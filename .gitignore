@@ -1,0 +1,35 @@
+# Dipendenze e build: si rigenerano con npm install / npm run build
+node_modules/
+dist/
+
+# Cache di Vite
+.vite/
+*.local
+
+# Log
+*.log
+npm-debug.log*
+
+# File a 0 byte creati dall'ambiente di lavoro (sandbox / editor), non fanno
+# parte del progetto. Sono in sola lettura e vuoti: se li vedi comparire con
+# `git status` e' normale, non vanno committati.
+.bashrc
+.bash_profile
+.gitconfig
+.gitmodules
+.idea
+.mcp.json
+.profile
+.ripgreprc
+.vscode
+.zprofile
+.zshrc
+.claude/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Ambiente
+.env
+.env.*

@@ -27,7 +27,7 @@ export function render() {
       null,
       el(
         'header',
-        { class: 'appbar' },
+        { class: 'appbar lg:hidden' },
         el(
           'span',
           { class: 'w-8 h-8 grid place-items-center rounded-lg bg-accent text-accent-ink font-black' },
@@ -49,6 +49,9 @@ export function render() {
       el(
         'main',
         { class: 'screen' },
+        el(
+          'div',
+          { class: 'lg-split' },
 
         /* ------------------------------------------------ today's session */
         el(
@@ -117,10 +120,14 @@ export function render() {
           ),
         ),
 
+        el(
+          'div',
+          { class: 'lg:contents' },
+
         /* ---------------------------------------------------------- stats */
         el(
           'section',
-          { class: 'tile mt-4 grid grid-cols-3 gap-3' },
+          { class: 'tile mt-4 lg:mt-0 grid grid-cols-3 gap-3' },
           stat(String(today.length), 'serie oggi', { accent: today.length > 0 }),
           stat(compact(volume(today)), 'kg oggi'),
           stat(String(streak(state.sets)), 'streak'),
@@ -129,7 +136,7 @@ export function render() {
         /* --------------------------------------------------------- shortcuts */
         el(
           'nav',
-          { class: 'mt-4 flex flex-col gap-2', 'aria-label': 'Scorciatoie' },
+          { class: 'mt-4 flex flex-col gap-2 lg:hidden', 'aria-label': 'Scorciatoie' },
           navRow({
             title: 'Timer',
             sub: 'Recupero, HIIT, EMOM, Tabata',
@@ -148,6 +155,8 @@ export function render() {
             iconName: 'chart',
             onClick: () => go('/stats'),
           }),
+        ),
+        ),
         ),
       ),
 

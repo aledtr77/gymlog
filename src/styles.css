@@ -139,15 +139,18 @@
     padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Primary action, pinned where the thumb already rests. */
+  /* Primary action, pinned where the thumb already rests.
+     The dock centres with flex rather than auto margins: .btn is
+     inline-flex, and margin:auto does not centre an inline-level box — that
+     is what pushed the button to the left edge. */
   .dock {
-    @apply fixed inset-x-0 bottom-0 z-30 px-4 pt-4 pointer-events-none;
+    @apply fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pt-4 pointer-events-none;
     padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(180deg, transparent, rgb(var(--bg)) 38%);
   }
 
   .dock > * {
-    @apply mx-auto w-full max-w-lg pointer-events-auto;
+    @apply w-full max-w-lg pointer-events-auto;
   }
 
   .label {
@@ -176,5 +179,67 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   Desktop.
+
+   The phone layout is the baseline and stays untouched. From 1024px the
+   pointer replaces the thumb, so the rail takes over navigation, the
+   content stops being a 512px strip marooned in an empty page, and the
+   dock aligns to the content column instead of the whole viewport.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  body {
+    padding-left: 15rem; /* the rail */
+  }
+
+  .appbar {
+    @apply px-8;
+    min-height: 72px;
+  }
+
+  /* Wider, but not unbounded: past ~60rem a line of text stops being
+     comfortable and a card grid reads better than a stretched one. */
+  .screen {
+    @apply max-w-4xl px-8 pt-8;
+    padding-bottom: 8rem;
+  }
+
+  /* Pinning the action to the bottom edge is a thumb affordance. With a
+     pointer it only opens a void between the content and the button, so on
+     desktop the dock returns to the flow, directly under what it acts on. */
+  /* Mirrors .screen's box exactly — same max-width, same auto margins, same
+     padding — so the action sits on the content column's left edge instead
+     of floating in the middle of the page. */
+  .dock {
+    @apply static inset-auto z-auto mx-auto w-full max-w-4xl justify-start px-8 pt-6 pb-24;
+    background: none;
+  }
+
+  .dock > * {
+    @apply max-w-sm;
+  }
+
+  .screen {
+    padding-bottom: 0;
+  }
+
+  /* Two columns where the content is genuinely independent. Marked by the
+     feature rather than assumed, so a dense screen can opt out. */
+  .lg-split {
+    @apply grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-6 items-start;
+  }
+
+  .lg-cols-2 {
+    @apply grid grid-cols-2 gap-3;
+  }
+}
+
+@media (min-width: 1280px) {
+  .screen,
+  .dock {
+    @apply max-w-5xl;
   }
 }

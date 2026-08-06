@@ -17,6 +17,10 @@ export function mountRestBar(root) {
       return;
     }
 
+    // Drains left to right behind the numbers, so progress reads at a glance
+    // without a second element competing for attention.
+    const left = rest.total ? Math.max(0, rest.remaining / rest.total) : 0;
+
     replace(
       host,
       h(
@@ -30,6 +34,10 @@ export function mountRestBar(root) {
             onClick: stopRest,
             'aria-label': 'Chiudi il recupero',
           },
+          h('span', {
+            class: 'rest__fill',
+            style: { transform: `scaleX(${left.toFixed(3)})` },
+          }),
           h('span', { class: 'rest__label' }, rest.over ? 'Vai' : 'Recupero'),
           h('span', { class: 'rest__time' }, mmss(rest.remaining)),
         ),

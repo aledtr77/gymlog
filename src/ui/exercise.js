@@ -83,7 +83,12 @@ export function exerciseScreen(exercise, ctx) {
       // Only claim "first time" when there is genuinely nothing: saying it
       // with sets already listed below reads as a bug.
       previous
-        ? h('p', { class: 'previous' }, `Ultima volta: ${kg(previous.weight)} kg × ${previous.reps}`)
+        ? h(
+            'p',
+            { class: 'previous' },
+            'Ultima volta: ',
+            h('b', null, `${kg(previous.weight)} kg × ${previous.reps}`),
+          )
         : doneToday.length
           ? null
           : h('p', { class: 'previous' }, 'Prima volta su questo esercizio'),

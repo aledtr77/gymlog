@@ -30,6 +30,7 @@ export function listScreen(ctx) {
     h(
       'header',
       { class: 'top' },
+      h('span', { class: 'top__brand' }, 'G'),
       h('h1', { class: 'top__title' }, 'GymLog'),
       h(
         'button',
@@ -93,5 +94,6 @@ function exerciseRow(row, ctx) {
     row.doneToday
       ? h('span', { class: 'row__today' }, `${row.doneToday}×`)
       : null,
+    h('span', { class: 'row__go', 'aria-hidden': 'true' }, '›'),
   );
 }

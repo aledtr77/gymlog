@@ -5,7 +5,7 @@
  * WebView bloccate): l'app resta usabile per la sessione corrente.
  */
 
-const DB_NAME = 'forgia';
+const DB_NAME = 'gymlog';
 const DB_VERSION = 1;
 
 export const STORES = {
@@ -51,7 +51,7 @@ function openDatabase() {
     request.onerror = () => reject(request.error);
     request.onblocked = () => reject(new Error('Database bloccato da un altra scheda'));
   }).catch((error) => {
-    console.warn('[forgia] IndexedDB non utilizzabile, uso memoria volatile:', error);
+    console.warn('[gymlog] IndexedDB non utilizzabile, uso memoria volatile:', error);
     memoryFallback = new Map(Object.values(STORES).map((name) => [name, new Map()]));
     return null;
   });

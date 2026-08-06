@@ -33,25 +33,15 @@ export function homeView(ctx) {
   function appbar() {
     return h(
       'header',
-      { class: 'appbar' },
+      { class: 'appbar appbar--brand' },
       h(
         'div',
         { class: 'appbar__inner' },
         h(
           'div',
           { class: 'brand' },
-          h('span', { class: 'brand__mark' }, 'F'),
-          h('span', { class: 'brand__name' }, 'Forgia'),
-        ),
-        h(
-          'button',
-          {
-            type: 'button',
-            class: 'icon-btn',
-            'aria-label': 'Impostazioni',
-            onClick: () => ctx.navigate('settings'),
-          },
-          icon('settings'),
+          h('span', { class: 'brand__mark' }, 'G'),
+          h('span', { class: 'brand__name' }, 'GymLog'),
         ),
       ),
     );
@@ -155,7 +145,7 @@ export function homeView(ctx) {
         ),
       ),
       state.routines.length
-        ? state.routines.map(routineCard)
+        ? h('div', { class: 'list-grid' }, state.routines.map(routineCard))
         : h(
             'div',
             { class: 'card' },
@@ -310,32 +300,36 @@ export function homeView(ctx) {
           'Vedi tutti',
         ),
       ),
-      completed.map((workout) => {
-        const summary = summarizeWorkout(workout);
-        return h(
-          'div',
-          { class: 'routine' },
-          h(
+      h(
+        'div',
+        { class: 'list-grid' },
+        completed.map((workout) => {
+          const summary = summarizeWorkout(workout);
+          return h(
             'div',
-            { class: 'routine__body' },
-            h('span', { class: 'routine__name' }, workout.name),
+            { class: 'routine' },
             h(
-              'span',
-              { class: 'routine__meta' },
-              `${relativeDay(workout.startedAt)} · ${summary.sets} serie · ${compactKg(summary.volume)} kg`,
+              'div',
+              { class: 'routine__body' },
+              h('span', { class: 'routine__name' }, workout.name),
+              h(
+                'span',
+                { class: 'routine__meta' },
+                `${relativeDay(workout.startedAt)} · ${summary.sets} serie · ${compactKg(summary.volume)} kg`,
+              ),
             ),
-          ),
-          h(
-            'button',
-            {
-              type: 'button',
-              class: 'btn btn--ghost btn--sm',
-              onClick: () => repeatWorkout(workout),
-            },
-            'Ripeti',
-          ),
-        );
-      }),
+            h(
+              'button',
+              {
+                type: 'button',
+                class: 'btn btn--ghost btn--sm',
+                onClick: () => repeatWorkout(workout),
+              },
+              'Ripeti',
+            ),
+          );
+        }),
+      ),
     );
   }
 

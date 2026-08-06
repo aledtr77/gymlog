@@ -10,9 +10,13 @@
  *   servire una versione stantia.
  */
 
-const VERSION = 'v3';
-const SHELL_CACHE = `forgia-shell-${VERSION}`;
-const ASSET_CACHE = `forgia-assets-${VERSION}`;
+const VERSION = 'v4';
+const SHELL_CACHE = `gymlog-shell-${VERSION}`;
+const ASSET_CACHE = `gymlog-assets-${VERSION}`;
+
+// `forgia-` è il vecchio prefisso: va ripulito anche quello, altrimenti le
+// cache della versione precedente resterebbero su disco per sempre.
+const CACHE_PREFIXES = ['gymlog-', 'forgia-'];
 
 const SHELL = [
   '/',
@@ -40,7 +44,11 @@ self.addEventListener('activate', (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => key.startsWith('forgia-') && !key.endsWith(VERSION))
+          .filter(
+            (key) =>
+              CACHE_PREFIXES.some((prefix) => key.startsWith(prefix)) &&
+              !key.endsWith(VERSION),
+          )
           .map((key) => caches.delete(key)),
       );
       await self.clients.claim();

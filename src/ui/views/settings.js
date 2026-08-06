@@ -182,7 +182,7 @@ export function settingsView(ctx) {
     const url = URL.createObjectURL(blob);
     const link = h('a', {
       href: url,
-      download: `forgia-${new Date().toISOString().slice(0, 10)}.json`,
+      download: `gymlog-${new Date().toISOString().slice(0, 10)}.json`,
     });
 
     document.body.append(link);
@@ -212,11 +212,11 @@ export function settingsView(ctx) {
       'section',
       { class: 'card' },
       h('div', { class: 'row', style: { gap: '12px' } },
-        h('span', { class: 'brand__mark' }, 'F'),
+        h('span', { class: 'brand__mark' }, 'G'),
         h(
           'div',
           { class: 'grow' },
-          h('div', { style: { fontWeight: '700' } }, 'Forgia'),
+          h('div', { style: { fontWeight: '700' } }, 'GymLog'),
           h('div', { class: 'tiny' }, 'Diario di allenamento offline-first'),
         ),
       ),

@@ -255,28 +255,32 @@ export function progressView(ctx) {
       'section',
       { class: 'col col--tight' },
       h('div', { class: 'section-title' }, h('h2', null, 'Record personali')),
-      ...list.map((record) =>
-        h(
-          'div',
-          { class: 'pr-card' },
-          h('span', { class: 'pr-card__medal' }, icon('trophy')),
+      h(
+        'div',
+        { class: 'list-grid' },
+        list.map((record) =>
           h(
             'div',
-            { class: 'pr-card__body' },
-            h('div', { class: 'pr-card__name' }, record.name),
+            { class: 'pr-card' },
+            h('span', { class: 'pr-card__medal' }, icon('trophy')),
             h(
               'div',
-              { class: 'pr-card__sub' },
-              record.bestWeight
-                ? `Massimale ${num(record.bestWeight.weight)} kg × ${num(record.bestWeight.reps)}`
-                : '—',
+              { class: 'pr-card__body' },
+              h('div', { class: 'pr-card__name' }, record.name),
+              h(
+                'div',
+                { class: 'pr-card__sub' },
+                record.bestWeight
+                  ? `Massimale ${num(record.bestWeight.weight)} kg × ${num(record.bestWeight.reps)}`
+                  : '—',
+              ),
             ),
-          ),
-          h(
-            'div',
-            { class: 'pr-card__v' },
-            h('strong', null, `${num(record.bestOneRm?.value ?? 0)}`),
-            h('span', { class: 'tiny' }, 'kg 1RM'),
+            h(
+              'div',
+              { class: 'pr-card__v' },
+              h('strong', null, `${num(record.bestOneRm?.value ?? 0)}`),
+              h('span', { class: 'tiny' }, 'kg 1RM'),
+            ),
           ),
         ),
       ),

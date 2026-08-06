@@ -15,7 +15,7 @@ async function boot() {
     await init();
     mountApp(root);
   } catch (error) {
-    console.error('[forgia] avvio fallito', error);
+    console.error('[gymlog] avvio fallito', error);
     root.replaceChildren(
       h(
         'div',

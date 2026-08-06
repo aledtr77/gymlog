@@ -265,7 +265,7 @@ export async function updateSettings(patch) {
    ------------------------------------------------------------------------- */
 export function exportData() {
   return {
-    app: 'forgia',
+    app: 'gymlog',
     version: 1,
     exportedAt: new Date().toISOString(),
     workouts: state.workouts,

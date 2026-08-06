@@ -120,6 +120,15 @@ export function mountApp(root) {
     return h(
       'nav',
       { class: 'tabbar', 'aria-label': 'Navigazione principale' },
+      // Da desktop la barra diventa una colonna laterale e ospita il marchio,
+      // che lì ha senso in permanenza; su mobile resta nascosto perché lo
+      // mostra già l'intestazione della Home.
+      h(
+        'div',
+        { class: 'tabbar__brand' },
+        h('span', { class: 'brand__mark' }, 'G'),
+        h('span', { class: 'brand__name' }, 'GymLog'),
+      ),
       h(
         'div',
         { class: 'tabbar__inner', role: 'tablist' },

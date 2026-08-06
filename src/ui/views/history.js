@@ -76,7 +76,7 @@ export function historyView(ctx) {
       groups.push(card(workout));
     }
 
-    return h('div', { class: 'col col--tight' }, ...groups);
+    return h('div', { class: 'list-grid' }, ...groups);
   }
 
   function card(workout) {

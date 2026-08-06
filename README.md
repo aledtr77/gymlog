@@ -1,4 +1,4 @@
-# Forgia — diario di allenamento PWA
+# GymLog — diario di allenamento PWA
 
 App web installabile per registrare gli allenamenti in palestra. Funziona
 completamente offline, non ha account né server: i dati restano su IndexedDB nel
@@ -19,7 +19,7 @@ npm run preview    # serve dist/ (necessario per provare il service worker)
 ## Da dove viene il modello di interazione
 
 Le app che dominano questa categoria (Hevy, Strong) hanno convissuto tutte sullo
-stesso schema, e per buone ragioni. Forgia lo adotta:
+stesso schema, e per buone ragioni. GymLog lo adotta:
 
 | Scelta | Perché |
 |---|---|
@@ -72,7 +72,7 @@ public/          manifest, service worker, icone
 
 ## Dati
 
-Tutto in IndexedDB (`forgia`): allenamenti, routine, record, esercizi
+Tutto in IndexedDB (`gymlog`): allenamenti, routine, record, esercizi
 personalizzati, preferenze e sessione in corso. `Strumenti → I tuoi dati`
 esporta e reimporta un JSON completo. L'import unisce senza duplicare (chiave
 sull'id dell'allenamento) e ricalcola i record da zero.

@@ -44,7 +44,7 @@ export function registerServiceWorker() {
         });
       });
     } catch (error) {
-      console.warn('[forgia] service worker non registrato', error);
+      console.warn('[gymlog] service worker non registrato', error);
     }
   }
 }
@@ -84,7 +84,7 @@ export function maybeSuggestInstall() {
   if (!canInstall()) return;
   if (state.workouts.length < 3) return;
 
-  toast('Aggiungi Forgia alla schermata home', {
+  toast('Aggiungi GymLog alla schermata home', {
     duration: 8000,
     iconName: 'download',
     action: { label: 'Installa', onClick: () => promptInstall() },

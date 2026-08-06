@@ -43,17 +43,25 @@ export function listScreen(ctx) {
       { class: 'wrap' },
       done.length
         ? h(
-            'p',
+            'div',
             { class: 'summary' },
-            `Oggi: ${done.length} ${done.length === 1 ? 'serie' : 'serie'} · ${compact(volume(done))} kg`,
+            h('span', { class: 'summary__label' }, 'Oggi'),
+            h(
+              'div',
+              { class: 'summary__stats' },
+              stat(String(done.length), 'serie'),
+              stat(compact(volume(done)), 'kg'),
+              stat(String(new Set(done.map((e) => e.exerciseId)).size), 'esercizi'),
+            ),
           )
         : null,
       rows.length
         ? h('div', { class: 'rows' }, rows.map((row) => exerciseRow(row, ctx)))
         : h(
-            'p',
+            'div',
             { class: 'blank' },
-            'Aggiungi il primo esercizio e comincia.',
+            h('strong', null, 'Comincia da qui'),
+            h('span', null, 'Aggiungi un esercizio: da lì in poi ti bastano due tasti e FATTO.'),
           ),
       h(
         'button',
@@ -70,6 +78,15 @@ export function listScreen(ctx) {
         '+ Aggiungi esercizio',
       ),
     ),
+  );
+}
+
+function stat(value, label) {
+  return h(
+    'div',
+    { class: 'stat' },
+    h('span', { class: 'stat__v' }, value),
+    h('span', { class: 'stat__l' }, label),
   );
 }
 

@@ -45,6 +45,10 @@ export async function mountApp(root) {
   render();
 
   function render() {
+    // Only the exercise screen pins an action to the bottom edge; the rest
+    // bar has to ride above it there, and sit low everywhere else.
+    document.body.classList.toggle('has-action', screen.name === 'exercise');
+
     if (screen.name === 'exercise') replace(host, exerciseScreen(screen.exercise, ctx));
     else if (screen.name === 'history') replace(host, historyScreen(ctx));
     else replace(host, listScreen(ctx));

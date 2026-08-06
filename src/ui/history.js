@@ -51,7 +51,12 @@ export function historyScreen(ctx) {
               ),
             ),
           )
-        : h('p', { class: 'blank' }, 'Ancora niente. Registra una serie.'),
+        : h(
+            'div',
+            { class: 'blank' },
+            h('strong', null, 'Storico vuoto'),
+            h('span', null, 'Le serie che registri finiscono qui, giorno per giorno.'),
+          ),
     ),
   );
 }

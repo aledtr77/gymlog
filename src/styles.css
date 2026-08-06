@@ -97,7 +97,12 @@
 
 body {
   margin: 0;
+  min-height: 100dvh;
   background: var(--bg);
+  background-image:
+    radial-gradient(90% 55% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 340px);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
   font-size: 17px;
@@ -215,23 +220,73 @@ button {
   background: var(--surface-3);
 }
 
-/* Today's tally: quiet, but the accent marks it as live data. */
+/* Today's tally. Given real weight at the top of the screen: a list of
+   three exercises otherwise leaves the page bottom-heavy with nothing. */
 .summary {
-  margin-bottom: var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-md);
-  background: var(--accent-soft);
+  margin-bottom: var(--sp-5);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-xl);
+  background: linear-gradient(155deg, var(--accent-soft), transparent 70%), var(--surface);
   border: 1px solid var(--accent-line);
-  font-size: 14px;
-  font-weight: 700;
+  box-shadow: var(--shadow-1);
+}
+
+.summary__label {
+  display: block;
+  margin-bottom: var(--sp-3);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--accent);
 }
 
+.summary__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stat__v {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__l {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
 .blank {
-  margin-top: 15vh;
+  display: grid;
+  place-content: center;
+  gap: var(--sp-2);
+  min-height: 52vh;
+  padding: var(--sp-6);
+  border-radius: var(--r-xl);
+  border: 1px dashed var(--line);
   text-align: center;
   color: var(--text-3);
   line-height: 1.6;
+}
+
+.blank strong {
+  display: block;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .grow {
@@ -415,10 +470,29 @@ button {
   white-space: nowrap;
 }
 
+/* Anchored to the bottom edge rather than floating mid-screen: it is the
+   only action here, and that is where the thumb already sits. */
+.action {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: var(--sp-4) var(--sp-4) calc(var(--sp-4) + var(--safe-b));
+  background: linear-gradient(180deg, transparent, var(--bg) 38%);
+  pointer-events: none;
+}
+
+.action > * {
+  max-width: calc(var(--wrap) - var(--sp-8));
+  margin: 0 auto;
+  pointer-events: auto;
+}
+
 /* The largest thing on the screen, and deliberately so. */
 .record {
+  display: block;
   width: 100%;
-  margin-top: var(--sp-5);
   min-height: 84px;
   border-radius: var(--r-xl);
   background: linear-gradient(160deg, var(--accent), var(--accent-2));
@@ -527,6 +601,7 @@ button {
   right: var(--sp-3);
   bottom: calc(var(--sp-3) + var(--safe-b));
   z-index: 40;
+  transition: bottom 0.2s var(--ease);
   max-width: calc(var(--wrap) - var(--sp-6));
   margin: 0 auto;
   display: flex;
@@ -536,6 +611,10 @@ button {
   background: var(--surface-3);
   box-shadow: var(--shadow-3);
   animation: slideUp 0.24s var(--ease);
+}
+
+body.has-action .rest {
+  bottom: calc(var(--sp-3) + 84px + var(--sp-4) * 2 + var(--safe-b));
 }
 
 @keyframes slideUp {

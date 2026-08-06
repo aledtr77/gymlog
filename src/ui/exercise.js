@@ -98,29 +98,15 @@ export function exerciseScreen(exercise, ctx) {
         stepper('KG', weightValue, () => bump('weight', -KG_STEP), () => bump('weight', KG_STEP)),
         stepper('REPS', repsValue, () => bump('reps', -1), () => bump('reps', 1)),
       ),
-      h(
-        'button',
-        {
-          type: 'button',
-          class: 'record',
-          onClick: async () => {
-            tap();
-            await addSet({
-              exerciseId: exercise.id,
-              name: exercise.name,
-              weight,
-              reps,
-            });
-            startRest();
-          },
-        },
-        'FATTO',
-      ),
       doneToday.length
         ? h(
             'div',
             { class: 'sets' },
-            h('h2', { class: 'sets__title' }, 'Oggi'),
+            h(
+              'h2',
+              { class: 'sets__title' },
+              `Oggi · ${doneToday.length} ${doneToday.length === 1 ? 'serie' : 'serie'}`,
+            ),
             doneToday.map((entry, index) =>
               h(
                 'div',
@@ -141,6 +127,25 @@ export function exerciseScreen(exercise, ctx) {
             ),
           )
         : null,
+    ),
+    // Pinned to the bottom edge: it is the one action on this screen, and
+    // that is where the thumb already is.
+    h(
+      'div',
+      { class: 'action' },
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'record',
+          onClick: async () => {
+            tap();
+            await addSet({ exerciseId: exercise.id, name: exercise.name, weight, reps });
+            startRest();
+          },
+        },
+        'FATTO',
+      ),
     ),
   );
 }

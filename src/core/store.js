@@ -1,10 +1,9 @@
 /**
- * Store applicativo: unica fonte di verità + persistenza.
+ * Application store: single source of truth plus persistence.
  *
- * La sessione in corso viene salvata a ogni modifica (con debounce), così
- * chiudere l'app, ricevere una chiamata o restare senza batteria non fa
- * perdere l'allenamento — il difetto che manda in bestia chi usa un diario
- * di palestra sul telefono.
+ * The in-progress session is saved on every change (debounced), so closing
+ * the app, taking a call or running out of battery never costs you the
+ * workout — the flaw that drives people off phone-based gym logs.
  */
 
 import * as db from './db.js';
@@ -55,7 +54,7 @@ export function emit(reason = 'change') {
 }
 
 /* -------------------------------------------------------------------------
-   Avvio
+   Startup
    ------------------------------------------------------------------------- */
 export async function init() {
   const [workouts, routines, records, customExercises, active, settings] =
@@ -76,8 +75,8 @@ export async function init() {
   state.active = active;
   state.settings = { ...DEFAULT_SETTINGS, ...(settings || {}) };
 
-  // Le routine di esempio vengono seminate una sola volta: se l'utente le
-  // cancella non devono ricomparire al riavvio.
+  // Sample routines are seeded exactly once: if the user deletes them they
+  // must not reappear on the next start.
   const seeded = await db.getMeta('routinesSeeded', false);
   if (!routines.length && !seeded) {
     await db.putMany(STORES.routines, PRESET_ROUTINES);
@@ -100,7 +99,7 @@ function reindex() {
 }
 
 /* -------------------------------------------------------------------------
-   Esercizi
+   Exercises
    ------------------------------------------------------------------------- */
 export function allExercises() {
   return [...EXERCISES, ...state.customExercises];
@@ -119,7 +118,7 @@ export async function addCustomExercise(exercise) {
 }
 
 /* -------------------------------------------------------------------------
-   Sessione attiva
+   Active session
    ------------------------------------------------------------------------- */
 let saveTimer = null;
 
@@ -145,8 +144,8 @@ export async function discardActive() {
 }
 
 /**
- * Conclude la sessione: salva l'allenamento, aggiorna i record e reindicizza
- * le prestazioni precedenti.
+ * Closes out the session: stores the workout, updates records and reindexes
+ * previous performances.
  * @returns {{saved: boolean, workout: object|null, newRecords: object[]}}
  */
 export async function completeActive() {
@@ -174,10 +173,10 @@ export async function completeActive() {
 }
 
 /* -------------------------------------------------------------------------
-   Record personali
+   Personal records
    ------------------------------------------------------------------------- */
 
-/** Valuta una serie appena completata e persiste l'eventuale nuovo record. */
+/** Evaluates a just-completed set and persists any new record. */
 export async function registerSetForRecords({ exerciseId, name, weight, reps, type, at }) {
   const current = state.records.get(exerciseId) || null;
   const { record, broken } = evaluatePersonalRecord(current, {
@@ -209,7 +208,7 @@ async function resyncRecords() {
 }
 
 /* -------------------------------------------------------------------------
-   Storico
+   History
    ------------------------------------------------------------------------- */
 export async function deleteWorkout(id) {
   await db.remove(STORES.workouts, id);
@@ -229,7 +228,7 @@ export async function clearAllWorkouts() {
 }
 
 /* -------------------------------------------------------------------------
-   Routine
+   Routines
    ------------------------------------------------------------------------- */
 export async function saveRoutine(routine) {
   await db.put(STORES.routines, routine);
@@ -251,7 +250,7 @@ export function findRoutine(id) {
 }
 
 /* -------------------------------------------------------------------------
-   Impostazioni
+   Settings
    ------------------------------------------------------------------------- */
 export async function updateSettings(patch) {
   state.settings = { ...state.settings, ...patch };

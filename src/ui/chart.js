@@ -1,10 +1,10 @@
 /**
- * Grafici.
+ * Charts.
  *
- * Serie singola, quindi nessuna legenda: il titolo della card dice già cosa
- * si sta guardando. Il tratto usa il colore d'accento, mentre etichette e
- * valori restano sui token di testo — il colore identifica il segno, non
- * scrive parole. Griglia e assi sono volutamente poco contrastati.
+ * A single series, so no legend: the card title already says what you are
+ * looking at. The stroke uses the accent colour while labels and values
+ * stay on the text tokens — colour identifies the mark, it does not spell
+ * words. Grid and axes are deliberately low contrast.
  */
 
 import { h } from './dom.js';
@@ -13,7 +13,7 @@ const W = 340;
 const H = 170;
 const PAD = { top: 14, right: 12, bottom: 22, left: 36 };
 
-/** Arrotonda gli estremi dell'asse a un passo leggibile. */
+/** Rounds the axis bounds to a readable step. */
 function niceBounds(lo, hi) {
   const span = hi - lo || Math.max(1, Math.abs(hi) * 0.1);
   const step = Math.max(0.5, 10 ** Math.floor(Math.log10(span)) / 2);
@@ -24,7 +24,7 @@ function niceBounds(lo, hi) {
 }
 
 /**
- * Grafico a linea con crosshair e tooltip.
+ * Line chart with crosshair and tooltip.
  * @param {{x: number|Date, y: number, label?: string}[]} points
  * @param {{formatY?: Function, formatX?: Function, unit?: string, caption?: string}} options
  */
@@ -50,9 +50,9 @@ export function lineChart(points, options = {}) {
   const ys = points.map((p) => p.y);
   const rawMin = Math.min(...ys);
   const rawMax = Math.max(...ys);
-  // Estremi "tondi": un asse che dice 115–130 si legge, uno che dice
-  // 116,7–129,4 costringe a decifrarlo. Il margine evita anche che il picco
-  // tocchi il bordo o che una serie piatta collassi su una riga sola.
+  // Round bounds: an axis reading 115-130 is legible, one reading
+  // 116.7-129.4 has to be decoded. The padding also keeps the peak off the
+  // edge and stops a flat series collapsing onto a single line.
   const { min, max } = niceBounds(rawMin, rawMax);
 
   const px = (i) => PAD.left + (innerW * i) / (points.length - 1);
@@ -88,8 +88,8 @@ export function lineChart(points, options = {}) {
     ),
   );
 
-  // Etichette selettive: primo, ultimo e massimo. Un numero su ogni punto
-  // renderebbe illeggibile il tracciato.
+  // Selective labels: first, last and maximum. A number on every point
+  // would bury the line itself.
   const maxIndex = ys.indexOf(rawMax);
   const highlight = new Set([0, points.length - 1, maxIndex]);
 
@@ -172,8 +172,8 @@ export function lineChart(points, options = {}) {
 
   const wrapper = h('div', { class: 'chart-wrap' }, svg, tooltip, srTable());
 
-  // Hover e tocco condividono lo stesso percorso: su mobile il "passaggio
-  // del dito" è l'unico modo per leggere un punto preciso.
+  // Hover and touch share one path: on mobile, dragging a finger across is
+  // the only way to read an exact point.
   const onMove = (event) => {
     const rect = svg.getBoundingClientRect();
     const ratio = (event.clientX - rect.left) / rect.width;
@@ -221,9 +221,9 @@ export function lineChart(points, options = {}) {
 }
 
 /**
- * Colonne. Le barre partono sempre dalla linea di base e hanno la cima
- * arrotondata di 4px; il distacco fra le colonne è dato da un gap reale,
- * non da una barra più stretta.
+ * Columns. Bars always start at the baseline and carry a 4px rounded cap;
+ * the separation between columns comes from a real gap, not from making
+ * the bar narrower.
  */
 export function barChart(bars, options = {}) {
   const { formatValue = (v) => String(Math.round(v)), unit = '', caption = 'Volume' } = options;

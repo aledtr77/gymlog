@@ -1,10 +1,10 @@
 /**
- * Timer di recupero.
+ * Rest timer.
  *
- * Basato su timestamp assoluti, non su un contatore decrementato a ogni tick:
- * quando il telefono va in standby o il browser mette la scheda in background
- * i timer vengono rallentati o congelati, e un timer a decremento arriverebbe
- * a fine serie sbagliando anche di minuti.
+ * Built on absolute timestamps rather than a counter decremented each tick:
+ * when the phone sleeps or the browser backgrounds the tab, timers are
+ * throttled or frozen, and a decrementing timer would reach the end of the
+ * set minutes off.
  */
 
 import { beep } from './feedback.js';
@@ -54,8 +54,8 @@ export function startRest(seconds, restLabel = '', { sound = true, vibration = t
       firedEnd = true;
       beep({ sound, vibration });
       notify();
-      // La barra resta visibile qualche secondo dopo lo zero: chi si allena
-      // spesso alza gli occhi in ritardo e deve poter vedere che è ora.
+      // The bar lingers a few seconds past zero: people mid-session often
+      // look up late and still need to see that the rest is over.
       setTimeout(() => {
         if (firedEnd) stopRest();
       }, 8000);

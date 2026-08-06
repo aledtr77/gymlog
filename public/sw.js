@@ -1,21 +1,20 @@
 /**
  * Service worker.
  *
- * Due strategie distinte:
- * - navigazioni: network-first con fallback all'app shell in cache, così una
- *   nuova versione arriva subito quando c'è rete e l'app si apre comunque
- *   quando non ce n'è (che in palestra è la norma);
- * - risorse statiche: cache-first con aggiornamento in background. I file
- *   generati dalla build hanno un hash nel nome, quindi la cache non può
- *   servire una versione stantia.
+ * Two distinct strategies:
+ * - navigations: network-first with a fallback to the cached app shell, so a
+ *   new version lands immediately when there is a connection and the app
+ *   still opens when there is not (the norm in a gym basement);
+ * - static assets: cache-first with a background refresh. Build output
+ *   carries a hash in the filename, so the cache cannot serve a stale one.
  */
 
 const VERSION = 'v4';
 const SHELL_CACHE = `gymlog-shell-${VERSION}`;
 const ASSET_CACHE = `gymlog-assets-${VERSION}`;
 
-// `forgia-` è il vecchio prefisso: va ripulito anche quello, altrimenti le
-// cache della versione precedente resterebbero su disco per sempre.
+// `forgia-` is the old prefix: it has to be swept up too, or the previous
+// version's caches would sit on disk forever.
 const CACHE_PREFIXES = ['gymlog-', 'forgia-'];
 
 const SHELL = [
@@ -30,8 +29,8 @@ const SHELL = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(SHELL_CACHE).then((cache) =>
-      // addAll fallisce in blocco se manca un solo file: qui ogni risorsa è
-      // indipendente e una mancante non deve impedire l'installazione.
+      // addAll fails as a unit if a single file is missing: here each asset
+      // stands alone, and one absentee must not block installation.
       Promise.allSettled(SHELL.map((url) => cache.add(url))),
     ),
   );
@@ -96,7 +95,7 @@ async function handleAsset(request) {
   const cached = await cache.match(request);
 
   if (cached) {
-    // Rinfresca in background senza far attendere l'utente.
+    // Refresh in the background without making the user wait.
     fetch(request)
       .then((response) => {
         if (response.ok) cache.put(request, response.clone());

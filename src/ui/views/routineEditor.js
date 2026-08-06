@@ -1,7 +1,7 @@
 /**
- * Editor di routine.
- * Serie/ripetizioni/recupero sono valori di partenza: durante l'allenamento
- * restano modificabili, quindi qui bastano tre campi per riga.
+ * Routine editor.
+ * Sets/reps/rest are starting values: they stay editable during the workout,
+ * so three fields per row is enough here.
  */
 
 import { h, replace } from '../dom.js';

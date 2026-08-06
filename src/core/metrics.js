@@ -1,11 +1,11 @@
 /**
- * Metriche di allenamento.
- * Funzioni pure: nessun accesso a DOM, storage o Date.now().
+ * Training metrics.
+ * Pure functions: no DOM, no storage, no Date.now().
  */
 
 export const SET_TYPES = ['normal', 'warmup', 'drop', 'failure'];
 
-/** Le serie di riscaldamento non contribuiscono al volume né ai record. */
+/** Warmup sets count towards neither volume nor personal records. */
 export function isWorkingSet(set) {
   return Boolean(set) && set.type !== 'warmup';
 }
@@ -14,7 +14,7 @@ export function isCountedSet(set) {
   return Boolean(set) && set.done === true && isWorkingSet(set);
 }
 
-/** Volume di una serie = carico × ripetizioni. */
+/** Volume of a set = load x reps. */
 export function setVolume(set) {
   const weight = Number(set?.weight) || 0;
   const reps = Number(set?.reps) || 0;
@@ -22,9 +22,9 @@ export function setVolume(set) {
 }
 
 /**
- * 1RM stimato con la formula di Epley: w × (1 + reps/30).
- * A 1 ripetizione restituisce il carico stesso.
- * Arrotondato a 0.5 kg, la granularità reale di una sala pesi.
+ * Estimated 1RM via the Epley formula: w * (1 + reps/30).
+ * At 1 rep it returns the load itself.
+ * Rounded to 0.5 kg, the real granularity of a weights room.
  */
 export function estimateOneRepMax(weight, reps) {
   const w = Number(weight) || 0;
@@ -39,7 +39,7 @@ export function round(value, decimals = 2) {
   return Math.round((Number(value) + Number.EPSILON) * factor) / factor;
 }
 
-/** Totali di una sessione, considerando solo le serie completate e non di riscaldamento. */
+/** Session totals, counting only completed, non-warmup sets. */
 export function summarizeWorkout(workout) {
   let volume = 0;
   let sets = 0;
@@ -76,10 +76,10 @@ export function workoutDuration(workout) {
 }
 
 /**
- * Confronta una serie con il record attuale di quell'esercizio.
- * Restituisce il record aggiornato e l'elenco dei primati battuti.
+ * Compares a set against the current record for that exercise.
+ * Returns the updated record and the list of bests that were beaten.
  *
- * @param {object|null} current record salvato, o null se è la prima volta
+ * @param {object|null} current stored record, or null the first time round
  * @param {object} set  { exerciseId, name, weight, reps, at }
  */
 export function evaluatePersonalRecord(current, set) {
@@ -130,9 +130,9 @@ export const PR_LABELS = {
 };
 
 /**
- * Ricostruisce tutti i record a partire dallo storico completo.
- * Usato dopo un import o dopo la cancellazione di un allenamento,
- * quando i record incrementali non sono più affidabili.
+ * Rebuilds every record from the full history.
+ * Used after an import or after deleting a workout, when the
+ * incrementally maintained records can no longer be trusted.
  */
 export function rebuildRecords(workouts) {
   const byExercise = new Map();
@@ -162,9 +162,9 @@ export function rebuildRecords(workouts) {
 }
 
 /**
- * Ultima prestazione registrata per ogni esercizio, indicizzata per id.
- * È la colonna "PRECEDENTE" della schermata di allenamento: sapere cosa hai
- * fatto l'ultima volta è l'informazione singola più utile mentre ti alleni.
+ * Last recorded performance per exercise, indexed by id.
+ * This is the "previous" column on the workout screen: knowing what you
+ * did last time is the single most useful thing to see mid-session.
  */
 export function buildLastPerformance(workouts) {
   const index = new Map();
@@ -192,7 +192,7 @@ export function buildLastPerformance(workouts) {
   return index;
 }
 
-/** Serie storiche per i grafici dei progressi di un singolo esercizio. */
+/** Time series feeding the progress charts for a single exercise. */
 export function exerciseProgress(workouts, exerciseId) {
   const points = [];
 
@@ -228,7 +228,7 @@ export function exerciseProgress(workouts, exerciseId) {
   return points.sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 
-/** Volume aggregato per gruppo muscolare in una finestra temporale. */
+/** Volume aggregated by muscle group over a time window. */
 export function volumeByMuscle(workouts, resolveMuscle) {
   const totals = new Map();
 

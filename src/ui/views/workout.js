@@ -1,13 +1,12 @@
 /**
- * Schermata di allenamento attivo.
+ * Active workout screen.
  *
- * Il modello di interazione è quello che si è imposto nelle app di
- * riferimento (Hevy, Strong): una card per esercizio, dentro ogni card una
- * riga per serie con le colonne SERIE · PRECEDENTE · KG · REPS · ✓.
- * Registrare una serie costa un tap sulla spunta; i valori sono già
- * pre-compilati con quelli dell'ultima volta. La colonna "precedente" è
- * l'informazione più utile che si possa avere sotto gli occhi mentre ci si
- * allena, e per questo occupa spazio fisso invece di essere nascosta.
+ * The interaction model is the one the reference apps settled on (Hevy,
+ * Strong): one card per exercise, and inside each card one row per set with
+ * the columns SET / PREVIOUS / KG / REPS / done. Logging a set costs a
+ * single tap on the tick, with values prefilled from last time. The
+ * "previous" column is the most useful thing you can have in front of you
+ * mid-session, which is why it holds fixed space rather than hiding.
  */
 
 import { h, raf, replace } from '../dom.js';
@@ -99,8 +98,8 @@ export function workoutView(ctx) {
           icon('plus'),
           'Aggiungi esercizio',
         ),
-        // Azione distruttiva volutamente dimessa e distanziata dal pulsante
-        // primario: è la stessa voce già presente nel menu ⋮.
+        // Destructive action, deliberately understated and kept away from
+        // the primary button: the same entry already lives in the ... menu.
         h(
           'button',
           {
@@ -121,7 +120,7 @@ export function workoutView(ctx) {
   const ticker = setInterval(syncStats, 1000);
   if (state.settings.keepAwake) keepScreenAwake(true);
 
-  /* ---------------------------------------------------------------- stato */
+  /* ---------------------------------------------------------------- state */
 
   function active() {
     return state.active;
@@ -222,8 +221,8 @@ export function workoutView(ctx) {
       ),
     );
 
-    // Le serie di lavoro sono numerate 1..n; riscaldamento, drop e cedimento
-    // portano una lettera, come nelle app di riferimento.
+    // Working sets are numbered 1..n; warmup, drop and failure sets carry a
+    // letter instead, as in the reference apps.
     let workingNumber = 0;
     replace(
       rows,
@@ -355,7 +354,7 @@ export function workoutView(ctx) {
     return wrap;
   }
 
-  /** Serie corrispondente dell'ultima volta, allineata per posizione. */
+  /** The matching set from last time, aligned by position. */
   function previousFor(block, set) {
     const history = state.lastPerformance.get(block.exerciseId);
     if (!history) return null;
@@ -368,7 +367,7 @@ export function workoutView(ctx) {
     return history.sets[index] || null;
   }
 
-  /* ----------------------------------------------------------- interazioni */
+  /* ---------------------------------------------------------- interaction */
 
   function onFieldInput(blockId, setId, field, rawValue) {
     const parsed = parseNum(rawValue);
@@ -399,8 +398,8 @@ export function workoutView(ctx) {
       return;
     }
 
-    // Campi vuoti: si adottano i valori suggeriti dalla volta precedente,
-    // che è quasi sempre quello che si intendeva fare.
+    // Empty fields fall back to the values suggested by last time, which is
+    // almost always what was meant.
     const previous = previousFor(block, set);
     let weight = parseNum(weightInput.value);
     let reps = parseNum(repsInput.value);
@@ -447,8 +446,8 @@ export function workoutView(ctx) {
     });
 
     if (broken.length) {
-      // Il primato viene marcato sulla serie, non solo sul nodo: così
-      // l'evidenza sopravvive a un ridisegno della card.
+      // The record is flagged on the set, not just the node, so the
+      // highlight survives a re-render of the card.
       commit(updateSet(active(), blockId, setId, { pr: true }));
       celebrate(row, block.name, broken, weight, reps);
     }
@@ -458,8 +457,8 @@ export function workoutView(ctx) {
     row.classList.add('is-pr', 'pr-flash');
     setTimeout(() => row.classList.remove('pr-flash'), 1100);
 
-    // Un solo messaggio anche quando cadono più primati insieme: il carico
-    // massimo tipicamente porta con sé anche 1RM e volume.
+    // One message even when several bests fall at once: a top load usually
+    // drags 1RM and volume along with it.
     const headline = broken.some((b) => b.type === 'weight')
       ? `Nuovo massimale: ${num(weight)} kg × ${num(reps)}`
       : `${PR_LABELS[broken[0].type]}: ${num(broken[0].value)} kg`;
@@ -476,8 +475,8 @@ export function workoutView(ctx) {
     if (!block) return;
 
     if (block.sets.length <= 1) {
-      // L'ultima riga non si elimina: una card senza serie non ha senso, e
-      // per togliere tutto c'è "Rimuovi esercizio".
+      // The last row cannot be deleted: a card with no sets is meaningless,
+      // and "remove exercise" already covers clearing it out.
       refreshCard(blockId);
       toast('Usa il menu per rimuovere l’esercizio', { variant: 'default' });
       return;
@@ -772,9 +771,9 @@ function metric(valueEl, label, extraClass) {
 }
 
 /**
- * Swipe orizzontale per eliminare una serie.
- * Il gesto parte solo se il movimento è chiaramente orizzontale, altrimenti
- * lo scorrimento verticale della pagina diventa impossibile.
+ * Horizontal swipe to delete a set.
+ * The gesture only engages once the movement is clearly horizontal, or
+ * scrolling the page vertically becomes impossible.
  */
 function attachSwipeToDelete(wrap, row, onDelete) {
   const THRESHOLD = 84;

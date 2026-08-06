@@ -1,8 +1,8 @@
 /**
- * Calcolatore dischi.
- * Greedy sui dischi disponibili, con gestione esplicita del residuo:
- * in palestra è normale non poter comporre un peso esatto e l'app deve
- * dirlo invece di mentire.
+ * Plate calculator.
+ * Greedy over the available plates, with the remainder handled explicitly:
+ * in a real gym you often cannot make an exact weight, and the app should
+ * say so rather than lie.
  */
 
 export const DEFAULT_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5];
@@ -17,9 +17,9 @@ export const BAR_WEIGHTS = [
 const EPS = 1e-6;
 
 /**
- * @param {number} targetWeight peso totale desiderato (bilanciere incluso)
- * @param {number} barWeight    peso del bilanciere
- * @param {number[]} available  dischi disponibili, per lato, illimitati
+ * @param {number} targetWeight desired total weight (bar included)
+ * @param {number} barWeight    weight of the bar itself
+ * @param {number[]} available  plates on hand, per side, unlimited count
  * @returns {{
  *   ok: boolean, error: string|null, sideWeight: number,
  *   plates: {weight:number,count:number}[],
@@ -100,7 +100,7 @@ function round2(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-/** Formattazione italiana: virgola decimale, niente ".0" inutili. */
+/** Italian formatting: decimal comma, no pointless trailing ".0". */
 export function formatKg(value) {
   const n = Number(value) || 0;
   const str = Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');

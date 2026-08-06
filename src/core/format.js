@@ -1,4 +1,4 @@
-/** Formattazioni localizzate in italiano. */
+/** Italian-localised formatting helpers. */
 
 const nfKg = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 });
 const nfInt = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
@@ -11,7 +11,7 @@ export function int(value) {
   return nfInt.format(Math.round(Number(value) || 0));
 }
 
-/** Volumi grandi: 12.480 kg diventa "12,5k" per non far esplodere il layout. */
+/** Large volumes: 12,480 kg becomes "12,5k" so the layout does not blow up. */
 export function compactKg(value) {
   const n = Number(value) || 0;
   if (n >= 10000) return `${nfKg.format(n / 1000)}k`;
@@ -19,15 +19,15 @@ export function compactKg(value) {
 }
 
 export function num(value) {
-  // Attenzione: Number('') vale 0, quindi il caso "campo vuoto" va escluso
-  // prima della conversione, altrimenti una serie non compilata mostra "0".
+  // Careful: Number('') is 0, so the "empty field" case must be excluded
+  // before converting, or an unfilled set would render as "0".
   if (value === '' || value === null || value === undefined) return '';
   const n = Number(value);
   if (!Number.isFinite(n)) return '';
   return Number.isInteger(n) ? String(n) : String(n).replace('.', ',');
 }
 
-/** Parsing tollerante: accetta sia "82,5" sia "82.5". */
+/** Lenient parsing: accepts both "82,5" and "82.5". */
 export function parseNum(value) {
   if (value === '' || value === null || value === undefined) return null;
   const n = Number(String(value).replace(',', '.'));
@@ -91,7 +91,7 @@ export function startOfDay(date) {
   return d;
 }
 
-/** Lunedì come primo giorno: è la convenzione italiana. */
+/** Monday as the first day, following the Italian convention. */
 export function startOfWeek(date) {
   const d = startOfDay(date);
   const shift = (d.getDay() + 6) % 7;

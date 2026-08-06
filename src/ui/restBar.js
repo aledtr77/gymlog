@@ -1,8 +1,8 @@
 /**
- * Barra del recupero.
- * Ancorata in basso e non modale: si può continuare a scorrere la scheda e
- * modificare le serie mentre scorre. Un timer a schermo intero bloccherebbe
- * proprio le azioni che si fanno durante il recupero.
+ * Rest bar.
+ * Anchored to the bottom and non-modal: you can keep scrolling the session
+ * and editing sets while it runs. A full-screen timer would block exactly
+ * the actions people take during a rest.
  */
 
 import { h } from './dom.js';

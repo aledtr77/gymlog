@@ -1,9 +1,9 @@
 /**
- * Registrazione del service worker e aggiornamenti.
+ * Service worker registration and updates.
  *
- * Quando esce una nuova versione l'app non si ricarica da sola: farlo a metà
- * allenamento significherebbe far ripartire il timer e perdere il focus su un
- * campo. Si avvisa e si lascia decidere.
+ * When a new version ships the app does not reload itself: doing that
+ * mid-workout would restart the timer and blow away focus on a field.
+ * It notifies instead, and lets the user decide.
  */
 
 import { toast } from './ui/toast.js';
@@ -13,9 +13,9 @@ export function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (import.meta.env?.DEV) return;
 
-  // L'avvio attende IndexedDB, quindi quando si arriva qui l'evento "load"
-  // è già passato: agganciarcisi e basta significherebbe non registrare mai
-  // il service worker, e quindi niente funzionamento offline.
+  // Startup awaits IndexedDB, so by the time we get here the "load" event
+  // has already fired: merely subscribing to it would mean never
+  // registering the service worker, and therefore no offline support.
   if (document.readyState === 'complete') register();
   else window.addEventListener('load', register, { once: true });
 
@@ -50,9 +50,9 @@ export function registerServiceWorker() {
 }
 
 /**
- * Prompt di installazione.
- * Chrome emette beforeinstallprompt una volta sola: va conservato e
- * riproposto in un momento sensato, non appena la pagina si apre.
+ * Install prompt.
+ * Chrome fires beforeinstallprompt only once: it has to be stashed and
+ * re-offered at a sensible moment, not the instant the page opens.
  */
 let deferredPrompt = null;
 
@@ -79,7 +79,7 @@ export async function promptInstall() {
   return outcome === 'accepted';
 }
 
-/** Suggerisce l'installazione dopo il terzo allenamento, non prima. */
+/** Suggests installing after the third workout, not before. */
 export function maybeSuggestInstall() {
   if (!canInstall()) return;
   if (state.workouts.length < 3) return;

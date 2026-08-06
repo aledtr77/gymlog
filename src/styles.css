@@ -1,8 +1,8 @@
 /* ==========================================================================
    GYMLOG — Design System
-   Dark-first, ad alto contrasto, pensato per essere usato con una mano
-   sotto le luci di una palestra. Nessuna dipendenza esterna: font di
-   sistema, così l'app resta istantanea e realmente offline.
+   Dark-first, high contrast, built to be driven one-handed under gym
+   lighting. No external dependencies: system fonts only, so the app stays
+   instant and genuinely offline.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 :root {
   color-scheme: dark;
 
-  /* Superfici */
+  /* Surfaces */
   --bg: #0a0b0e;
   --bg-elev: #121419;
   --surface: #16191f;
@@ -20,19 +20,19 @@
   --line: #2a2f39;
   --line-soft: #21252d;
 
-  /* Testo */
+  /* Text */
   --text: #f3f5f8;
   --text-2: #a8b0bd;
   --text-3: #6d7684;
 
-  /* Accento — "volt", energia da palestra, contrasto altissimo su nero */
+  /* Accent — "volt", gym energy, very high contrast on black */
   --accent: #c8f04a;
   --accent-press: #b2d93c;
   --accent-ink: #10140a;
   --accent-soft: rgba(200, 240, 74, 0.14);
   --accent-line: rgba(200, 240, 74, 0.35);
 
-  /* Semantici */
+  /* Semantic */
   --ok: #3ddc84;
   --ok-soft: rgba(61, 220, 132, 0.14);
   --warn: #ffb020;
@@ -44,14 +44,14 @@
   --info: #5b9dff;
   --info-soft: rgba(91, 157, 255, 0.14);
 
-  /* Raggi */
+  /* Radii */
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 18px;
   --r-xl: 24px;
   --r-full: 999px;
 
-  /* Spaziature */
+  /* Spacing */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -60,7 +60,7 @@
   --sp-6: 24px;
   --sp-8: 32px;
 
-  /* Ombre */
+  /* Shadows */
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2: 0 6px 20px rgba(0, 0, 0, 0.45);
   --shadow-3: 0 18px 48px rgba(0, 0, 0, 0.55);
@@ -79,8 +79,8 @@
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-/* Tema chiaro: stessi token, valori diversi. Applicato dal sistema oppure
-   forzato da [data-theme] tramite le impostazioni dell'app. */
+/* Light theme: same tokens, different values. Applied by the system or
+   forced via [data-theme] from the app settings. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
@@ -173,7 +173,7 @@ body {
   font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
-  /* Impedisce al pull-to-refresh di ricaricare l'app a metà allenamento. */
+  /* Stops pull-to-refresh reloading the app mid-workout. */
   overscroll-behavior-y: none;
 }
 
@@ -250,7 +250,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   3. Shell applicativa
+   3. Application shell
    -------------------------------------------------------------------------- */
 .app {
   min-height: 100dvh;
@@ -391,8 +391,8 @@ input[type="number"]::-webkit-inner-spin-button {
   border-top: 1px solid var(--line-soft);
 }
 
-/* Il marchio nella navigazione serve solo alla sidebar desktop: sul
-   telefono lo mostra già l'intestazione della Home. */
+/* The brand in the nav is for the desktop sidebar only: on the phone the
+   Home header already shows it. */
 .tabbar__brand {
   display: none;
 }
@@ -443,7 +443,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   5. Primitive
+   5. Primitives
    -------------------------------------------------------------------------- */
 .card {
   background: var(--surface);
@@ -490,7 +490,7 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text-3);
 }
 
-/* Bottoni ---------------------------------------------------------------- */
+/* Buttons ---------------------------------------------------------------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -593,7 +593,7 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text);
 }
 
-/* Campi ------------------------------------------------------------------ */
+/* Fields ----------------------------------------------------------------- */
 .field {
   display: flex;
   flex-direction: column;
@@ -772,7 +772,7 @@ input[type="number"]::-webkit-inner-spin-button {
   letter-spacing: 0.05em;
 }
 
-/* Stato vuoto ------------------------------------------------------------ */
+/* Empty state ------------------------------------------------------------ */
 .empty {
   display: flex;
   flex-direction: column;
@@ -869,7 +869,7 @@ input[type="number"]::-webkit-inner-spin-button {
   box-shadow: inset 0 0 0 1.5px var(--accent-ink);
 }
 
-/* Card routine ----------------------------------------------------------- */
+/* Routine card ----------------------------------------------------------- */
 .routine {
   display: flex;
   align-items: center;
@@ -929,7 +929,7 @@ input[type="number"]::-webkit-inner-spin-button {
   height: 20px;
 }
 
-/* Barra "allenamento in corso" ------------------------------------------- */
+/* "Workout in progress" bar ---------------------------------------------- */
 .resume {
   position: fixed;
   left: var(--sp-3);
@@ -957,8 +957,8 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 }
 
-/* Le icone non portano dimensioni proprie, le riceve ognuna dal contesto:
-   senza questa regola il chevron si dilata fino a deformare la barra. */
+/* Icons carry no intrinsic size, each gets it from context: without this
+   rule the chevron expands until it deforms the bar. */
 .resume svg {
   width: 22px;
   height: 22px;
@@ -980,7 +980,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   7. Allenamento attivo — la schermata principale
+   7. Active workout — the main screen
    -------------------------------------------------------------------------- */
 .wo-bar {
   position: sticky;
@@ -1035,7 +1035,7 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--accent);
 }
 
-/* Card esercizio --------------------------------------------------------- */
+/* Exercise card ---------------------------------------------------------- */
 .ex {
   background: var(--surface);
   border: 1px solid var(--line-soft);
@@ -1088,7 +1088,7 @@ input[type="number"]::-webkit-inner-spin-button {
   line-height: 1.35;
 }
 
-/* Tabella serie ---------------------------------------------------------- */
+/* Set table -------------------------------------------------------------- */
 .set-head,
 .set-row {
   display: grid;
@@ -1122,8 +1122,8 @@ input[type="number"]::-webkit-inner-spin-button {
   transition: background 0.18s var(--ease);
 }
 
-/* Opachi, non translucidi: sotto la riga c'è lo sfondo rosso dello swipe,
-   che con un colore semitrasparente traspare e sporca la tinta. */
+/* Opaque, not translucent: the swipe's red backdrop sits under the row and
+   a semi-transparent colour would bleed through and muddy the tint. */
 .set-row.is-done {
   background: color-mix(in srgb, var(--ok) 13%, var(--surface));
 }
@@ -1132,7 +1132,7 @@ input[type="number"]::-webkit-inner-spin-button {
   background: color-mix(in srgb, var(--pr) 16%, var(--surface));
 }
 
-/* Swipe per eliminare */
+/* Swipe to delete */
 .set-wrap {
   position: relative;
   overflow: hidden;
@@ -1307,7 +1307,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   8. Timer di recupero
+   8. Rest timer
    -------------------------------------------------------------------------- */
 .rest {
   position: fixed;
@@ -1510,7 +1510,7 @@ input[type="number"]::-webkit-inner-spin-button {
   gap: var(--sp-3);
 }
 
-/* Menu azioni ------------------------------------------------------------ */
+/* Action menu ------------------------------------------------------------ */
 .menu {
   display: flex;
   flex-direction: column;
@@ -1550,7 +1550,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   10. Selettore esercizi
+   10. Exercise picker
    -------------------------------------------------------------------------- */
 .ex-group {
   padding: var(--sp-3) var(--sp-1) 4px;
@@ -1623,7 +1623,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   11. Calcolatore dischi
+   11. Plate calculator
    -------------------------------------------------------------------------- */
 .barbell {
   display: flex;
@@ -1767,7 +1767,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   12. Storico
+   12. History
    -------------------------------------------------------------------------- */
 .hist {
   display: flex;
@@ -1879,7 +1879,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* --------------------------------------------------------------------------
-   13. Progressi / grafici
+   13. Progress / charts
    -------------------------------------------------------------------------- */
 .chart-wrap {
   position: relative;
@@ -2021,7 +2021,7 @@ input[type="number"]::-webkit-inner-spin-button {
   font-variant-numeric: tabular-nums;
 }
 
-/* Card PR ---------------------------------------------------------------- */
+/* PR card ---------------------------------------------------------------- */
 .pr-card {
   display: flex;
   align-items: center;
@@ -2201,24 +2201,24 @@ input[type="number"]::-webkit-inner-spin-button {
   background: var(--line-soft);
 }
 
-/* Contenitore delle liste ripetute (routine, storico, record).
-   Una colonna sul telefono, due da tablet in su: sono schede corte e
-   larghe, e su uno schermo grande incolonnarle spreca solo spazio. */
+/* Container for repeated lists (routines, history, records).
+   One column on the phone, two from tablet up: these are short, wide cards,
+   and stacking them on a large screen only wastes space. */
 .list-grid {
   display: grid;
-  /* minmax(0, 1fr) e non 1fr: senza il minimo a zero le schede con testo
-     lungo allargherebbero la traccia e sfonderebbero lo schermo. */
+  /* minmax(0, 1fr) rather than 1fr: without the zero minimum, cards with
+     long text widen the track and burst out of the screen. */
   grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-2);
 }
 
 /* --------------------------------------------------------------------------
-   16. Desktop e tablet
+   16. Desktop and tablet
 
-   L'app nasce per il telefono e lì resta invariata. Sopra i 900px la
-   navigazione passa da barra in basso a colonna laterale — il pollice non
-   è più il vincolo, il puntatore sì — e il contenuto smette di essere una
-   striscia stretta al centro di uno schermo vuoto.
+   The app is born for the phone and stays untouched there. Above 900px the
+   navigation moves from a bottom bar to a side column — the thumb is no
+   longer the constraint, the pointer is — and the content stops being a
+   narrow strip marooned in the middle of an empty screen.
    -------------------------------------------------------------------------- */
 @media (min-width: 700px) {
   :root {
@@ -2230,8 +2230,8 @@ input[type="number"]::-webkit-inner-spin-button {
     gap: var(--sp-3);
   }
 
-  /* I separatori di mese devono restare a tutta larghezza, altrimenti
-     l'ordine cronologico si spezza fra le due colonne. */
+  /* Month separators must span the full row, or the chronological order
+     breaks across the two columns. */
   .list-grid > .month-sep {
     grid-column: 1 / -1;
   }
@@ -2242,7 +2242,7 @@ input[type="number"]::-webkit-inner-spin-button {
     --maxw: 1100px;
   }
 
-  /* Lo spazio a sinistra è occupato dalla sidebar, che è fixed. */
+  /* The space on the left belongs to the sidebar, which is fixed. */
   .app {
     padding-left: var(--sidebar-w);
   }
@@ -2261,9 +2261,9 @@ input[type="number"]::-webkit-inner-spin-button {
     gap: var(--sp-2);
   }
 
-  /* Durante l'allenamento la sidebar resta: su desktop non c'è la scarsità
-     di spazio verticale che sul telefono giustificava il nasconderla.
-     Serve !important perché .hidden lo usa a sua volta. */
+  /* The sidebar stays during a workout: on desktop there is none of the
+     vertical scarcity that justified hiding it on the phone.
+     !important is needed because .hidden uses it too. */
   .tabbar.hidden {
     display: flex !important;
   }
@@ -2308,7 +2308,7 @@ input[type="number"]::-webkit-inner-spin-button {
     background: var(--accent-soft);
   }
 
-  /* In verticale l'indicatore va a sinistra, non sopra. */
+  /* Vertically, the indicator belongs on the left, not on top. */
   .tab[aria-selected="true"]::before {
     top: 50%;
     left: 0;
@@ -2328,15 +2328,15 @@ input[type="number"]::-webkit-inner-spin-button {
     flex: none;
   }
 
-  /* Senza barra in basso, il fondo pagina non ha più bisogno di franchigia. */
+  /* With no bottom bar, the page foot no longer needs clearance. */
   .main {
     padding: var(--sp-6) var(--sp-5) var(--sp-8);
   }
 
-  /* La vista allenamento non segue --maxw: la tabella delle serie è densa e
-     stretta per natura, e portarla a 1100px apre solo un vuoto fra la
-     colonna "precedente" e i campi di inserimento. La barra in alto usa lo
-     stesso limite per restare allineata al contenuto. */
+  /* The workout view does not follow --maxw: the set table is dense and
+     narrow by nature, and taking it to 1100px only opens a void between the
+     "previous" column and the inputs. The top bar uses the same limit so it
+     stays aligned with the content. */
   .main--nonav,
   .wo-bar__inner {
     max-width: 820px;
@@ -2354,14 +2354,14 @@ input[type="number"]::-webkit-inner-spin-button {
     padding: 0 var(--sp-5);
   }
 
-  /* L'intestazione della Home contiene solo il marchio, che qui è già nella
-     sidebar: tenerla significherebbe una barra vuota. Le altre viste hanno
-     un titolo vero e restano. */
+  /* The Home header holds only the brand, which the sidebar already
+     carries here: keeping it would mean an empty bar. The other views have
+     a real title and stay. */
   .appbar--brand {
     display: none;
   }
 
-  /* Gli elementi fissi partivano da bordo schermo: ora il bordo è la
+  /* Fixed elements used to start at the screen edge: now the edge is the
      sidebar. */
   .rest,
   .resume,
@@ -2387,8 +2387,9 @@ input[type="number"]::-webkit-inner-spin-button {
     margin: 0 0 0 auto;
   }
 
-  /* Il bottom sheet su desktop diventa un pannello centrato: ancorarlo al
-     bordo inferiore di uno schermo alto lo mette lontano dallo sguardo. */
+  /* On desktop the bottom sheet becomes a centred panel: anchoring it to
+     the bottom edge of a tall screen puts it far from where you are
+     looking. */
   .sheet {
     left: var(--sidebar-w);
     max-width: 560px;
@@ -2409,7 +2410,7 @@ input[type="number"]::-webkit-inner-spin-button {
     height: 80dvh;
   }
 
-  /* La maniglia serve al trascinamento col dito: col puntatore non ha uso. */
+  /* The handle exists for finger dragging: a pointer has no use for it. */
   .sheet__grab {
     display: none;
   }

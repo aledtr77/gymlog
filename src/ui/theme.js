@@ -1,8 +1,8 @@
 /**
- * Tema.
- * Oltre alla classe sull'elemento radice va aggiornato anche il meta
- * theme-color, altrimenti la barra di stato del sistema resta del colore
- * sbagliato quando l'app è installata.
+ * Theming.
+ * Besides the class on the root element, the theme-color meta must be
+ * updated too, or the system status bar keeps the wrong colour once the
+ * app is installed.
  */
 
 const DARK_BG = '#0a0b0e';

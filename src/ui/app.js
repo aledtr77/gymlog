@@ -1,10 +1,9 @@
 /**
- * Shell applicativa: router a schede, barra di navigazione, timer di
- * recupero persistente e barra "allenamento in corso".
+ * Application shell: tab router, navigation bar, persistent rest timer and
+ * the "workout in progress" bar.
  *
- * La navigazione usa l'hash: il tasto "indietro" del sistema cambia scheda
- * invece di chiudere l'app, che è quello che ci si aspetta da un'app
- * installata.
+ * Navigation runs off the hash, so the system back button switches tabs
+ * instead of closing the app, which is what an installed app should do.
  */
 
 import { h, replace } from './dom.js';
@@ -52,8 +51,8 @@ export function mountApp(root) {
   watchSystemTheme(() => state.settings.theme);
   reacquireWakeLockOnVisible();
 
-  // Il primo tocco sblocca l'audio: senza un gesto utente il browser non
-  // lascia suonare il beep di fine recupero.
+  // The first touch unlocks audio: without a user gesture the browser will
+  // not let the end-of-rest beep play.
   document.addEventListener('pointerdown', () => unlockAudio(), { once: true });
 
   const ctx = {
@@ -73,8 +72,8 @@ export function mountApp(root) {
     if (reason === 'active') updateResumeBar();
   });
 
-  // Salvare al passaggio in background è l'ultima occasione utile prima che
-  // il sistema possa terminare la pagina.
+  // Saving as we background is the last reliable chance before the system
+  // may terminate the page.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') persistActive();
   });
@@ -90,7 +89,7 @@ export function mountApp(root) {
     if (!VIEWS[tab]) return;
     if (location.hash !== `#/${tab}`) {
       location.hash = `#/${tab}`;
-      return; // hashchange farà il render
+      return; // hashchange drives the render
     }
     render(tab, { force: true });
   }
@@ -98,7 +97,7 @@ export function mountApp(root) {
   function render(tab, { force = false } = {}) {
     if (!VIEWS[tab]) tab = 'home';
 
-    // La scheda "Allena" mostra l'allenamento in corso, se ce n'è uno.
+    // The "train" tab shows the in-progress workout when there is one.
     if (tab === 'home' && state.active) tab = 'workout';
     if (tab === 'workout' && !state.active) tab = 'home';
 
@@ -120,9 +119,9 @@ export function mountApp(root) {
     return h(
       'nav',
       { class: 'tabbar', 'aria-label': 'Navigazione principale' },
-      // Da desktop la barra diventa una colonna laterale e ospita il marchio,
-      // che lì ha senso in permanenza; su mobile resta nascosto perché lo
-      // mostra già l'intestazione della Home.
+      // On desktop this bar becomes a side column and carries the brand,
+      // where it earns permanent space; on mobile it stays hidden, since
+      // the Home header already shows it.
       h(
         'div',
         { class: 'tabbar__brand' },
@@ -156,12 +155,12 @@ export function mountApp(root) {
     tabbar.querySelectorAll('.tab').forEach((button) => {
       button.setAttribute('aria-selected', String(button.dataset.tab === activeTab));
     });
-    // Durante l'allenamento la barra sparisce: lo spazio verticale serve
-    // tutto alle serie, e uscire per sbaglio a metà sessione è fastidioso.
+    // The bar disappears mid-workout: every vertical pixel belongs to the
+    // sets, and leaving by accident halfway through is infuriating.
     tabbar.classList.toggle('hidden', currentTab === 'workout');
   }
 
-  /** Barra fissa che riporta all'allenamento in corso da qualsiasi scheda. */
+  /** Fixed bar returning to the in-progress workout from any tab. */
   function updateResumeBar() {
     const shouldShow = Boolean(state.active) && currentTab !== 'workout';
 

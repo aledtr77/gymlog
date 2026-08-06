@@ -1,7 +1,7 @@
 /**
- * Progressi.
- * Tre domande, in ordine di importanza: sto alzando di più su un esercizio?
- * sto allenandomi con costanza? sto trascurando qualche gruppo muscolare?
+ * Progress.
+ * Three questions, in order of importance: am I lifting more on a given
+ * exercise? am I training consistently? am I neglecting a muscle group?
  */
 
 import { h, replace } from '../dom.js';
@@ -56,7 +56,7 @@ export function progressView(ctx) {
     return [overview(), weeklyVolume(), exerciseTrend(), muscleBalance(), records()];
   }
 
-  /* --------------------------------------------------------------- sintesi */
+  /* --------------------------------------------------------------- summary */
 
   function overview() {
     const now = Date.now();
@@ -78,7 +78,7 @@ export function progressView(ctx) {
         stat(String(last30.length), '', 'Sessioni'),
         stat(compactKg(volume), 'kg', 'Volume'),
         stat(String(sets), '', 'Serie'),
-        // Sotto l'ora si mostrano i minuti: "0 h" non è un dato.
+        // Below an hour, show minutes: "0 h" is not information.
         duration >= 3600000
           ? stat(String(Math.round(duration / 3600000)), 'h', 'Tempo')
           : stat(String(Math.round(duration / 60000)), 'min', 'Tempo'),
@@ -86,7 +86,7 @@ export function progressView(ctx) {
     );
   }
 
-  /* ------------------------------------------------------ volume per settimana */
+  /* ----------------------------------------------------- volume per week */
 
   function weeklyVolume() {
     const weeks = [];
@@ -119,11 +119,11 @@ export function progressView(ctx) {
     );
   }
 
-  /* ----------------------------------------------------- andamento esercizio */
+  /* --------------------------------------------------- exercise progress */
 
   function exerciseTrend() {
-    // Solo esercizi con almeno due sessioni: sotto quella soglia non c'è
-    // nessun andamento da mostrare, solo un punto isolato.
+    // Only exercises with at least two sessions: below that there is no
+    // trend to show, just a lone point.
     const counts = new Map();
     for (const workout of completed) {
       for (const block of workout.exercises || []) {
@@ -201,7 +201,7 @@ export function progressView(ctx) {
     );
   }
 
-  /* --------------------------------------------------- equilibrio muscolare */
+  /* ----------------------------------------------------- muscle balance */
 
   function muscleBalance() {
     const now = Date.now();
@@ -242,7 +242,7 @@ export function progressView(ctx) {
     );
   }
 
-  /* ---------------------------------------------------------------- record */
+  /* --------------------------------------------------------------- records */
 
   function records() {
     const list = [...state.records.values()].sort(

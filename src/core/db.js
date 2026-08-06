@@ -1,8 +1,8 @@
 /**
- * Persistenza su IndexedDB.
- * Una sola connessione riusata, promisificata, con migrazione versionata.
- * Fallback in memoria se IndexedDB non è disponibile (Safari in privata,
- * WebView bloccate): l'app resta usabile per la sessione corrente.
+ * IndexedDB persistence.
+ * A single reused connection, promisified, with versioned migrations.
+ * Falls back to memory when IndexedDB is unavailable (Safari in private
+ * mode, locked-down WebViews): the app stays usable for this session.
  */
 
 const DB_NAME = 'gymlog';
@@ -24,7 +24,7 @@ function openDatabase() {
 
   dbPromise = new Promise((resolve, reject) => {
     if (typeof indexedDB === 'undefined') {
-      reject(new Error('IndexedDB non disponibile'));
+      reject(new Error('IndexedDB unavailable'));
       return;
     }
 
@@ -49,9 +49,9 @@ function openDatabase() {
       resolve(db);
     };
     request.onerror = () => reject(request.error);
-    request.onblocked = () => reject(new Error('Database bloccato da un altra scheda'));
+    request.onblocked = () => reject(new Error('Database blocked by another tab'));
   }).catch((error) => {
-    console.warn('[gymlog] IndexedDB non utilizzabile, uso memoria volatile:', error);
+    console.warn('[gymlog] IndexedDB unusable, falling back to memory:', error);
     memoryFallback = new Map(Object.values(STORES).map((name) => [name, new Map()]));
     return null;
   });
@@ -143,7 +143,7 @@ export function clear(storeName) {
   });
 }
 
-/* Chiave/valore semplice per preferenze e sessione in corso. */
+/* Plain key/value for preferences and the in-progress session. */
 export async function getMeta(key, fallback = null) {
   const row = await get(STORES.meta, key);
   return row === undefined || row === null ? fallback : row.value;
@@ -154,8 +154,8 @@ export function setMeta(key, value) {
 }
 
 /**
- * Chiede al browser di non sfrattare i dati sotto pressione di spazio.
- * Senza questo, mesi di allenamenti possono sparire silenziosamente.
+ * Asks the browser not to evict our data under storage pressure.
+ * Without this, months of training can vanish silently.
  */
 export async function requestPersistentStorage() {
   try {
@@ -164,7 +164,7 @@ export async function requestPersistentStorage() {
       return await navigator.storage.persist();
     }
   } catch {
-    /* non critico */
+    /* not critical */
   }
   return false;
 }

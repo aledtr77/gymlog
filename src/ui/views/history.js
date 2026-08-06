@@ -1,7 +1,7 @@
 /**
- * Storico.
- * Elenco raggruppato per mese; il dettaglio si apre in un pannello con tutte
- * le serie esattamente come sono state registrate.
+ * History.
+ * A list grouped by month; the detail opens in a sheet showing every set
+ * exactly as it was logged.
  */
 
 import { h } from '../dom.js';
@@ -105,7 +105,7 @@ export function historyView(ctx) {
             { class: 'badge' },
             `${summary.exercises} ${summary.exercises === 1 ? 'esercizio' : 'esercizi'}`,
           ),
-          // Sotto il minuto la durata non dice nulla di utile.
+          // Under a minute, the duration says nothing useful.
           summary.durationMs >= 60000
             ? h('span', { class: 'badge' }, durationLabel(summary.durationMs))
             : null,

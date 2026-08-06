@@ -1,7 +1,7 @@
 /**
- * Modello della sessione di allenamento.
- * Le funzioni restituiscono sempre nuovi oggetti: lo stato è immutabile,
- * così il salvataggio su IndexedDB non può mai catturare una via di mezzo.
+ * Workout session model.
+ * Every function returns fresh objects: state is immutable, so a save to
+ * IndexedDB can never capture a half-applied change.
  */
 
 import { isCountedSet, setVolume, round } from './metrics.js';
@@ -47,7 +47,7 @@ export function createSet({ type = 'normal', weight = '', reps = '', rpe = null 
   };
 }
 
-/** Costruisce una sessione a partire da una routine salvata. */
+/** Builds a session from a stored routine. */
 export function workoutFromRoutine(routine, startedAt) {
   const workout = createWorkout({
     name: routine.name,
@@ -70,7 +70,7 @@ export function workoutFromRoutine(routine, startedAt) {
 }
 
 /* -------------------------------------------------------------------------
-   Mutazioni
+   Mutations
    ------------------------------------------------------------------------- */
 
 export function updateExercise(workout, exerciseBlockId, patch) {
@@ -100,8 +100,8 @@ export function addSet(workout, exerciseBlockId) {
     ...workout,
     exercises: workout.exercises.map((ex) => {
       if (ex.id !== exerciseBlockId) return ex;
-      // La nuova serie eredita i valori dell'ultima: in genere si ripete lo
-      // stesso carico, e pre-compilare risparmia due tap per serie.
+      // A new set inherits the previous one's values: you usually repeat the
+      // same load, and prefilling saves two taps per set.
       const last = [...ex.sets].reverse().find((s) => s.type !== 'warmup') || ex.sets.at(-1);
       return {
         ...ex,
@@ -159,7 +159,7 @@ export function moveExercise(workout, exerciseBlockId, delta) {
   return { ...workout, exercises };
 }
 
-/** Chiude la sessione scartando le serie mai completate. */
+/** Closes the session, dropping sets that were never completed. */
 export function finishWorkout(workout, finishedAt = new Date().toISOString()) {
   const exercises = workout.exercises
     .map((ex) => ({ ...ex, sets: ex.sets.filter((s) => s.done) }))
@@ -168,12 +168,12 @@ export function finishWorkout(workout, finishedAt = new Date().toISOString()) {
   return { ...workout, exercises, finishedAt, status: 'completed' };
 }
 
-/** Una sessione senza nemmeno una serie completata non vale la pena salvarla. */
+/** A session without a single completed set is not worth storing. */
 export function hasLoggedSets(workout) {
   return (workout?.exercises || []).some((ex) => (ex.sets || []).some((s) => s.done));
 }
 
-/** Trasforma una sessione conclusa in una routine riutilizzabile. */
+/** Turns a finished session into a reusable routine. */
 export function routineFromWorkout(workout, name) {
   return {
     id: uid(),
@@ -196,7 +196,7 @@ export function routineFromWorkout(workout, name) {
   };
 }
 
-/** Volume progressivo di un singolo esercizio nella sessione corrente. */
+/** Running volume for a single exercise within the current session. */
 export function exerciseVolume(exerciseBlock) {
   let volume = 0;
   for (const set of exerciseBlock.sets || []) {

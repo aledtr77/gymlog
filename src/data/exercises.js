@@ -1,10 +1,10 @@
 /**
- * Libreria esercizi.
+ * Exercise library.
  *
- * Formato compatto: [id, nome, gruppo, attrezzo, recupero secondi].
- * Il recupero di default è per esercizio, non globale: uno squat pesante e
- * un curl non hanno lo stesso bisogno di riposo, e chiedere all'utente di
- * regolarlo ogni volta sarebbe attrito inutile.
+ * Compact format: [id, name, muscle, equipment, rest seconds].
+ * The default rest is per exercise rather than global: a heavy squat and a
+ * curl do not need the same recovery, and making the user adjust it every
+ * time would be pointless friction.
  */
 
 export const MUSCLES = [
@@ -35,7 +35,7 @@ export const EQUIPMENT = [
 ];
 
 const RAW = [
-  // Petto ------------------------------------------------------------------
+  // Chest -----------------------------------------------------------------
   ['panca-piana', 'Panca piana', 'Petto', 'Bilanciere', 150],
   ['panca-inclinata-bil', 'Panca inclinata bilanciere', 'Petto', 'Bilanciere', 150],
   ['panca-declinata-bil', 'Panca declinata bilanciere', 'Petto', 'Bilanciere', 150],
@@ -51,7 +51,7 @@ const RAW = [
   ['dip-petto', 'Dip alle parallele (petto)', 'Petto', 'Corpo libero', 120],
   ['pullover', 'Pullover', 'Petto', 'Manubri', 90],
 
-  // Dorso ------------------------------------------------------------------
+  // Back ------------------------------------------------------------------
   ['trazioni', 'Trazioni alla sbarra', 'Dorso', 'Corpo libero', 150],
   ['trazioni-presa-inversa', 'Trazioni presa inversa', 'Dorso', 'Corpo libero', 150],
   ['trazioni-zavorrate', 'Trazioni zavorrate', 'Dorso', 'Corpo libero', 180],
@@ -71,7 +71,7 @@ const RAW = [
   ['shrug-man', 'Scrollate con manubri', 'Dorso', 'Manubri', 90],
   ['iperestensioni', 'Iperestensioni lombari', 'Dorso', 'Corpo libero', 75],
 
-  // Spalle -----------------------------------------------------------------
+  // Shoulders -------------------------------------------------------------
   ['military-press', 'Lento avanti in piedi', 'Spalle', 'Bilanciere', 150],
   ['shoulder-press-man', 'Shoulder press manubri', 'Spalle', 'Manubri', 120],
   ['arnold-press', 'Arnold press', 'Spalle', 'Manubri', 105],
@@ -84,7 +84,7 @@ const RAW = [
   ['tirate-al-mento', 'Tirate al mento', 'Spalle', 'Bilanciere', 90],
   ['push-press', 'Push press', 'Spalle', 'Bilanciere', 150],
 
-  // Bicipiti ---------------------------------------------------------------
+  // Biceps ----------------------------------------------------------------
   ['curl-bil', 'Curl con bilanciere', 'Bicipiti', 'Bilanciere', 90],
   ['curl-ez', 'Curl con bilanciere EZ', 'Bicipiti', 'Bilanciere', 90],
   ['curl-man-alternato', 'Curl alternato con manubri', 'Bicipiti', 'Manubri', 75],
@@ -94,7 +94,7 @@ const RAW = [
   ['curl-cavi', 'Curl ai cavi', 'Bicipiti', 'Cavi', 60],
   ['curl-concentrato', 'Curl concentrato', 'Bicipiti', 'Manubri', 60],
 
-  // Tricipiti --------------------------------------------------------------
+  // Triceps ---------------------------------------------------------------
   ['panca-stretta', 'Panca presa stretta', 'Tricipiti', 'Bilanciere', 120],
   ['french-press', 'French press', 'Tricipiti', 'Bilanciere', 90],
   ['push-down-corda', 'Push down alla corda', 'Tricipiti', 'Cavi', 60],
@@ -104,7 +104,7 @@ const RAW = [
   ['kickback', 'Kickback', 'Tricipiti', 'Manubri', 60],
   ['skull-crusher', 'Skull crusher', 'Tricipiti', 'Bilanciere', 90],
 
-  // Quadricipiti -----------------------------------------------------------
+  // Quads -----------------------------------------------------------------
   ['squat', 'Squat con bilanciere', 'Quadricipiti', 'Bilanciere', 180],
   ['front-squat', 'Front squat', 'Quadricipiti', 'Bilanciere', 180],
   ['hack-squat', 'Hack squat', 'Quadricipiti', 'Macchina', 150],
@@ -117,7 +117,7 @@ const RAW = [
   ['step-up', 'Step up', 'Quadricipiti', 'Manubri', 90],
   ['sissy-squat', 'Sissy squat', 'Quadricipiti', 'Corpo libero', 75],
 
-  // Femorali ---------------------------------------------------------------
+  // Hamstrings ------------------------------------------------------------
   ['stacco-rumeno', 'Stacco rumeno', 'Femorali', 'Bilanciere', 150],
   ['stacco-gambe-tese', 'Stacco a gambe tese', 'Femorali', 'Bilanciere', 150],
   ['leg-curl-sdraiato', 'Leg curl sdraiato', 'Femorali', 'Macchina', 75],
@@ -125,19 +125,19 @@ const RAW = [
   ['good-morning', 'Good morning', 'Femorali', 'Bilanciere', 120],
   ['nordic-curl', 'Nordic hamstring curl', 'Femorali', 'Corpo libero', 105],
 
-  // Glutei -----------------------------------------------------------------
+  // Glutes ----------------------------------------------------------------
   ['hip-thrust', 'Hip thrust', 'Glutei', 'Bilanciere', 150],
   ['glute-bridge', 'Ponte per glutei', 'Glutei', 'Corpo libero', 90],
   ['abduzioni-macchina', 'Abduzioni a macchina', 'Glutei', 'Macchina', 60],
   ['kickback-cavi', 'Slanci posteriori ai cavi', 'Glutei', 'Cavi', 60],
   ['pull-through', 'Pull through', 'Glutei', 'Cavi', 90],
 
-  // Polpacci ---------------------------------------------------------------
+  // Calves ----------------------------------------------------------------
   ['calf-in-piedi', 'Calf raise in piedi', 'Polpacci', 'Macchina', 60],
   ['calf-seduto', 'Calf raise seduto', 'Polpacci', 'Macchina', 60],
   ['calf-leg-press', 'Calf alla leg press', 'Polpacci', 'Macchina', 60],
 
-  // Addome -----------------------------------------------------------------
+  // Abs -------------------------------------------------------------------
   ['crunch', 'Crunch', 'Addome', 'Corpo libero', 45],
   ['crunch-cavi', 'Crunch ai cavi', 'Addome', 'Cavi', 60],
   ['plank', 'Plank', 'Addome', 'Corpo libero', 60],
@@ -147,7 +147,7 @@ const RAW = [
   ['russian-twist', 'Russian twist', 'Addome', 'Altro', 45],
   ['hollow-hold', 'Hollow hold', 'Addome', 'Corpo libero', 45],
 
-  // Avambracci -------------------------------------------------------------
+  // Forearms --------------------------------------------------------------
   ['curl-polsi', 'Curl per polsi', 'Avambracci', 'Bilanciere', 45],
   ['farmer-walk', "Farmer's walk", 'Avambracci', 'Manubri', 90],
 
@@ -178,7 +178,7 @@ export function exerciseById(id) {
   return BY_ID.get(id) || null;
 }
 
-/** Ricerca senza accenti e case-insensitive: "panca" trova "Panca piana". */
+/** Accent-insensitive, case-insensitive search: "panca" finds "Panca piana". */
 export function normalize(value) {
   return String(value)
     .toLowerCase()

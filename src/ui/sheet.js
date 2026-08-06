@@ -1,8 +1,8 @@
 /**
  * Bottom sheet.
- * Trascinabile verso il basso, chiudibile con Esc o toccando lo sfondo, con
- * gestione della cronologia: il tasto "indietro" di Android chiude il pannello
- * invece di uscire dall'app.
+ * Draggable downwards, dismissible with Esc or by tapping the backdrop, and
+ * history-aware: Android's back button closes the sheet rather than leaving
+ * the app.
  */
 
 import { h, raf } from './dom.js';
@@ -46,8 +46,8 @@ export function openSheet({
           ),
         )
       : null,
-    // La fascia "sticky" (ricerca, filtri) precede il corpo scorrevole:
-    // sotto la lista sembrerebbe una barra di stato, non un comando.
+    // The sticky strip (search, filters) comes before the scrolling body:
+    // below the list it would read as a status bar, not a control.
     sticky ? h('div', { class: 'sheet__sticky' }, sticky) : null,
     bodyEl,
     footer ? h('div', { class: 'sheet__foot' }, footer) : null,
@@ -71,7 +71,7 @@ export function openSheet({
   document.addEventListener('keydown', onKey);
   attachDrag(grab, sheet, close);
 
-  // Voce di cronologia dedicata: intercetta il gesto "indietro".
+  // A dedicated history entry, so the back gesture lands here.
   history.pushState({ sheet: true }, '');
   window.addEventListener('popstate', onPop);
 
@@ -107,10 +107,9 @@ export function openSheet({
       if (!openSheets.length) layer().style.pointerEvents = 'none';
     }, 300);
 
-    // onClose viene invocato solo dopo che la voce di cronologia del pannello
-    // è stata effettivamente rimossa: chi chiude un pannello e subito dopo
-    // naviga altrove troverebbe la propria destinazione sovrascritta dal
-    // popstate in arrivo.
+    // onClose only fires once the sheet's history entry is actually gone:
+    // closing a sheet and immediately navigating elsewhere would otherwise
+    // see that destination overwritten by the inbound popstate.
     if (!poppedByHistory && history.state?.sheet) {
       let settled = false;
       const finalize = () => {
@@ -120,7 +119,7 @@ export function openSheet({
         onClose?.();
       };
       window.addEventListener('popstate', finalize, { once: true });
-      setTimeout(finalize, 250); // rete di sicurezza se popstate non arriva
+      setTimeout(finalize, 250); // safety net if popstate never arrives
       history.back();
     } else {
       onClose?.();
@@ -130,7 +129,7 @@ export function openSheet({
   return handle;
 }
 
-/** Trascinamento sulla maniglia: sotto i 110px torna su, oltre chiude. */
+/** Dragging the handle: under 110px it springs back, beyond that it closes. */
 function attachDrag(grab, sheet, close) {
   let startY = 0;
   let delta = 0;
@@ -193,8 +192,8 @@ export function openMenu(title, items) {
 }
 
 /**
- * Conferma. Sostituisce window.confirm, che in standalone su iOS mostra
- * l'URL dell'app ed è impossibile da rendere coerente col resto.
+ * Confirmation. Replaces window.confirm, which in iOS standalone mode shows
+ * the app URL and cannot be made to match anything else.
  */
 export function confirmSheet({
   title,
@@ -204,9 +203,9 @@ export function confirmSheet({
   danger = false,
 }) {
   return new Promise((resolve) => {
-    // L'esito viene registrato al click ma consegnato solo alla chiusura
-    // completa: chi attende questa promessa può navigare senza correre
-    // contro l'animazione e la cronologia del pannello.
+    // The outcome is recorded on click but delivered only once the sheet
+    // has fully closed, so awaiting this promise lets you navigate without
+    // racing the animation and the sheet's history entry.
     let outcome = false;
     let settled = false;
 
@@ -241,7 +240,7 @@ export function confirmSheet({
   });
 }
 
-/** Input testuale in un pannello, stessa logica di confirmSheet. */
+/** Text input in a sheet, same mechanics as confirmSheet. */
 export function promptSheet({
   title,
   label,

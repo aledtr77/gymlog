@@ -52,8 +52,8 @@ export function toast(message, options = {}) {
     setTimeout(() => node.remove(), 400);
   }
 
-  // Toccare il toast lo chiude subito: è un pattern che gli utenti tentano
-  // sempre, e non rispondere sembra un bug.
+  // Tapping the toast dismisses it at once: users always try this, and
+  // not responding reads as a bug.
   node.addEventListener('click', (event) => {
     if (!event.target.closest('.toast__action')) dismiss();
   });

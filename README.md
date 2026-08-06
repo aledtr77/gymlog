@@ -1,86 +1,92 @@
-# GymLog — diario di allenamento PWA
+# GymLog — a PWA training log
 
-App web installabile per registrare gli allenamenti in palestra. Funziona
-completamente offline, non ha account né server: i dati restano su IndexedDB nel
-dispositivo e si esportano in JSON quando si vuole.
+An installable web app for logging gym sessions. Works fully offline, has no
+accounts and no server: data lives in IndexedDB on the device and can be
+exported to JSON at any time.
 
 ```bash
 npm install
-npm run dev        # sviluppo su http://localhost:5173
-npm test           # test unitari della logica
-npm run build      # bundle di produzione in dist/
-npm run preview    # serve dist/ (necessario per provare il service worker)
+npm run dev        # development on http://localhost:5173
+npm test           # unit tests for the logic layer
+npm run build      # production bundle in dist/
+npm run preview    # serves dist/ (needed to exercise the service worker)
 ```
 
-> Il service worker è attivo solo nella build di produzione: in `dev` è
-> disattivato di proposito, altrimenti servirebbe file in cache mentre li stai
-> modificando.
+> The service worker only runs in the production build; it is deliberately
+> disabled in `dev`, or it would serve cached files while you are editing them.
 
-## Da dove viene il modello di interazione
+## Where the interaction model comes from
 
-Le app che dominano questa categoria (Hevy, Strong) hanno convissuto tutte sullo
-stesso schema, e per buone ragioni. GymLog lo adotta:
+The apps that dominate this category (Hevy, Strong) all converged on the same
+scheme, for good reasons. GymLog adopts it:
 
-| Scelta | Perché |
+| Choice | Why |
 |---|---|
-| **Una card per esercizio, una riga per serie** | La sessione si legge tutta a colpo d'occhio. Il form singolo "scegli esercizio → inserisci → salva" costringe a ricordare a memoria cosa hai già fatto. |
-| **Colonna `PRECEDENTE` sempre visibile** | È l'informazione più utile mentre ci si allena: sapere che l'ultima volta hai fatto 82,5 × 8 decide il carico di adesso. Toccarla ricopia i valori. |
-| **Registrare = un tap sulla spunta** | Carico e ripetizioni sono già pre-compilati con l'ultima volta. Chi ripete lo stesso peso non tocca nulla. |
-| **Recupero automatico alla spunta** | Il timer parte da solo col recupero configurato per quell'esercizio, e resta una barra in basso invece di una schermata modale: durante il recupero si continua a usare l'app. |
-| **Tipi di serie a lettera (W / D / C)** | Riscaldamento, drop set e cedimento si distinguono con un tocco sul numero, e il riscaldamento resta fuori da volume e record. |
-| **Record celebrati sul momento** | Il primato viene rilevato quando spunti la serie, non a fine mese in una schermata di statistiche. |
+| **One card per exercise, one row per set** | The whole session reads at a glance. A single "pick exercise → enter → save" form forces you to remember what you have already done. |
+| **A permanently visible `previous` column** | It is the most useful thing to have while training: knowing you did 82.5 x 8 last time decides today's load. Tapping it copies the values across. |
+| **Logging = one tap on the tick** | Load and reps are prefilled from last time. If you repeat the same weight you touch nothing. |
+| **Rest starts automatically on the tick** | The timer starts on its own with the rest configured for that exercise, and stays a bottom bar rather than a modal screen: you keep using the app while resting. |
+| **Lettered set types (W / D / F)** | Warmup, drop set and failure are one tap on the number apart, and warmups stay out of volume and records. |
+| **Records celebrated on the spot** | A personal best is detected when you tick the set, not at the end of the month in a stats screen. |
 
-## Struttura
+## Layout
+
+The app is designed for the phone and unchanged there. From 700px the repeated
+card lists go to two columns; from 900px the bottom tab bar becomes a side
+column and the content widens, so an installed desktop PWA is not a narrow
+strip in the middle of an empty screen.
+
+## Structure
 
 ```
 src/
-  core/          logica pura, senza DOM — è la parte coperta dai test
-    metrics.js     1RM, volumi, record, prestazione precedente, progressi
-    workout.js     modello della sessione (immutabile)
-    plates.js      calcolo dischi
-    restTimer.js   timer basato su timestamp assoluti
-    db.js          IndexedDB promisificato, con fallback in memoria
-    store.js       stato applicativo + persistenza
-    feedback.js    audio, vibrazione, wake lock
-    format.js      formattazioni italiane
-  data/          libreria esercizi e routine di partenza
-  ui/            viste e componenti (hyperscript, niente innerHTML)
-  pwa.js         service worker e prompt di installazione
-public/          manifest, service worker, icone
+  core/          pure logic, no DOM — this is the part the tests cover
+    metrics.js     1RM, volumes, records, last performance, progress
+    workout.js     session model (immutable)
+    plates.js      plate maths
+    restTimer.js   timer built on absolute timestamps
+    db.js          promisified IndexedDB with an in-memory fallback
+    store.js       application state + persistence
+    feedback.js    audio, vibration, wake lock
+    format.js      Italian-localised formatting
+  data/          exercise library and starter routines
+  ui/            views and components (hyperscript, never innerHTML)
+  pwa.js         service worker and install prompt
+public/          manifest, service worker, icons
 ```
 
-## Decisioni tecniche non ovvie
+Note the app's user interface is in Italian; the code, comments and docs are
+in English.
 
-- **Nessuna dipendenza a runtime.** Niente framework, niente font da CDN. Il
-  bundle sta in ~26 kB gzip e l'app si apre istantaneamente anche con la rete
-  del seminterrato di una palestra.
-- **Il timer di recupero usa timestamp assoluti**, non un contatore decrementato
-  a ogni tick. Quando il telefono va in standby i timer vengono congelati: un
-  contatore a decremento sbaglierebbe di minuti.
-- **La sessione in corso è salvata a ogni modifica** (con debounce) e di nuovo
-  quando l'app passa in background. Chiudere l'app o restare senza batteria non
-  fa perdere l'allenamento.
-- **Il DOM si costruisce con nodi reali**, mai con `innerHTML`: i nomi che
-  scrive l'utente (esercizi personalizzati, note, routine) non possono
-  trasformarsi in markup.
-- **`overscroll-behavior: none`** impedisce che il pull-to-refresh ricarichi
-  l'app a metà serie.
-- **Le righe completate hanno sfondo opaco**, non semitrasparente: sotto c'è il
-  livello rosso dello swipe-per-eliminare.
-- **I pannelli aggiungono una voce di cronologia**, così il tasto "indietro" di
-  Android li chiude invece di uscire dall'app.
+## Non-obvious technical decisions
 
-## Dati
+- **No runtime dependencies.** No framework, no CDN fonts. The bundle is ~26 kB
+  gzipped and opens instantly even on gym-basement reception.
+- **The rest timer uses absolute timestamps**, not a counter decremented each
+  tick. Timers freeze when the phone sleeps; a decrementing counter would be
+  minutes wrong.
+- **The in-progress session is saved on every change** (debounced) and again
+  when the app backgrounds. Closing the app or running out of battery does not
+  cost you the workout.
+- **The DOM is built from real nodes**, never `innerHTML`: names the user types
+  (custom exercises, notes, routines) cannot turn into markup.
+- **`overscroll-behavior: none`** stops pull-to-refresh reloading the app
+  halfway through a set.
+- **Completed rows use an opaque background**, not a translucent one: the red
+  swipe-to-delete layer sits underneath.
+- **Sheets push a history entry**, so Android's back button closes them instead
+  of leaving the app.
 
-Tutto in IndexedDB (`gymlog`): allenamenti, routine, record, esercizi
-personalizzati, preferenze e sessione in corso. `Strumenti → I tuoi dati`
-esporta e reimporta un JSON completo. L'import unisce senza duplicare (chiave
-sull'id dell'allenamento) e ricalcola i record da zero.
+## Data
 
-## Test
+Everything lives in IndexedDB (`gymlog`): workouts, routines, records, custom
+exercises, preferences and the in-progress session. `Tools → Your data` exports
+and re-imports a complete JSON file. Import merges without duplicating (keyed
+on workout id) and recomputes records from scratch.
 
-`npm test` copre la logica pura: stima dell'1RM, conteggi di volume con
-esclusione del riscaldamento, rilevamento dei record, ricostruzione dei record
-dallo storico, indice della prestazione precedente, calcolo dischi (compresi i
-pesi non componibili e gli errori di virgola mobile) e le mutazioni immutabili
-della sessione.
+## Tests
+
+`npm test` covers the pure logic: 1RM estimation, volume counts with warmups
+excluded, record detection, rebuilding records from history, the last-performance
+index, plate maths (including unmakeable weights and floating-point drift) and
+the session's immutable mutations.

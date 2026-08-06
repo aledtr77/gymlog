@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { calculatePlates, formatKg } from '../src/core/plates.js';
 
-test('combinazione classica: 100 kg su bilanciere olimpico', () => {
+test('classic combination: 100 kg on an olympic bar', () => {
   const result = calculatePlates(100, 20);
   assert.equal(result.ok, true);
   assert.equal(result.error, null);
@@ -15,7 +15,7 @@ test('combinazione classica: 100 kg su bilanciere olimpico', () => {
   assert.equal(result.achievedTotal, 100);
 });
 
-test('greedy: usa i dischi più pesanti disponibili', () => {
+test('greedy: uses the heaviest plates available', () => {
   const result = calculatePlates(142.5, 20);
   assert.equal(result.sideWeight, 61.25);
   assert.deepEqual(result.plates, [
@@ -26,7 +26,7 @@ test('greedy: usa i dischi più pesanti disponibili', () => {
   assert.equal(result.remainderPerSide, 0);
 });
 
-test('solo bilanciere: nessun disco, nessun errore', () => {
+test('bar only: no plates, no error', () => {
   const result = calculatePlates(20, 20);
   assert.equal(result.ok, true);
   assert.deepEqual(result.plates, []);
@@ -34,35 +34,35 @@ test('solo bilanciere: nessun disco, nessun errore', () => {
   assert.equal(result.achievedTotal, 20);
 });
 
-test('peso sotto il bilanciere: errore esplicito', () => {
+test('weight below the bar: explicit error', () => {
   const result = calculatePlates(15, 20);
   assert.equal(result.ok, false);
   assert.match(result.error, /inferiore al bilanciere/);
   assert.deepEqual(result.plates, []);
 });
 
-test('peso non componibile: dichiara il residuo invece di arrotondare', () => {
+test('unmakeable weight: reports the remainder instead of rounding', () => {
   const result = calculatePlates(100.4, 20);
   assert.ok(result.remainderPerSide > 0);
   assert.match(result.error, /mancano/);
-  // Il totale dichiarato è quello davvero caricabile, non quello richiesto.
+  // The reported total is what can actually be loaded, not what was asked.
   assert.ok(result.achievedTotal < 100.4);
 });
 
-test('inventario ridotto: si adatta ai dischi disponibili', () => {
+test('reduced inventory: adapts to the plates on hand', () => {
   const result = calculatePlates(60, 20, [10, 5]);
   assert.equal(result.sideWeight, 20);
   assert.deepEqual(result.plates, [{ weight: 10, count: 2 }]);
   assert.equal(result.remainderPerSide, 0);
 });
 
-test('senza bilanciere (manubri): tutto il peso è su un lato per due', () => {
+test('no bar (dumbbells): the whole weight is one side, doubled', () => {
   const result = calculatePlates(40, 0);
   assert.equal(result.sideWeight, 20);
   assert.equal(result.achievedTotal, 40);
 });
 
-test('input non validi non producono NaN', () => {
+test('invalid input never produces NaN', () => {
   for (const bad of [0, -10, null, undefined, NaN, 'abc']) {
     const result = calculatePlates(bad, 20);
     assert.equal(result.ok, false);
@@ -71,7 +71,7 @@ test('input non validi non producono NaN', () => {
   }
 });
 
-test('nessun errore di virgola mobile sui mezzi dischi', () => {
+test('no floating-point drift on half plates', () => {
   const result = calculatePlates(63.5, 20);
   assert.equal(result.sideWeight, 21.75);
   assert.equal(result.remainderPerSide, 0);
@@ -79,7 +79,7 @@ test('nessun errore di virgola mobile sui mezzi dischi', () => {
   assert.equal(Math.round(loaded * 100) / 100, 21.75);
 });
 
-test('formattazione italiana dei pesi', () => {
+test('Italian weight formatting', () => {
   assert.equal(formatKg(20), '20');
   assert.equal(formatKg(2.5), '2,5');
   assert.equal(formatKg(1.25), '1,25');

@@ -1,8 +1,7 @@
 /**
- * Selettore esercizi.
- * Ricerca immediata, filtro per gruppo muscolare, selezione multipla:
- * aggiungere cinque esercizi a una scheda deve costare un solo passaggio,
- * non cinque aperture di pannello.
+ * Exercise picker.
+ * Instant search, muscle-group filter, multi-select: adding five exercises
+ * to a routine should cost one pass, not five trips through a sheet.
  */
 
 import { h, raf, replace } from './dom.js';
@@ -106,8 +105,8 @@ export function pickExercises({ multiple = true, title = 'Aggiungi esercizio' } 
     });
 
     renderList();
-    // Su desktop il focus automatico è comodo; su mobile aprirebbe la
-    // tastiera coprendo metà elenco, quindi si evita.
+    // Autofocus helps on desktop; on mobile it would raise the keyboard
+    // over half the list, so it is skipped there.
     if (!('ontouchstart' in window)) raf(() => searchInput.focus());
 
     function renderList() {
@@ -134,8 +133,8 @@ export function pickExercises({ multiple = true, title = 'Aggiungi esercizio' } 
         return;
       }
 
-      // Raggruppato per gruppo muscolare, a meno che non si stia già
-      // filtrando o cercando: in quel caso l'elenco piatto è più veloce.
+      // Grouped by muscle, unless a filter or search is already active:
+      // then a flat list gets you there faster.
       const grouped = !muscle && !normalizedQuery;
       const nodes = [];
       let currentGroup = null;

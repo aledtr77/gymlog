@@ -14,39 +14,39 @@ import {
 
 /* ------------------------------------------------------------------- 1RM */
 
-test('1RM: a una ripetizione coincide col carico', () => {
+test('1RM: at one rep it equals the load', () => {
   assert.equal(estimateOneRepMax(100, 1), 100);
 });
 
-test('1RM: formula di Epley', () => {
+test('1RM: Epley formula', () => {
   assert.equal(estimateOneRepMax(100, 5), 116.67);
   assert.equal(estimateOneRepMax(100, 12), 140);
   assert.equal(estimateOneRepMax(80, 8), 101.33);
 });
 
-test('1RM: valori non validi danno zero invece di NaN', () => {
+test('1RM: invalid values yield zero rather than NaN', () => {
   assert.equal(estimateOneRepMax(0, 5), 0);
   assert.equal(estimateOneRepMax(100, 0), 0);
   assert.equal(estimateOneRepMax('', ''), 0);
   assert.equal(estimateOneRepMax(-50, 5), 0);
 });
 
-test('1RM: cresce al crescere delle ripetizioni', () => {
+test('1RM: grows as reps grow', () => {
   const values = [1, 3, 5, 8, 12].map((reps) => estimateOneRepMax(100, reps));
   const sorted = [...values].sort((a, b) => a - b);
   assert.deepEqual(values, sorted);
 });
 
-/* --------------------------------------------------------------- conteggi */
+/* ----------------------------------------------------------------- counts */
 
-test('solo le serie completate e non di riscaldamento contano', () => {
+test('only completed, non-warmup sets count', () => {
   assert.equal(isCountedSet({ done: true, type: 'normal' }), true);
   assert.equal(isCountedSet({ done: true, type: 'warmup' }), false);
   assert.equal(isCountedSet({ done: false, type: 'normal' }), false);
   assert.equal(isCountedSet({ done: true, type: 'drop' }), true);
 });
 
-test('riepilogo: il riscaldamento non gonfia il volume', () => {
+test('summary: warmup does not inflate volume', () => {
   const workout = {
     startedAt: '2026-08-01T10:00:00.000Z',
     finishedAt: '2026-08-01T11:00:00.000Z',
@@ -64,7 +64,7 @@ test('riepilogo: il riscaldamento non gonfia il volume', () => {
   };
 
   const summary = summarizeWorkout(workout);
-  assert.equal(summary.volume, 1120); // 80*8 + 80*6, senza il warmup
+  assert.equal(summary.volume, 1120); // 80*8 + 80*6, warmup excluded
   assert.equal(summary.sets, 2);
   assert.equal(summary.reps, 14);
   assert.equal(summary.topWeight, 80);
@@ -72,16 +72,16 @@ test('riepilogo: il riscaldamento non gonfia il volume', () => {
   assert.equal(summary.durationMs, 3600000);
 });
 
-test('riepilogo: sessione vuota non lancia eccezioni', () => {
+test('summary: an empty session does not throw', () => {
   const summary = summarizeWorkout({ startedAt: '2026-08-01T10:00:00.000Z', exercises: [] });
   assert.equal(summary.volume, 0);
   assert.equal(summary.sets, 0);
   assert.equal(summary.durationMs, 0);
 });
 
-/* ---------------------------------------------------------------- record */
+/* --------------------------------------------------------------- records */
 
-test('record: la prima serie valida stabilisce tutti i primati', () => {
+test('records: the first valid set establishes every best', () => {
   const { record, broken } = evaluatePersonalRecord(null, {
     exerciseId: 'squat',
     name: 'Squat',
@@ -99,7 +99,7 @@ test('record: la prima serie valida stabilisce tutti i primati', () => {
   assert.equal(record.bestVolume.value, 500);
 });
 
-test('record: un carico più alto con meno reps batte solo il massimale', () => {
+test('records: a heavier load at fewer reps beats only the top weight', () => {
   const first = evaluatePersonalRecord(null, {
     exerciseId: 'squat',
     name: 'Squat',
@@ -116,11 +116,11 @@ test('record: un carico più alto con meno reps batte solo il massimale', () => 
     type: 'normal',
   });
 
-  // 110×3 → 1RM 121 < 126,67 e volume 330 < 800: solo il carico è un primato.
+  // 110x3 -> 1RM 121 < 126.67 and volume 330 < 800: only the load is a best.
   assert.deepEqual(broken.map((b) => b.type), ['weight']);
 });
 
-test('record: una serie peggiore non batte nulla', () => {
+test('records: a worse set beats nothing', () => {
   const first = evaluatePersonalRecord(null, {
     exerciseId: 'squat',
     name: 'Squat',
@@ -141,7 +141,7 @@ test('record: una serie peggiore non batte nulla', () => {
   assert.equal(record.bestWeight.weight, 100);
 });
 
-test('record: le serie di riscaldamento non generano primati', () => {
+test('records: warmup sets never produce bests', () => {
   const { broken, record } = evaluatePersonalRecord(null, {
     exerciseId: 'squat',
     name: 'Squat',
@@ -154,7 +154,7 @@ test('record: le serie di riscaldamento non generano primati', () => {
   assert.equal(record, null);
 });
 
-test('record: ricostruzione dallo storico equivale al calcolo incrementale', () => {
+test('records: rebuilding from history matches the incremental result', () => {
   const workouts = [
     {
       id: 'w1',
@@ -189,9 +189,9 @@ test('record: ricostruzione dallo storico equivale al calcolo incrementale', () 
   assert.equal(record.bestVolume.value, 525);
 });
 
-/* --------------------------------------------------- prestazione precedente */
+/* ------------------------------------------------------ last performance */
 
-test('ultima prestazione: vince la sessione più recente', () => {
+test('last performance: the most recent session wins', () => {
   const workouts = [
     {
       id: 'w2',
@@ -228,7 +228,7 @@ test('ultima prestazione: vince la sessione più recente', () => {
   assert.equal(previous.sets[0].weight, 82.5);
 });
 
-test('ultima prestazione: le serie non completate sono escluse', () => {
+test('last performance: incomplete sets are excluded', () => {
   const index = buildLastPerformance([
     {
       id: 'w1',
@@ -248,9 +248,9 @@ test('ultima prestazione: le serie non completate sono escluse', () => {
   assert.equal(index.get('squat').sets.length, 1);
 });
 
-/* ------------------------------------------------------------ progressi */
+/* ------------------------------------------------------------- progress */
 
-test('progressi: un punto per sessione, in ordine cronologico', () => {
+test('progress: one point per session, in chronological order', () => {
   const workouts = [
     {
       startedAt: '2026-07-08T10:00:00.000Z',
@@ -273,7 +273,7 @@ test('progressi: un punto per sessione, in ordine cronologico', () => {
   assert.equal(points[1].weight, 110);
 });
 
-test('volume per gruppo muscolare, ordinato dal più allenato', () => {
+test('volume by muscle group, most-trained first', () => {
   const workouts = [
     {
       startedAt: '2026-07-01T10:00:00.000Z',

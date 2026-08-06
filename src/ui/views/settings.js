@@ -1,7 +1,7 @@
 /**
- * Strumenti e impostazioni.
- * Include export/import: i dati di allenamento sono di chi si allena, e
- * devono poter uscire dall'app in un file leggibile.
+ * Tools and settings.
+ * Includes export/import: training data belongs to the person training, and
+ * must be able to leave the app as a readable file.
  */
 
 import { h } from '../dom.js';

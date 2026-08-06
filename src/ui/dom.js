@@ -1,8 +1,8 @@
 /**
  * Micro-hyperscript.
- * Costruisce nodi reali invece di concatenare stringhe HTML: niente
- * innerHTML significa niente rischio di iniezione dai nomi che l'utente
- * scrive (esercizi personalizzati, note, nomi di routine).
+ * Builds real nodes instead of concatenating HTML strings: no innerHTML
+ * means no injection risk from the names users type (custom exercises,
+ * notes, routine names).
  */
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -67,7 +67,7 @@ export function $$(selector, root = document) {
   return [...root.querySelectorAll(selector)];
 }
 
-/** Delegazione di eventi: un solo listener per lista, non uno per riga. */
+/** Event delegation: one listener per list, not one per row. */
 export function delegate(root, eventName, selector, handler) {
   root.addEventListener(eventName, (event) => {
     const target = event.target.closest(selector);

@@ -1,7 +1,7 @@
 /**
- * Routine di partenza.
- * Sono solo un punto di partenza: vengono seminate al primo avvio e da lì
- * l'utente le modifica, le duplica o le cancella come qualsiasi altra.
+ * Starter routines.
+ * Only a starting point: they are seeded on first run, after which the user
+ * edits, duplicates or deletes them like any other.
  */
 
 const ex = (exerciseId, name, sets, reps, restSeconds) => ({

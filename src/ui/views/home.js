@@ -1,7 +1,7 @@
 /**
  * Home.
- * Risponde a una sola domanda: "cosa alleno oggi?". Sopra il colpo d'occhio
- * sulla settimana, poi il tasto per partire, poi le routine.
+ * Answers exactly one question: "what am I training today?". The week at a
+ * glance up top, then the button to start, then the routines.
  */
 
 import { h } from '../dom.js';
@@ -127,7 +127,7 @@ export function homeView(ctx) {
     );
   }
 
-  /* -------------------------------------------------------------- routine */
+  /* ------------------------------------------------------------- routines */
 
   function routines() {
     return h(
@@ -277,7 +277,7 @@ export function homeView(ctx) {
     toast('Routine creata', { variant: 'ok', iconName: 'check' });
   }
 
-  /* -------------------------------------------------------------- recenti */
+  /* ---------------------------------------------------------------- recent */
 
   function recent() {
     const completed = state.workouts.filter((w) => w.status === 'completed').slice(0, 3);
@@ -333,7 +333,7 @@ export function homeView(ctx) {
     );
   }
 
-  /* ------------------------------------------------------------- avvii */
+  /* -------------------------------------------------------------- starting */
 
   async function startEmpty() {
     if (!(await confirmReplaceActive())) return;

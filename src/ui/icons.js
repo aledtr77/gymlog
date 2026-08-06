@@ -1,10 +1,10 @@
-/** Set di icone: tracciati a 24×24, coerenti nello spessore. */
+/** Icon set: 24x24 paths, consistent stroke weight. */
 
 import { h } from './dom.js';
 
 /**
- * Un bilanciere leggibile a 23px si ottiene con cinque rettangoli, non con un
- * tracciato unico: le forme restano nette anche a dimensioni piccole.
+ * A dumbbell legible at 23px comes from five rectangles rather than one
+ * path: the shapes stay crisp at small sizes.
  */
 const SHAPES = {
   dumbbell: [

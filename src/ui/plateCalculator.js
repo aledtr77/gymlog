@@ -1,8 +1,8 @@
 /**
- * Calcolatore dischi.
- * Vive in un pannello richiamabile ovunque, ed è raggiungibile con un tocco
- * lungo sul campo del carico durante l'allenamento: è lì che serve davvero,
- * non in una scheda separata da cercare.
+ * Plate calculator.
+ * Lives in a sheet that can be summoned anywhere, and is reachable by long
+ * pressing the load field mid-workout: that is where it is actually needed,
+ * not in a separate tab you have to go find.
  */
 
 import { h, replace } from './dom.js';
@@ -91,8 +91,8 @@ export function openPlateCalculator({ targetWeight = null } = {}) {
       barbell,
       h('div', { class: 'barbell__bar' }),
       h('div', { class: 'barbell__collar' }),
-      // I dischi pesanti stanno all'interno, contro il collare, come si
-      // caricano davvero: plateNodes è già ordinato dal più pesante.
+      // Heavy plates sit inside, against the collar, the way you really
+      // load a bar: plateNodes is already sorted heaviest first.
       h('div', { class: 'barbell__plates' }, plateNodes),
     );
 

@@ -25,7 +25,7 @@ function sample() {
   return workout;
 }
 
-test('nuova sessione: attiva, senza esercizi', () => {
+test('new session: active, with no exercises', () => {
   const workout = createWorkout({});
   assert.equal(workout.status, 'active');
   assert.equal(workout.finishedAt, null);
@@ -33,7 +33,7 @@ test('nuova sessione: attiva, senza esercizi', () => {
   assert.ok(workout.id);
 });
 
-test('aggiungere esercizi crea una serie vuota di partenza', () => {
+test('adding exercises creates one empty starting set', () => {
   const workout = sample();
   assert.equal(workout.exercises.length, 2);
   assert.equal(workout.exercises[0].sets.length, 1);
@@ -41,7 +41,7 @@ test('aggiungere esercizi crea una serie vuota di partenza', () => {
   assert.equal(workout.exercises[0].restSeconds, 150);
 });
 
-test('le mutazioni non modificano l’oggetto originale', () => {
+test('mutations never touch the original object', () => {
   const workout = sample();
   const blockId = workout.exercises[0].id;
   const next = addSet(workout, blockId);
@@ -51,7 +51,7 @@ test('le mutazioni non modificano l’oggetto originale', () => {
   assert.notEqual(workout, next);
 });
 
-test('una nuova serie eredita i valori della precedente', () => {
+test('a new set inherits the previous one values', () => {
   let workout = sample();
   const blockId = workout.exercises[0].id;
   const setId = workout.exercises[0].sets[0].id;
@@ -64,7 +64,7 @@ test('una nuova serie eredita i valori della precedente', () => {
   assert.equal(workout.exercises[0].sets[1].done, false);
 });
 
-test('la serie di riscaldamento non viene usata come modello', () => {
+test('a warmup set is never used as the template', () => {
   let workout = sample();
   const blockId = workout.exercises[0].id;
   const setId = workout.exercises[0].sets[0].id;
@@ -78,7 +78,7 @@ test('la serie di riscaldamento non viene usata come modello', () => {
   assert.equal(workout.exercises[0].sets[2].weight, 100);
 });
 
-test('rimozione di serie ed esercizi', () => {
+test('removing sets and exercises', () => {
   let workout = sample();
   const blockId = workout.exercises[0].id;
 
@@ -92,7 +92,7 @@ test('rimozione di serie ed esercizi', () => {
   assert.equal(workout.exercises[0].name, 'Squat');
 });
 
-test('riordino degli esercizi con limiti rispettati', () => {
+test('reordering exercises respects the bounds', () => {
   const workout = sample();
   const firstId = workout.exercises[0].id;
 
@@ -100,11 +100,11 @@ test('riordino degli esercizi con limiti rispettati', () => {
   assert.equal(moved.exercises[0].name, 'Squat');
   assert.equal(moved.exercises[1].name, 'Panca piana');
 
-  // Oltre il bordo non succede nulla.
+  // Past the edge, nothing happens.
   assert.equal(moveExercise(workout, firstId, -1), workout);
 });
 
-test('chiudere la sessione scarta le serie non completate', () => {
+test('closing the session discards incomplete sets', () => {
   let workout = sample();
   const blockId = workout.exercises[0].id;
   const setId = workout.exercises[0].sets[0].id;
@@ -120,7 +120,7 @@ test('chiudere la sessione scarta le serie non completate', () => {
   assert.equal(finished.exercises[0].sets.length, 1);
 });
 
-test('hasLoggedSets distingue una sessione vuota da una reale', () => {
+test('hasLoggedSets tells an empty session from a real one', () => {
   const workout = sample();
   assert.equal(hasLoggedSets(workout), false);
 
@@ -131,7 +131,7 @@ test('hasLoggedSets distingue una sessione vuota da una reale', () => {
   assert.equal(hasLoggedSets(withSet), true);
 });
 
-test('routine → sessione: crea il numero di serie previsto', () => {
+test('routine -> session: creates the expected number of sets', () => {
   const routine = {
     id: 'r1',
     name: 'Push',
@@ -148,7 +148,7 @@ test('routine → sessione: crea il numero di serie previsto', () => {
   assert.equal(workout.exercises[0].sets[0].done, false);
 });
 
-test('sessione → routine: media le ripetizioni delle serie fatte', () => {
+test('session -> routine: averages the reps of completed sets', () => {
   let workout = sample();
   workout = removeExercise(workout, workout.exercises[1].id);
 
@@ -172,7 +172,7 @@ test('sessione → routine: media le ripetizioni delle serie fatte', () => {
   assert.equal(routine.exercises[0].restSeconds, 150);
 });
 
-test('createSet: valori di default coerenti', () => {
+test('createSet: coherent defaults', () => {
   const set = createSet();
   assert.equal(set.type, 'normal');
   assert.equal(set.done, false);

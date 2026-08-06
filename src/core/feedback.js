@@ -1,9 +1,9 @@
 /**
- * Feedback aptico e sonoro.
+ * Haptic and audio feedback.
  *
- * L'AudioContext viene creato una sola volta e "sbloccato" al primo tocco:
- * i browser mobile bloccano l'audio non originato da un gesto utente, quindi
- * senza questo trucco il beep di fine recupero semplicemente non suona.
+ * The AudioContext is created once and "unlocked" on the first touch:
+ * mobile browsers block audio that did not originate in a user gesture, so
+ * without this trick the end-of-rest beep simply never plays.
  */
 
 let ctx = null;
@@ -23,8 +23,8 @@ export function unlockAudio() {
   if (!context) return;
   unlocked = true;
   if (context.state === 'suspended') context.resume().catch(() => {});
-  // Un buffer muto: alcuni browser considerano "attivo" il contesto solo dopo
-  // che ha effettivamente riprodotto qualcosa.
+  // A silent buffer: some browsers only treat the context as "running"
+  // once it has actually played something.
   const source = context.createBufferSource();
   source.buffer = context.createBuffer(1, 1, 22050);
   source.connect(context.destination);
@@ -45,7 +45,7 @@ function tone(context, at, duration, frequency, gainPeak = 0.35) {
   osc.stop(at + duration + 0.02);
 }
 
-/** Tre note ascendenti: riconoscibili anche con la musica in cuffia. */
+/** Three rising notes: recognisable even with music in your headphones. */
 export function beep({ sound = true, vibration = true } = {}) {
   if (vibration) vibrate([120, 70, 120, 70, 260]);
   if (!sound) return;
@@ -64,7 +64,7 @@ export function vibrate(pattern) {
   try {
     if (navigator.vibrate) navigator.vibrate(pattern);
   } catch {
-    /* alcuni browser lanciano se la pagina non è visibile */
+    /* some browsers throw when the page is not visible */
   }
 }
 
@@ -73,7 +73,7 @@ export function tapFeedback(enabled = true) {
 }
 
 /* -------------------------------------------------------------------------
-   Schermo sempre acceso
+   Keep the screen awake
    ------------------------------------------------------------------------- */
 let wakeLock = null;
 let wakeWanted = false;
@@ -86,7 +86,7 @@ export async function keepScreenAwake(enabled) {
     try {
       await wakeLock?.release();
     } catch {
-      /* già rilasciato */
+      /* already released */
     }
     wakeLock = null;
     return false;
@@ -103,7 +103,7 @@ export async function keepScreenAwake(enabled) {
   }
 }
 
-/** Il wake lock decade quando l'app va in background: va riacquisito. */
+/** The wake lock drops when the app backgrounds: it must be reacquired. */
 export function reacquireWakeLockOnVisible() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && wakeWanted && !wakeLock) {

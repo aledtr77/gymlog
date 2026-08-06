@@ -4,8 +4,8 @@ import { init } from './core/store.js';
 import { mountApp } from './ui/app.js';
 import { maybeSuggestInstall, registerServiceWorker, watchInstallPrompt } from './pwa.js';
 
-// Va agganciato prima del primo paint: Chrome emette beforeinstallprompt una
-// sola volta e non lo ripete se nessuno stava ascoltando.
+// Must be attached before the first paint: Chrome fires beforeinstallprompt
+// exactly once and does not repeat it if nobody was listening.
 watchInstallPrompt();
 
 async function boot() {

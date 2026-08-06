@@ -53,6 +53,8 @@
 
   body {
     @apply bg-bg text-ink font-sans antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: -0.006em;
     /* Depth, so a sparse screen never reads as an unfinished black page. */
     background-image:
       radial-gradient(90% 50% at 50% -8%, rgb(var(--accent) / 0.1), transparent 60%),
@@ -70,6 +72,22 @@
   ::selection {
     background: rgb(var(--accent) / 0.3);
   }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
 }
 
 /* ==========================================================================
@@ -79,7 +97,7 @@
 @layer components {
   /* 44px is the accessible minimum; primary actions are far larger. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 min-h-[52px]
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 min-h-[48px]
            font-bold tracking-tight transition active:scale-[0.98] disabled:opacity-40
            disabled:active:scale-100 disabled:cursor-not-allowed;
   }
@@ -100,7 +118,7 @@
 
   /* The one-tap action every screen ends with. */
   .btn-hero {
-    @apply btn-primary w-full min-h-[80px] text-2xl font-black tracking-widest;
+    @apply btn-primary w-full min-h-[60px] text-base font-extrabold tracking-tight;
   }
 
   .card {
@@ -136,7 +154,7 @@
 
   .screen {
     @apply mx-auto w-full max-w-lg px-4 pt-5 animate-rise;
-    padding-bottom: calc(180px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Primary action, pinned where the thumb already rests.
@@ -144,9 +162,9 @@
      inline-flex, and margin:auto does not centre an inline-level box — that
      is what pushed the button to the left edge. */
   .dock {
-    @apply fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pt-4 pointer-events-none;
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-    background: linear-gradient(180deg, transparent, rgb(var(--bg)) 38%);
+    @apply fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pt-8 pointer-events-none;
+    padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, transparent, rgb(var(--bg)) 46%);
   }
 
   .dock > * {
@@ -159,6 +177,94 @@
 
   .num {
     @apply tabular-nums tracking-tight;
+  }
+
+  .setup-flow {
+    @apply mx-auto w-full max-w-5xl;
+  }
+
+  .setup-intro {
+    @apply mb-8 max-w-2xl;
+  }
+
+  .setup-eyebrow {
+    @apply inline-flex items-center rounded-full bg-accent/10 px-3 py-1.5 text-[11px]
+           font-extrabold uppercase tracking-[0.14em] text-accent;
+  }
+
+  .setup-title {
+    @apply mt-5 max-w-xl font-black tracking-[-0.045em];
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    line-height: 0.98;
+  }
+
+  .setup-copy {
+    @apply mt-4 max-w-2xl text-[15px] leading-7 text-ink-2;
+  }
+
+  .setup-section {
+    @apply rounded-xl3 border border-line bg-surface p-4 md:p-6;
+  }
+
+  .setup-section + .setup-section {
+    @apply mt-4;
+  }
+
+  .setup-section-head {
+    @apply mb-5 grid grid-cols-[36px_minmax(0,1fr)] items-start gap-3;
+  }
+
+  .setup-step {
+    @apply grid h-9 w-9 place-items-center rounded-full bg-accent text-sm font-black text-accent-ink;
+  }
+
+  .setup-question {
+    @apply text-[17px] font-extrabold leading-snug;
+  }
+
+  .setup-hint {
+    @apply mt-1 text-[13px] leading-relaxed text-ink-3;
+  }
+
+  .setup-choice {
+    @apply min-h-[112px] rounded-2xl border border-line bg-surface-2 p-4 text-left
+           transition hover:border-ink-3 hover:bg-surface-3;
+  }
+
+  .setup-choice.is-selected {
+    @apply border-accent bg-accent/10 shadow-[inset_0_0_0_1px_rgb(var(--accent)/.16)];
+  }
+
+  .setup-choice-title {
+    @apply block text-[15px] font-extrabold leading-tight;
+  }
+
+  .setup-choice.is-selected .setup-choice-title {
+    @apply text-accent;
+  }
+
+  .setup-choice-copy {
+    @apply mt-2 block text-[13px] leading-[1.55] text-ink-3;
+  }
+
+  .segmented {
+    @apply inline-flex rounded-xl bg-surface-2 border border-line p-1;
+  }
+
+  .segmented > button {
+    @apply min-h-[40px] rounded-lg px-3.5 text-sm font-bold text-ink-2 transition;
+  }
+
+  .segmented > button[aria-pressed='true'] {
+    @apply bg-surface text-ink shadow-sm;
+  }
+
+  .sheet-layer {
+    @apply fixed inset-0 z-50 bg-bg flex flex-col animate-rise;
+  }
+
+  .sheet-panel {
+    @apply min-h-0 flex-1 flex flex-col overflow-hidden;
   }
 }
 
@@ -192,18 +298,26 @@
    ========================================================================== */
 @media (min-width: 1024px) {
   body {
-    padding-left: 15rem; /* the rail */
+    padding-left: 17rem;
+    background-image:
+      radial-gradient(60% 55% at 62% -10%, rgb(var(--accent) / 0.09), transparent 65%),
+      linear-gradient(180deg, rgb(var(--surface) / 0.34), transparent 420px);
   }
 
   .appbar {
-    @apply px-8;
-    min-height: 72px;
+    @apply px-10;
+    min-height: 76px;
+    background: rgb(var(--bg) / 0.72);
+  }
+
+  .appbar-back {
+    @apply hidden;
   }
 
   /* Wider, but not unbounded: past ~60rem a line of text stops being
      comfortable and a card grid reads better than a stretched one. */
   .screen {
-    @apply max-w-4xl px-8 pt-8;
+    @apply max-w-6xl px-10 pt-8;
     padding-bottom: 8rem;
   }
 
@@ -214,12 +328,12 @@
      padding — so the action sits on the content column's left edge instead
      of floating in the middle of the page. */
   .dock {
-    @apply static inset-auto z-auto mx-auto w-full max-w-4xl justify-start px-8 pt-6 pb-24;
+    @apply static inset-auto z-auto mx-auto w-full max-w-6xl justify-start px-10 pt-6 pb-20;
     background: none;
   }
 
   .dock > * {
-    @apply max-w-sm;
+    @apply w-auto min-w-[220px] max-w-xs;
   }
 
   .screen {
@@ -235,11 +349,29 @@
   .lg-cols-2 {
     @apply grid grid-cols-2 gap-3;
   }
+
+  .sheet-layer {
+    @apply bg-black/55 p-8 items-center justify-center;
+    backdrop-filter: blur(8px);
+  }
+
+  .sheet-panel {
+    @apply w-full max-w-3xl flex-none rounded-xl3 border border-line bg-bg shadow-2xl;
+    height: auto;
+    max-height: min(860px, calc(100dvh - 4rem));
+  }
+
+  .sheet-panel .screen {
+    @apply max-w-none px-7 pt-6;
+    padding-bottom: 3rem;
+  }
+
+  .sheet-panel .appbar-back {
+    @apply grid;
+  }
 }
 
 @media (min-width: 1280px) {
   .screen,
-  .dock {
-    @apply max-w-5xl;
-  }
+  .dock { @apply max-w-6xl; }
 }

@@ -11,8 +11,8 @@ export function bmi(kgWeight, cmHeight) {
   if (m <= 0 || !kgWeight) return null;
   const value = round(kgWeight / (m * m), 1);
   const band =
-    value < 18.5 ? 'sottopeso' : value < 25 ? 'normopeso' : value < 30 ? 'sovrappeso' : 'obesità';
-  return { value, band, caveat: 'Non distingue muscolo da grasso: su chi si allena sovrastima.' };
+    value < 18.5 ? 'underweight' : value < 25 ? 'healthy range' : value < 30 ? 'overweight' : 'obesity range';
+  return { value, band, caveat: 'It cannot distinguish muscle from body fat and may overestimate risk in muscular people.' };
 }
 
 /** Mifflin–St Jeor: the resting burn, more accurate than Harris–Benedict. */
@@ -23,11 +23,11 @@ export function bmr({ weight, height, age, sex = 'm' }) {
 }
 
 export const ACTIVITY = [
-  { id: 'sedentario', label: 'Sedentario', factor: 1.2, hint: 'Lavoro da seduto, niente sport' },
-  { id: 'leggero', label: 'Leggero', factor: 1.375, hint: '1-3 allenamenti a settimana' },
-  { id: 'moderato', label: 'Moderato', factor: 1.55, hint: '3-5 allenamenti' },
-  { id: 'intenso', label: 'Intenso', factor: 1.725, hint: '6-7 allenamenti' },
-  { id: 'atleta', label: 'Atleta', factor: 1.9, hint: 'Doppie sedute o lavoro fisico' },
+  { id: 'sedentario', label: 'Sedentary', factor: 1.2, hint: 'Desk-based day, little exercise' },
+  { id: 'leggero', label: 'Lightly active', factor: 1.375, hint: '1–3 workouts per week' },
+  { id: 'moderato', label: 'Moderately active', factor: 1.55, hint: '3–5 workouts per week' },
+  { id: 'intenso', label: 'Very active', factor: 1.725, hint: '6–7 workouts per week' },
+  { id: 'atleta', label: 'Athlete', factor: 1.9, hint: 'Twice-daily training or physical work' },
 ];
 
 export function tdee(bmrValue, activityId = 'moderato') {
@@ -40,11 +40,11 @@ export function tdee(bmrValue, activityId = 'moderato') {
  * (~1.8 g/kg, the range the evidence supports for trainees), fat gets 25%
  * of calories, and carbohydrate takes the remainder.
  */
-export function macros(calories, weight, goal = 'mantenimento') {
+export function macros(calories, weight, goal = 'maintenance') {
   if (!calories || !weight) return null;
   const adjusted =
-    goal === 'dimagrimento' ? Math.round(calories * 0.8)
-      : goal === 'massa' ? Math.round(calories * 1.1)
+    goal === 'fat-loss' ? Math.round(calories * 0.8)
+      : goal === 'muscle-gain' ? Math.round(calories * 1.1)
         : calories;
 
   const protein = Math.round(weight * 1.8);
@@ -95,7 +95,7 @@ export function bodyFat({ sex = 'm', height, neck, waist, hip }) {
 /** Plates per side, and honest about what cannot be made exactly. */
 export function plates(target, bar = 20, available = [25, 20, 15, 10, 5, 2.5, 1.25]) {
   const total = Number(target) || 0;
-  if (total < bar) return { ok: false, error: `Meno del bilanciere (${bar} kg)`, plates: [] };
+  if (total < bar) return { ok: false, error: `Below the empty bar weight (${bar} kg)`, plates: [] };
 
   let side = round((total - bar) / 2, 2);
   const out = [];
@@ -113,6 +113,6 @@ export function plates(target, bar = 20, available = [25, 20, 15, 10, 5, 2.5, 1.
     plates: out,
     remainder: side,
     achieved: round(total - side * 2, 2),
-    error: side > 1e-6 ? `Mancano ${side} kg per lato` : null,
+    error: side > 1e-6 ? `${side} kg per side cannot be loaded with the available plates` : null,
   };
 }

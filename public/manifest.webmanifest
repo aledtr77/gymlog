@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "GymLog — allenamento",
+  "name": "GymLog — Training journal",
   "short_name": "GymLog",
-  "description": "La scheda di oggi è già pronta. Registri una serie in un tocco, anche senza connessione.",
+  "description": "Plan workouts, log sets, and track progress—even when you are offline.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -19,8 +19,8 @@
     { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Inizia allenamento", "short_name": "Allena", "url": "/#/session" },
+    { "name": "Start workout", "short_name": "Train", "url": "/#/session" },
     { "name": "Timer", "short_name": "Timer", "url": "/#/timer" },
-    { "name": "Progressi", "short_name": "Progressi", "url": "/#/stats" }
+    { "name": "View progress", "short_name": "Progress", "url": "/#/stats" }
   ]
 }

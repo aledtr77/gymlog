@@ -31,8 +31,8 @@ export default {
       },
       fontFamily: {
         sans: [
-          'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI',
-          'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif',
+          'Inter', 'Geist', 'SF Pro Text', 'SF Pro Display', 'ui-sans-serif',
+          'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Arial', 'sans-serif',
         ],
       },
       borderRadius: { xl2: '1.25rem', xl3: '1.75rem' },

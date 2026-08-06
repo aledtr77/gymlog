@@ -1,212 +1,431 @@
 /**
- * Dashboard — one screen, one question: what am I doing today?
- *
- * Everything else the brief asks for exists, but nothing else is on the
- * critical path. The session is one tap away; the rest lives behind a
- * single "Altro" row, so a beginner is never asked to choose between eleven
- * features before they can lift.
+ * Today is an orientation screen, not a programme editor. It explains the
+ * next useful action, gives enough context to trust it, and leaves the full
+ * prescription behind progressive disclosure.
  */
 
-import { el } from '../ui/el.js';
+import { el, replace } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
-import { stat, navRow } from '../ui/components.js';
-import { state, plannedSession, prefs } from '../core/state.js';
-import { buildSession, volume, streak, isTimed } from '../core/training.js';
+import { appbar, stat } from '../ui/components.js';
+import { state, plannedSession, prefs, setTemplate } from '../core/state.js';
+import { buildSession, volume, isTimed } from '../core/training.js';
 import { go } from '../core/router.js';
-import { WEEKDAYS, sameDay, startOfWeek } from '../utils/date.js';
+import { WEEKDAYS, longDate, sameDay, startOfWeek } from '../utils/date.js';
 import { compact, kg } from '../utils/num.js';
+import { TEMPLATES } from '../data/programs.js';
+
+const setupDraft = { level: null, days: null, reviewing: false, selected: null };
 
 export function render() {
+  if (!prefs.get('onboarded')) return renderSetup();
+
   const { template, session: planned } = plannedSession();
   const session = buildSession(planned, state.sets);
-  const today = state.sets.filter((s) => sameDay(s.at, new Date()));
+  const today = state.sets.filter((set) => sameDay(set.at, new Date()));
+  const nextLift = session.lifts.find((lift) => !lift.done) || session.lifts.at(-1);
+  const firstWorkout = state.sets.length === 0;
+
+  const heading = session.complete
+    ? 'You are done for today.'
+    : session.started
+      ? 'Pick up where you left off.'
+      : firstWorkout
+        ? 'Let’s start steady.'
+        : 'Ready for your next workout?';
+
+  const guidance = session.complete
+    ? 'Recover, eat normally, and come back when you feel ready. More training is not always better training.'
+    : session.started
+      ? `${session.setsDone} of ${session.setsTotal} sets are complete. Your next exercise is ready.`
+      : firstWorkout
+        ? 'We will guide you one exercise at a time. Today is about learning the movements, not testing your limits.'
+        : 'This workout follows your plan and recent training. Adjust it if your recovery or form feels off today.';
 
   return {
     node: el(
       'div',
       null,
-      el(
-        'header',
-        { class: 'appbar lg:hidden' },
-        el(
-          'span',
-          { class: 'w-8 h-8 grid place-items-center rounded-lg bg-accent text-accent-ink font-black' },
-          'G',
-        ),
-        el('h1', { class: 'flex-1 text-lg font-extrabold tracking-tight' }, 'GymLog'),
-        el(
+      appbar({
+        title: 'Today',
+        sub: longDate(new Date()),
+        action: el(
           'button',
           {
             type: 'button',
-            class: 'w-11 h-11 grid place-items-center rounded-full text-ink-2 active:bg-surface-2',
-            'aria-label': 'Altro',
+            class: 'lg:hidden w-11 h-11 grid place-items-center rounded-full text-ink-2 active:bg-surface-2',
+            'aria-label': 'Open tools and settings',
             onClick: () => go('/more'),
           },
           icon('more', 'w-6 h-6'),
         ),
-      ),
-
+      }),
       el(
         'main',
         { class: 'screen' },
         el(
-          'div',
-          { class: 'lg-split' },
-
-        /* ------------------------------------------------ today's session */
-        el(
-          'section',
-          {
-            class: 'rounded-xl3 border border-line p-5 relative overflow-hidden',
-            style: {
-              backgroundImage:
-                'linear-gradient(160deg, rgb(var(--accent) / 0.14), transparent 55%), linear-gradient(rgb(var(--surface)), rgb(var(--surface)))',
-            },
-          },
-          el(
-            'p',
-            { class: 'text-[11px] font-extrabold uppercase tracking-[0.16em] text-accent' },
-            session.complete ? 'Fatto oggi' : 'Oggi ti alleni',
-          ),
-          el('h2', { class: 'mt-1 text-3xl font-black tracking-tighter leading-none' }, session.name),
-          el('p', { class: 'mt-1 text-sm text-ink-2' }, `${template.name} · ${session.focus}`),
-
-          weekStrip(),
-
-          el(
-            'ol',
-            { class: 'mt-1 border-t border-line/70' },
-            session.lifts.map((lift) =>
-              el(
-                'li',
-                { class: 'flex items-center gap-3 py-3 border-b border-line/70' },
-                el(
-                  'span',
-                  {
-                    class: [
-                      'w-[22px] h-[22px] shrink-0 grid place-items-center rounded-full border text-[13px] font-black',
-                      lift.done
-                        ? 'bg-accent border-transparent text-accent-ink'
-                        : 'border-line text-transparent',
-                    ],
-                  },
-                  '✓',
-                ),
-                el(
-                  'span',
-                  { class: 'flex-1 min-w-0 flex flex-col' },
-                  el(
-                    'span',
-                    { class: ['font-bold truncate', lift.done && 'text-ink-3 line-through'] },
-                    lift.name,
-                  ),
-                  el(
-                    'span',
-                    { class: 'text-[13px] text-ink-3 num' },
-                    isTimed(lift.exerciseId)
-                      ? `${lift.sets} × ${lift.target.reps}s`
-                      : `${lift.sets} × ${lift.target.reps} · ${kg(lift.target.weight)} kg`,
-                  ),
-                ),
-                lift.logged.length && !lift.done
-                  ? el(
-                      'span',
-                      { class: 'chip chip-on shrink-0 num' },
-                      `${lift.logged.length}/${lift.sets}`,
-                    )
-                  : null,
-              ),
-            ),
-          ),
+          'header',
+          { class: 'mb-5 lg:mb-7 max-w-2xl' },
+          el('h2', { class: 'text-2xl lg:text-3xl font-black tracking-tight' }, heading),
+          el('p', { class: 'mt-2 text-sm lg:text-[15px] leading-relaxed text-ink-2' }, guidance),
         ),
-
         el(
           'div',
-          { class: 'lg:contents' },
-
-        /* ---------------------------------------------------------- stats */
-        el(
-          'section',
-          { class: 'tile mt-4 lg:mt-0 grid grid-cols-3 gap-3' },
-          stat(String(today.length), 'serie oggi', { accent: today.length > 0 }),
-          stat(compact(volume(today)), 'kg oggi'),
-          stat(String(streak(state.sets)), 'streak'),
-        ),
-
-        /* --------------------------------------------------------- shortcuts */
-        el(
-          'nav',
-          { class: 'mt-4 flex flex-col gap-2 lg:hidden', 'aria-label': 'Scorciatoie' },
-          navRow({
-            title: 'Timer',
-            sub: 'Recupero, HIIT, EMOM, Tabata',
-            iconName: 'timer',
-            onClick: () => go('/timer'),
-          }),
-          navRow({
-            title: 'Esercizi',
-            sub: 'Cerca, guarda come si esegue',
-            iconName: 'dumbbell',
-            onClick: () => go('/exercises'),
-          }),
-          navRow({
-            title: 'Progressi',
-            sub: 'Volume, record, muscoli',
-            iconName: 'chart',
-            onClick: () => go('/stats'),
-          }),
-        ),
-        ),
-        ),
-      ),
-
-      el(
-        'div',
-        { class: 'dock' },
-        el(
-          'button',
-          {
-            type: 'button',
-            class: 'btn-hero',
-            disabled: session.complete,
-            onClick: () => go('/session'),
-          },
-          session.complete
-            ? 'COMPLETATO'
-            : session.started
-              ? `RIPRENDI · ${session.setsDone}/${session.setsTotal}`
-              : 'INIZIA',
+          { class: 'lg:grid lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,.8fr)] lg:gap-6 lg:items-start' },
+          sessionCard({ session, template, nextLift }),
+          el(
+            'aside',
+            { class: 'mt-4 lg:mt-0 flex flex-col gap-4' },
+            weekCard(today),
+            coachingCard({ firstWorkout, session, nextLift }),
+          ),
         ),
       ),
     ),
   };
 }
 
-/** Seven days at a glance. A chart would say the same thing with more ink. */
+function renderSetup() {
+  const main = el('main', { class: 'screen' });
+
+  const paint = () => {
+    replace(main, setupDraft.reviewing ? proposalStep(paint) : questionsStep(paint));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  paint();
+
+  return {
+    node: el(
+      'div',
+      null,
+      appbar({ title: 'Today', sub: 'Set up your starting point' }),
+      main,
+    ),
+  };
+}
+
+function questionsStep(paint) {
+  const ready = setupDraft.level && setupDraft.days;
+  const levelOptions = [
+    { value: 'beginner', label: 'Beginner', body: 'Exercises, equipment, and training loads are still new to me.' },
+    { value: 'intermediate', label: 'Intermediate', body: 'I know the main movements and already train fairly consistently.' },
+    { value: 'advanced', label: 'Experienced', body: 'I am comfortable managing form, load, recovery, and training volume.' },
+  ];
+  const dayOptions = [
+    { value: 2, label: '2 days', body: 'A realistic, low-pressure place to begin.' },
+    { value: 3, label: '3 days', body: 'A balanced rhythm with plenty of recovery.' },
+    { value: 4, label: '4 days', body: 'More sessions with less work in each one.' },
+    { value: 5, label: '5+ days', body: 'Best suited to experienced, well-recovered training.' },
+  ];
+
+  return el(
+    'div',
+    { class: 'setup-flow' },
+    el(
+      'header',
+      { class: 'setup-intro' },
+      el('span', { class: 'setup-eyebrow' }, 'A quick setup'),
+      el('h2', { class: 'setup-title' }, 'Let’s get you set up.'),
+      el('p', { class: 'setup-copy' }, 'Tell us where you are starting and how much time you actually have. We will build a simple plan for you to review—nothing starts until you approve it.'),
+    ),
+    el(
+      'section',
+      { class: 'setup-section' },
+      el('div', { class: 'setup-section-head' }, el('span', { class: 'setup-step' }, '1'), el('div', null, el('h3', { class: 'setup-question' }, 'How familiar are you with strength training?'), el('p', { class: 'setup-hint' }, 'Choose the description that feels closest. There is no wrong answer.'))),
+      el('div', { class: 'grid grid-cols-1 md:grid-cols-3 gap-2.5' }, levelOptions.map((option) => setupChoice(option, setupDraft.level === option.value, () => { setupDraft.level = option.value; paint(); }))),
+    ),
+    el(
+      'section',
+      { class: 'setup-section' },
+      el('div', { class: 'setup-section-head' }, el('span', { class: 'setup-step' }, '2'), el('div', null, el('h3', { class: 'setup-question' }, 'How many days can you train most weeks?'), el('p', { class: 'setup-hint' }, 'Choose what is sustainable, not the best-case scenario.'))),
+      el('div', { class: 'grid grid-cols-2 lg:grid-cols-4 gap-2.5' }, dayOptions.map((option) => setupChoice(option, setupDraft.days === option.value, () => { setupDraft.days = option.value; paint(); }))),
+    ),
+    el(
+      'div',
+      { class: 'mt-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3' },
+      el(
+        'button',
+        {
+          type: 'button',
+          class: 'btn-primary sm:min-w-[240px]',
+          disabled: !ready,
+          onClick: () => {
+            const suggested = suggestedTemplate(setupDraft.level, setupDraft.days);
+            setupDraft.selected = new Set(suggested.sessions.flatMap((session) => session.lifts.map((lift) => `${session.id}:${lift.exerciseId}`)));
+            setupDraft.reviewing = true;
+            paint();
+          },
+        },
+        'Build my starting plan',
+        icon('next', 'w-5 h-5'),
+      ),
+      el('button', { type: 'button', class: 'btn-quiet', onClick: () => go('/exercises') }, 'Explore exercises first'),
+    ),
+  );
+}
+
+function setupChoice(option, active, onClick) {
+  return el(
+    'button',
+    { type: 'button', class: ['setup-choice', active && 'is-selected'], 'aria-pressed': String(active), onClick },
+    el('span', { class: 'setup-choice-title' }, option.label),
+    el('span', { class: 'setup-choice-copy' }, option.body),
+  );
+}
+
+function proposalStep(paint) {
+  const suggested = suggestedTemplate(setupDraft.level, setupDraft.days);
+  const selected = setupDraft.selected;
+  const countFor = (session) => session.lifts.filter((lift) => selected.has(`${session.id}:${lift.exerciseId}`)).length;
+  const valid = suggested.sessions.every((session) => countFor(session) >= 3);
+
+  return el(
+    'div',
+    { class: 'setup-flow' },
+    el('button', { type: 'button', class: 'btn-quiet -ml-3 mb-2', onClick: () => { setupDraft.reviewing = false; paint(); } }, icon('back', 'w-5 h-5'), 'Change answers'),
+    el(
+      'header',
+      { class: 'max-w-2xl mb-6' },
+      el('p', { class: 'setup-eyebrow' }, 'Review before you start'),
+      el('h2', { class: 'mt-2 text-3xl font-black tracking-tight' }, suggested.name),
+      el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2' }, proposalExplanation(setupDraft.level, setupDraft.days, suggested)),
+    ),
+    el(
+      'div',
+      { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4 items-start' },
+      suggested.sessions.map((session, sessionIndex) =>
+        el(
+          'section',
+          { class: 'card' },
+          el('p', { class: 'label' }, `Session ${sessionIndex + 1}`),
+          el('h3', { class: 'mt-1 text-xl font-black' }, session.name),
+          el('p', { class: 'mt-1 text-sm text-ink-2' }, session.focus),
+          el('p', { class: 'mt-3 text-[13px] leading-relaxed text-ink-3' }, 'Everything is selected to start. Remove anything you do not want, keeping at least three exercises per session.'),
+          el(
+            'div',
+            { class: 'mt-3 border-t border-line' },
+            session.lifts.map((lift) => {
+              const key = `${session.id}:${lift.exerciseId}`;
+              const checked = selected.has(key);
+              return el(
+                'label',
+                { class: 'flex items-center gap-3 min-h-[58px] py-2.5 border-b border-line last:border-0 cursor-pointer' },
+                el('input', { type: 'checkbox', class: 'w-5 h-5 accent-current shrink-0', checked, onChange: () => { checked ? selected.delete(key) : selected.add(key); paint(); } }),
+                el('span', { class: 'flex-1 min-w-0' }, el('span', { class: 'block font-bold' }, lift.name), el('span', { class: 'block text-xs text-ink-3 num' }, `${lift.sets} sets · ${isTimed(lift.exerciseId) ? `${lift.reps} seconds` : `${lift.reps} reps`}`)),
+              );
+            }),
+          ),
+        ),
+      ),
+    ),
+    !valid ? el('p', { class: 'mt-4 text-sm font-bold text-warn' }, 'Keep at least three exercises in every session.') : null,
+    el(
+      'div',
+      { class: 'mt-5 rounded-xl3 border border-line bg-surface p-5 flex flex-col sm:flex-row sm:items-center gap-4' },
+      el('div', { class: 'flex-1' }, el('h3', { class: 'font-extrabold' }, 'Happy with this starting point?'), el('p', { class: 'mt-1 text-[13px] leading-relaxed text-ink-3' }, 'Once confirmed, Today will show your next session. You can revisit this setup at any time.')),
+      el('button', { type: 'button', class: 'btn-primary sm:min-w-[210px]', disabled: !valid, onClick: () => activateProposal(suggested) }, 'Use this plan'),
+    ),
+    el('button', { type: 'button', class: 'btn-quiet mt-3', onClick: () => go('/exercises') }, 'I want to learn about these exercises', icon('next', 'w-4 h-4')),
+  );
+}
+
+function suggestedTemplate(level, days) {
+  const recommended = recommendedDays(level, days);
+  if (recommended <= 3) return TEMPLATES[0];
+  if (recommended === 4) return TEMPLATES[1];
+  return TEMPLATES[2];
+}
+
+function proposalExplanation(level, days, template) {
+  const levelLabel = level === 'beginner' ? 'beginner' : level === 'intermediate' ? 'intermediate' : 'experienced';
+  const recommended = recommendedDays(level, days);
+  const availability = days === 5 ? '5 or more' : days;
+  const adjustment = recommended < days ? ` We suggest starting with ${recommended} so recovery stays manageable.` : '';
+  return `You chose ${levelLabel} and ${availability} available days.${adjustment} This plan alternates ${template.sessions.length} sessions. Review every exercise before you confirm.`;
+}
+
+function recommendedDays(level, available) {
+  if (level === 'beginner') return Math.min(available, 3);
+  if (level === 'intermediate') return Math.min(available, 4);
+  return available;
+}
+
+function activateProposal(base) {
+  const sessions = base.sessions.map((session) => ({
+    ...session,
+    lifts: session.lifts.filter((lift) => setupDraft.selected.has(`${session.id}:${lift.exerciseId}`)),
+  }));
+  const custom = {
+    ...base,
+    id: 'custom',
+    name: 'My plan',
+    days: recommendedDays(setupDraft.level, setupDraft.days),
+    level: setupDraft.level,
+    blurb: `${recommendedDays(setupDraft.level, setupDraft.days)} days per week, set up by you.`,
+    bestFor: 'A starting plan shaped by your setup choices.',
+    schedule: `${recommendedDays(setupDraft.level, setupDraft.days)} days per week with recovery between sessions.`,
+    sessions,
+  };
+  const level = setupDraft.level;
+  const trainingDays = recommendedDays(level, setupDraft.days);
+  setupDraft.level = null;
+  setupDraft.days = null;
+  setupDraft.reviewing = false;
+  setupDraft.selected = null;
+  setTemplate('custom', { level, trainingDays, customTemplate: custom });
+}
+
+function sessionCard({ session, template, nextLift }) {
+  const completedPct = session.setsTotal ? Math.round((session.setsDone / session.setsTotal) * 100) : 0;
+  const minutes = Math.max(30, Math.round(session.setsTotal * 2.7 / 5) * 5);
+
+  return el(
+    'section',
+    {
+      class: 'rounded-xl3 border border-line p-5 lg:p-7 relative overflow-hidden',
+      style: {
+        backgroundImage:
+          'linear-gradient(145deg, rgb(var(--accent) / 0.11), transparent 48%), linear-gradient(rgb(var(--surface)), rgb(var(--surface)))',
+      },
+    },
+    el(
+      'div',
+      { class: 'flex items-start gap-4' },
+      el(
+        'div',
+        { class: 'flex-1 min-w-0' },
+        el('p', { class: 'label text-accent' }, session.complete ? 'Complete' : session.started ? 'In progress' : 'Your next workout'),
+        el('h3', { class: 'mt-1 text-2xl lg:text-3xl font-black tracking-tight' }, session.name),
+        el('p', { class: 'mt-1 text-sm text-ink-2' }, session.focus),
+      ),
+      session.started
+        ? el('span', { class: 'chip chip-on shrink-0 num' }, `${completedPct}%`)
+        : null,
+    ),
+    el(
+      'div',
+      { class: 'flex flex-wrap gap-2 mt-4' },
+      el('span', { class: 'chip' }, `${session.lifts.length} exercises`),
+      el('span', { class: 'chip' }, `${session.setsTotal} sets`),
+      el('span', { class: 'chip' }, `about ${minutes} min`),
+    ),
+    session.started
+      ? el(
+          'div',
+          { class: 'mt-5 h-2 rounded-full bg-surface-2 overflow-hidden', role: 'progressbar', 'aria-label': 'Workout completed', 'aria-valuenow': String(completedPct), 'aria-valuemin': '0', 'aria-valuemax': '100' },
+          el('div', { class: 'h-full rounded-full bg-accent', style: { width: `${completedPct}%` } }),
+        )
+      : null,
+    !session.complete && nextLift
+      ? el(
+          'div',
+          { class: 'mt-5 rounded-2xl border border-line bg-bg/45 p-4' },
+          el('p', { class: 'label' }, session.started ? 'Next exercise' : 'Start here'),
+          el('p', { class: 'mt-1 font-extrabold' }, nextLift.name),
+          el('p', { class: 'mt-0.5 text-sm text-ink-2 num' }, targetLabel(nextLift)),
+          el('p', { class: 'mt-2 text-xs leading-relaxed text-ink-3' }, nextLift.target.why),
+        )
+      : null,
+    el(
+      'details',
+      { class: 'group mt-4' },
+      el(
+        'summary',
+        { class: 'min-h-[44px] flex items-center gap-2 cursor-pointer text-sm font-bold text-ink-2 select-none' },
+        icon('next', 'w-4 h-4 transition group-open:rotate-90'),
+        'View all exercises',
+      ),
+      el(
+        'ol',
+        { class: 'border-t border-line/70' },
+        session.lifts.map((lift, index) =>
+          el(
+            'li',
+            { class: 'flex items-center gap-3 py-3 border-b border-line/70 last:border-0' },
+            el('span', { class: ['w-6 h-6 shrink-0 grid place-items-center rounded-full text-xs font-black', lift.done ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink-3'] }, lift.done ? '✓' : String(index + 1)),
+            el('span', { class: 'flex-1 min-w-0' }, el('span', { class: 'block font-bold truncate' }, lift.name), el('span', { class: 'block text-xs text-ink-3 num' }, targetLabel(lift))),
+          ),
+        ),
+      ),
+    ),
+    el(
+      'div',
+      { class: 'mt-5 flex flex-col sm:flex-row gap-2.5' },
+      el(
+        'button',
+        { type: 'button', class: 'btn-primary sm:min-w-[220px]', disabled: session.complete, onClick: () => go('/session') },
+        session.complete ? 'Workout complete' : session.started ? 'Resume workout' : 'Start workout',
+        session.complete ? null : icon('next', 'w-5 h-5'),
+      ),
+      el('button', { type: 'button', class: 'btn-quiet', onClick: () => go('/more') }, `Plan: ${template.name}`),
+    ),
+  );
+}
+
+function weekCard(todaySets) {
+  const weekStart = startOfWeek(new Date());
+  const sessionsThisWeek = new Set(
+    state.sets
+      .filter((set) => new Date(set.at) >= weekStart)
+      .map((set) => new Date(set.at).toDateString()),
+  ).size;
+
+  return el(
+    'section',
+    { class: 'card' },
+    el('div', { class: 'flex items-baseline justify-between gap-3' }, el('h3', { class: 'font-extrabold' }, 'This week'), el('span', { class: 'text-xs text-ink-3' }, 'Mon–Sun')),
+    weekStrip(),
+    el(
+      'div',
+      { class: 'grid grid-cols-3 gap-3 pt-4 border-t border-line' },
+      stat(String(todaySets.length), 'sets today', { accent: todaySets.length > 0 }),
+      stat(compact(volume(todaySets)), 'kg today'),
+      stat(String(sessionsThisWeek), 'sessions / 7d'),
+    ),
+  );
+}
+
+function coachingCard({ firstWorkout, session, nextLift }) {
+  const title = firstWorkout ? 'Your first workout' : session.complete ? 'After training' : 'Today’s approach';
+  const body = firstWorkout
+    ? 'Choose a load that leaves another 3–4 good reps in reserve. Open the exercise library if a movement is unfamiliar.'
+    : session.complete
+      ? 'There is no need to add extra work. Progress comes from consistent sessions performed with steady form.'
+      : nextLift?.target.status === 'up'
+        ? 'The load increases because you completed every set last time. Reduce it if your form breaks down today.'
+        : 'Keep the same load until you can complete every planned set with controlled form.';
+
+  return el(
+    'section',
+    { class: 'card' },
+    el('div', { class: 'w-9 h-9 grid place-items-center rounded-xl bg-accent/12 text-accent' }, icon('info', 'w-5 h-5')),
+    el('h3', { class: 'mt-3 font-extrabold' }, title),
+    el('p', { class: 'mt-1.5 text-sm leading-relaxed text-ink-2' }, body),
+    firstWorkout
+      ? el('button', { type: 'button', class: 'btn-quiet mt-2 -ml-3', onClick: () => go('/exercises') }, 'Open exercise library', icon('next', 'w-4 h-4'))
+      : null,
+  );
+}
+
+function targetLabel(lift) {
+  if (isTimed(lift.exerciseId)) return `${lift.sets} sets of ${lift.target.reps} seconds`;
+  return `${lift.sets} × ${lift.target.reps}${lift.target.weight ? ` · ${kg(lift.target.weight)} kg` : ' · bodyweight'}`;
+}
+
 function weekStrip() {
   const start = startOfWeek(new Date());
   const today = new Date();
 
   return el(
     'div',
-    { class: 'flex gap-1.5 my-4', role: 'list', 'aria-label': 'Questa settimana' },
-    WEEKDAYS.map((letter, i) => {
+    { class: 'flex gap-1.5 my-4', role: 'list', 'aria-label': 'Workouts this week' },
+    WEEKDAYS.map((letter, index) => {
       const day = new Date(start);
-      day.setDate(day.getDate() + i);
-      const trained = state.sets.some((s) => sameDay(s.at, day));
+      day.setDate(day.getDate() + index);
+      const trained = state.sets.some((set) => sameDay(set.at, day));
       const isToday = sameDay(day, today);
-
       return el(
         'span',
-        {
-          role: 'listitem',
-          class: [
-            'flex-1 h-9 grid place-items-center rounded-lg text-[11px] font-extrabold',
-            trained ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink-3',
-            isToday && !trained && 'ring-1 ring-accent/50',
-          ],
-          'aria-label': `${letter}: ${trained ? 'allenato' : 'riposo'}`,
-        },
+        { role: 'listitem', class: ['flex-1 h-9 grid place-items-center rounded-lg text-[11px] font-extrabold', trained ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink-3', isToday && !trained && 'ring-1 ring-accent/60'], 'aria-label': `${letter}: ${trained ? 'workout logged' : isToday ? 'today' : 'no workout'}` },
         letter,
       );
     }),

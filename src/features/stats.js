@@ -20,11 +20,11 @@ export function render() {
       node: el(
         'div',
         null,
-        appbar({ title: 'Progressi', back: () => go('/') }),
+        appbar({ title: 'Progress', back: () => go('/') }),
         el(
           'main',
-          { class: 'screen' },
-          blank({ title: 'Ancora niente', body: 'Registra il primo allenamento e qui compaiono volume, record e muscoli allenati.' }),
+          { class: 'screen lg:max-w-4xl' },
+          blank({ title: 'Nothing here yet', body: 'Complete your first workout to see training volume, personal bests, and muscle-group balance.' }),
         ),
       ),
     };
@@ -39,30 +39,30 @@ export function render() {
     node: el(
       'div',
       null,
-      appbar({ title: 'Progressi', back: () => go('/') }),
+      appbar({ title: 'Progress', back: () => go('/') }),
       el(
         'main',
-        { class: 'screen' },
+        { class: 'screen lg:grid lg:grid-cols-2 lg:gap-4' },
 
         el(
           'section',
-          { class: 'tile grid grid-cols-3 gap-3' },
-          stat(compact(volume(thisWeek)), 'kg settimana', { accent: true }),
-          stat(String(thisWeek.length), 'serie'),
-          stat(String(streak(sets)), 'streak'),
+          { class: 'tile grid grid-cols-3 gap-3 lg:col-span-2' },
+          stat(compact(volume(thisWeek)), 'kg this week', { accent: true }),
+          stat(String(thisWeek.length), 'sets'),
+          stat(String(streak(sets)), 'day streak'),
         ),
 
         el(
           'section',
-          { class: 'card mt-4' },
-          el('h2', { class: 'label mb-3' }, 'Volume per settimana'),
+          { class: 'card mt-4 lg:mt-0 lg:col-span-2' },
+          el('h2', { class: 'label mb-3' }, 'Weekly volume'),
           bars(weeks),
         ),
 
         el(
           'section',
-          { class: 'card mt-4' },
-          el('h2', { class: 'label mb-3' }, 'Volume per gruppo'),
+          { class: 'card mt-4 lg:mt-0' },
+          el('h2', { class: 'label mb-3' }, 'Volume by muscle group'),
           el(
             'div',
             { class: 'flex flex-col gap-2.5' },
@@ -89,8 +89,8 @@ export function render() {
 
         el(
           'section',
-          { class: 'card mt-4' },
-          el('h2', { class: 'label mb-3' }, 'Record personali'),
+          { class: 'card mt-4 lg:mt-0' },
+          el('h2', { class: 'label mb-3' }, 'Personal bests'),
           el(
             'div',
             { class: 'flex flex-col gap-2' },
@@ -104,7 +104,7 @@ export function render() {
               ),
             ),
           ),
-          el('p', { class: 'mt-3 text-xs text-ink-3' }, 'L’ultima colonna è l’1RM stimato (Epley).'),
+          el('p', { class: 'mt-3 text-xs text-ink-3' }, 'The final column is an estimated one-rep max using the Epley formula.'),
         ),
       ),
     ),
@@ -118,7 +118,7 @@ function bars(weeks) {
 
   return el(
     'div',
-    { class: 'flex items-end gap-1.5 h-[140px]', role: 'img', 'aria-label': 'Volume delle ultime otto settimane' },
+    { class: 'flex items-end gap-1.5 h-[140px]', role: 'img', 'aria-label': 'Training volume over the last eight weeks' },
     weeks.map((w) => {
       const h = Math.round((w.volume / max) * H);
       return el(

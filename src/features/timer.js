@@ -48,7 +48,7 @@ export function startRest(seconds = prefs.get('restDefault')) {
       fired = true;
       if (prefs.get('sound')) audio.beep();
       if (prefs.get('vibration')) haptics.alarm();
-      notify.show('Recupero finito', 'Vai con la prossima serie.');
+      notify.show('Rest complete', 'You are ready for the next set.');
       emit('rest', restState());
       // Lingers a few seconds past zero: people look up late.
       setTimeout(stopRest, 6000);
@@ -100,8 +100,8 @@ export const PRESETS = [
   },
   {
     id: 'circuito',
-    name: 'Circuito',
-    blurb: '45s per stazione × 6, 2 giri',
+    name: 'Circuit',
+    blurb: '45s per station × 6, 2 rounds',
     build: () => sequence({ work: 45, rest: 15, rounds: 6, cycles: 2 }),
   },
 ];
@@ -126,8 +126,8 @@ export function render() {
   let loop = null;
 
   const clock = el('p', { class: 'text-7xl font-black num tracking-tighter' }, '0:00');
-  const phase = el('p', { class: 'label' }, 'Pronto');
-  const meta = el('p', { class: 'text-sm text-ink-3 mt-1' }, 'Scegli un formato');
+  const phase = el('p', { class: 'label' }, 'Ready');
+  const meta = el('p', { class: 'text-sm text-ink-3 mt-1' }, 'Choose a format');
   const stage = el('div', {
     class: 'rounded-xl3 border border-line bg-surface p-8 text-center transition-colors',
   });
@@ -139,9 +139,9 @@ export function render() {
     loop = null;
     steps = null;
     stage.classList.remove('bg-accent', 'text-accent-ink');
-    phase.textContent = 'Pronto';
+    phase.textContent = 'Ready';
     clock.textContent = '0:00';
-    meta.textContent = 'Scegli un formato';
+    meta.textContent = 'Choose a format';
     wakeScreen.keepAwake(false);
   };
 
@@ -164,8 +164,8 @@ export function render() {
     const step = steps[stepIndex];
     const left = Math.max(0, Math.ceil((stepEnds - Date.now()) / 1000));
     clock.textContent = mmss(left);
-    phase.textContent = step.kind === 'work' ? 'Lavora' : 'Recupera';
-    meta.textContent = `Round ${step.round} di ${step.of}`;
+    phase.textContent = step.kind === 'work' ? 'Work' : 'Rest';
+    meta.textContent = `Round ${step.round} of ${step.of}`;
     stage.classList.toggle('bg-accent', step.kind === 'work');
     stage.classList.toggle('text-accent-ink', step.kind === 'work');
     if (left <= 0) advance();
@@ -189,7 +189,7 @@ export function render() {
       appbar({ title: 'Timer', back: () => go('/') }),
       el(
         'main',
-        { class: 'screen' },
+        { class: 'screen lg:max-w-4xl' },
         stage,
         el(
           'div',
@@ -230,7 +230,7 @@ export function render() {
         el(
           'button',
           { type: 'button', class: 'btn-ghost w-full mt-4', onClick: stop },
-          'Ferma',
+          'Stop',
         ),
       ),
     ),
@@ -272,10 +272,10 @@ export function mountRestBar(root) {
           {
             type: 'button',
             class: 'flex-1 min-w-0 flex items-center justify-between gap-3 px-5 py-4 text-left',
-            'aria-label': 'Chiudi il recupero',
+            'aria-label': 'Stop rest timer',
             onClick: stopRest,
           },
-          el('span', { class: 'label' }, rest.over ? 'Vai' : 'Recupero'),
+          el('span', { class: 'label' }, rest.over ? 'Go' : 'Rest'),
           el('span', { class: 'text-2xl font-black num' }, mmss(rest.remaining)),
           // Hairline progress: tinting the whole bar makes the time harder to read.
           el('span', {

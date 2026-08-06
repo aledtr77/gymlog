@@ -116,7 +116,7 @@ test('closing the session discards incomplete sets', () => {
 
   assert.equal(finished.status, 'completed');
   assert.equal(finished.finishedAt, '2026-08-01T11:00:00.000Z');
-  assert.equal(finished.exercises.length, 1, 'lo squat, senza serie fatte, sparisce');
+  assert.equal(finished.exercises.length, 1, 'the squat disappears when no sets were completed');
   assert.equal(finished.exercises[0].sets.length, 1);
 });
 

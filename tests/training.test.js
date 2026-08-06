@@ -41,7 +41,7 @@ test('first time: the shipped starting load, and it says why', () => {
   const t = targetFor([], SQUAT, NOW);
   assert.equal(t.weight, SQUAT.start);
   assert.equal(t.status, 'start');
-  assert.match(t.why, /Prima volta/);
+  assert.match(t.why, /First time/);
 });
 
 test('clearing every set earns the increment', () => {

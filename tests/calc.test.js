@@ -5,8 +5,8 @@ import * as calc from '../src/utils/calc.js';
 test('BMI classifies and warns about its own limits', () => {
   const r = calc.bmi(75, 175);
   assert.equal(r.value, 24.5);
-  assert.equal(r.band, 'normopeso');
-  assert.match(r.caveat, /muscolo/);
+  assert.equal(r.band, 'healthy range');
+  assert.match(r.caveat, /muscle/);
   assert.equal(calc.bmi(0, 175), null);
 });
 
@@ -24,11 +24,11 @@ test('TDEE scales the basal rate by activity', () => {
 });
 
 test('macros hit the calorie target and set protein per kilo', () => {
-  const m = calc.macros(2500, 80, 'mantenimento');
+  const m = calc.macros(2500, 80, 'maintenance');
   assert.equal(m.protein, 144);
   const total = m.protein * 4 + m.fat * 9 + m.carbs * 4;
   assert.ok(Math.abs(total - m.calories) < 20, `${total} vs ${m.calories}`);
-  assert.ok(calc.macros(2500, 80, 'dimagrimento').calories < m.calories);
+  assert.ok(calc.macros(2500, 80, 'fat-loss').calories < m.calories);
 });
 
 test('1RM table descends and stays under the max', () => {
@@ -51,6 +51,6 @@ test('plates: exact combination, and honesty when there is none', () => {
   assert.equal(ok.achieved, 100);
   assert.equal(calc.plates(10, 20).ok, false);
   const odd = calc.plates(101, 20);
-  assert.match(odd.error, /Mancano/);
+  assert.match(odd.error, /cannot be loaded/);
   assert.ok(odd.achieved < 101);
 });

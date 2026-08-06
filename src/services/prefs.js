@@ -13,7 +13,9 @@ const DEFAULTS = {
   keepAwake: true,
   restDefault: 90,
   onboarded: false,
-  level: 'principiante',
+  level: 'beginner',
+  trainingDays: 3,
+  customTemplate: null,
 };
 
 let cache = null;

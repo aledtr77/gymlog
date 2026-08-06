@@ -79,7 +79,7 @@ test('no floating-point drift on half plates', () => {
   assert.equal(Math.round(loaded * 100) / 100, 21.75);
 });
 
-test('Italian weight formatting', () => {
+test('weight formatting stays compact and readable', () => {
   assert.equal(formatKg(20), '20');
   assert.equal(formatKg(2.5), '2,5');
   assert.equal(formatKg(1.25), '1,25');

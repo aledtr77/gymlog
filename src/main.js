@@ -34,7 +34,7 @@ async function boot() {
       el(
         'div',
         { class: 'screen' },
-        el('p', { class: 'text-center text-ink-3 mt-20' }, 'Non riesco ad avviare l’app. Ricarica la pagina.'),
+        el('p', { class: 'text-center text-ink-3 mt-20' }, 'GymLog could not start. Reload the page and try again.'),
       ),
     );
     return;

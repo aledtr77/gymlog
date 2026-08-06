@@ -51,7 +51,7 @@ export function render({ params }) {
       back: () => go('/'),
       action: el(
         'span',
-        { class: 'chip num shrink-0', 'aria-label': `Esercizio ${index + 1} di ${session.lifts.length}` },
+        { class: 'chip num shrink-0', 'aria-label': `Exercise ${index + 1} of ${session.lifts.length}` },
         `${index + 1}/${session.lifts.length}`,
       ),
     }),
@@ -65,7 +65,7 @@ export function render({ params }) {
         'aria-valuemin': '0',
         'aria-valuemax': String(session.setsTotal),
         'aria-valuenow': String(session.setsDone),
-        'aria-label': 'Avanzamento allenamento',
+        'aria-label': 'Workout progress',
       },
       el('span', {
         class: 'block h-full bg-accent origin-left transition-transform duration-300',
@@ -75,7 +75,7 @@ export function render({ params }) {
 
     el(
       'main',
-      { class: 'screen' },
+      { class: 'screen lg:max-w-4xl' },
 
       el(
         'div',
@@ -85,9 +85,9 @@ export function render({ params }) {
           'p',
           { class: 'mt-2 text-lg font-bold text-accent num' },
           timed
-            ? `${lift.sets} serie da ${lift.target.reps}s`
+            ? `${lift.sets} sets of ${lift.target.reps}s`
             : bodyweight
-              ? `${lift.sets} serie da ${lift.target.reps}`
+              ? `${lift.sets} sets of ${lift.target.reps}`
               : `${lift.sets} × ${lift.target.reps} · ${kg(lift.target.weight)} kg`,
         ),
         el('p', { class: 'mt-2 text-[13px] text-ink-3' }, lift.target.why),
@@ -127,8 +127,8 @@ export function render({ params }) {
           'h3',
           { class: 'label mb-2' },
           lift.done
-            ? `Fatte tutte e ${lift.sets}`
-            : `Ne mancano ${lift.sets - lift.logged.length} su ${lift.sets}`,
+            ? `All ${lift.sets} sets complete`
+            : `${lift.sets - lift.logged.length} of ${lift.sets} sets left`,
         ),
         el(
           'div',
@@ -164,7 +164,7 @@ export function render({ params }) {
                 {
                   type: 'button',
                   class: 'ml-auto w-10 h-10 grid place-items-center rounded-full text-ink-3 active:text-danger',
-                  'aria-label': `Elimina serie ${i + 1}`,
+                  'aria-label': `Delete set ${i + 1}`,
                   onClick: () => removeSet(entry.id),
                 },
                 icon('close', 'w-5 h-5'),
@@ -177,7 +177,7 @@ export function render({ params }) {
 
     el(
       'div',
-      { class: 'dock' },
+      { class: 'dock lg:max-w-4xl' },
       lift.done
         ? el(
             'button',
@@ -190,12 +190,12 @@ export function render({ params }) {
                   go(`/session/${cursor}`);
                 } else {
                   wakeScreen.keepAwake(false);
-                  toast('Allenamento chiuso. Bel lavoro.', { variant: 'ok' });
+                  toast('Workout complete. Nice work.', { variant: 'ok' });
                   go('/');
                 }
               },
             },
-            index + 1 < session.lifts.length ? 'PROSSIMO ESERCIZIO' : 'CHIUDI ALLENAMENTO',
+            index + 1 < session.lifts.length ? 'NEXT EXERCISE' : 'FINISH WORKOUT',
           )
         : el(
             'button',
@@ -214,7 +214,7 @@ export function render({ params }) {
                 startRest(lift.rest);
               },
             },
-            'FATTO',
+            'LOG SET',
           ),
     ),
   );

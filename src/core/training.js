@@ -49,7 +49,7 @@ export function targetFor(sets, lift, now = new Date()) {
       weight: lift.start,
       reps: lift.reps,
       status: 'start',
-      why: 'Prima volta: parti leggero, impara il movimento.',
+      why: 'First time here: start light and learn the movement.',
     };
   }
 
@@ -62,7 +62,7 @@ export function targetFor(sets, lift, now = new Date()) {
       weight: loadable(load + step, isTimed(lift.exerciseId) ? 1 : 1.25),
       reps: lift.reps,
       status: 'up',
-      why: `Chiuse tutte le serie: +${round(step, 2)}.`,
+      why: `You completed every set last time: add ${round(step, 2)}.`,
     };
   }
 
@@ -71,7 +71,7 @@ export function targetFor(sets, lift, now = new Date()) {
       weight: loadable(load * 0.9, 1.25),
       reps: lift.reps,
       status: 'deload',
-      why: 'Fermo da due sedute: scarica del 10% e risali.',
+      why: 'Progress has stalled for two sessions: reduce the load by 10% and build back up.',
     };
   }
 
@@ -79,7 +79,7 @@ export function targetFor(sets, lift, now = new Date()) {
     weight: load,
     reps: lift.reps,
     status: 'hold',
-    why: `Stesso carico: chiudi ${lift.sets}×${lift.reps} e sali.`,
+    why: `Keep this load until you complete ${lift.sets} × ${lift.reps} with good form.`,
   };
 }
 
@@ -198,7 +198,7 @@ export function streak(sets, now = new Date()) {
 export function muscleSplit(sets, resolve) {
   const totals = new Map();
   for (const s of sets) {
-    const muscle = resolve(s.exerciseId) || 'Altro';
+    const muscle = resolve(s.exerciseId) || 'Other';
     totals.set(muscle, (totals.get(muscle) || 0) + (s.weight || 0) * (s.reps || 0));
   }
   return [...totals.entries()]

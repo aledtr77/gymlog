@@ -1,7 +1,7 @@
-/** Number formatting and parsing, Italian conventions. */
+/** Number formatting and parsing. */
 
-const nf1 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 });
-const nf0 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
+const nf1 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 export const kg = (v) => nf1.format(Number(v) || 0);
 export const int = (v) => nf0.format(Math.round(Number(v) || 0));

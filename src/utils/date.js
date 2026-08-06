@@ -17,11 +17,11 @@ export const startOfWeek = (d) => {
 export const daysBetween = (a, b) =>
   Math.round((startOfDay(b) - startOfDay(a)) / 86400000);
 
-export const WEEKDAYS = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+export const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-const dfLong = new Intl.DateTimeFormat('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-const dfShort = new Intl.DateTimeFormat('it-IT', { day: '2-digit', month: '2-digit' });
-const dfMonth = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' });
+const dfLong = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+const dfShort = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit' });
+const dfMonth = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
 
 export const longDate = (d) => dfLong.format(new Date(d));
 export const shortDate = (d) => dfShort.format(new Date(d));
@@ -29,9 +29,9 @@ export const monthLabel = (d) => dfMonth.format(new Date(d));
 
 export function dayLabel(d) {
   const gap = daysBetween(d, new Date());
-  if (gap === 0) return 'Oggi';
-  if (gap === 1) return 'Ieri';
-  if (gap < 7) return `${gap} giorni fa`;
+  if (gap === 0) return 'Today';
+  if (gap === 1) return 'Yesterday';
+  if (gap < 7) return `${gap} days ago`;
   return longDate(d);
 }
 

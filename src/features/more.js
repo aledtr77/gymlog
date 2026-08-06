@@ -7,6 +7,7 @@
  * for.
  */
 import { el } from '../ui/el.js';
+import { icon } from '../ui/icons.js';
 import { appbar, navRow, sheet, toast, stat } from '../ui/components.js';
 import { state, logBody, prefs, setTemplate, activeTemplate } from '../core/state.js';
 import { TEMPLATES } from '../data/programs.js';
@@ -27,65 +28,135 @@ export function render() {
     node: el(
       'div',
       null,
-      appbar({ title: 'Altro', back: () => go('/') }),
+      appbar({ title: 'More', back: () => go('/') }),
       el(
         'main',
-        { class: 'screen flex flex-col gap-2' },
-
-        navRow({
-          title: 'Programma',
-          sub: `${template.name} · ${template.days} giorni a settimana`,
-          iconName: 'calendar',
-          onClick: openProgram,
-        }),
-        navRow({
-          title: 'Peso corporeo',
-          sub: lastWeight ? `${kg(lastWeight.weight)} kg · ${dayLabel(lastWeight.at)}` : 'Mai registrato',
-          iconName: 'scale',
-          onClick: openBody,
-        }),
-        navRow({ title: 'Calcolatori', sub: 'BMI, TDEE, 1RM, macro, dischi', iconName: 'calculator', onClick: openCalculators }),
-        navRow({ title: 'Storico', sub: `${state.sets.length} serie registrate`, iconName: 'trophy', onClick: openHistory }),
-        navRow({ title: 'I tuoi dati', sub: 'Esporta, importa, spazio usato', iconName: 'share', onClick: openData }),
-        navRow({ title: 'Impostazioni', sub: 'Tema, suoni, recupero', iconName: 'info', onClick: openSettings }),
+        { class: 'screen' },
+        el(
+          'header',
+          { class: 'mb-6 max-w-2xl' },
+          el('h2', { class: 'text-2xl font-black tracking-tight' }, 'Tools and preferences'),
+          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2' }, 'Adjust your training, review your data, and manage the app. Estimates can provide context, but they are not medical advice.'),
+        ),
+        el(
+          'div',
+          { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5 items-start' },
+          toolSection({
+            title: 'Training',
+            body: 'Shape your plan and review previous sessions.',
+            items: [
+              { title: 'Training plan', sub: `${template.name} · ${template.days} days per week`, iconName: 'calendar', onClick: openProgram },
+              { title: 'Workout history', sub: state.sets.length ? `${state.sets.length} logged sets` : 'Your first logged set will appear here', iconName: 'trophy', onClick: openHistory },
+            ],
+          }),
+          toolSection({
+            title: 'Measurements and estimates',
+            body: 'Look at long-term trends rather than isolated numbers.',
+            items: [
+              { title: 'Body weight', sub: lastWeight ? `${kg(lastWeight.weight)} kg · ${dayLabel(lastWeight.at)}` : 'Start tracking a trend', iconName: 'scale', onClick: openBody },
+              { title: 'Training and health estimates', sub: 'BMI, energy needs, 1RM, body fat, and plates', iconName: 'calculator', onClick: openCalculators },
+            ],
+          }),
+          toolSection({
+            title: 'App and privacy',
+            body: 'Personalize GymLog and stay in control of your data.',
+            className: 'lg:col-span-2',
+            items: [
+              { title: 'Settings', sub: 'Theme, sound, vibration, and rest', iconName: 'info', onClick: openSettings },
+              { title: 'Your data', sub: 'Export a copy and review storage use', iconName: 'share', onClick: openData },
+            ],
+          }),
+        ),
       ),
     ),
   };
+}
+
+function toolSection({ title, body, items, className = '' }) {
+  return el(
+    'section',
+    { class: `card p-3 lg:p-4 ${className}` },
+    el('div', { class: 'px-2 pt-1 pb-3' }, el('h3', { class: 'font-extrabold' }, title), el('p', { class: 'mt-1 text-xs leading-relaxed text-ink-3' }, body)),
+    el(
+      'div',
+      { class: ['grid grid-cols-1 gap-1', className && 'lg:grid-cols-2'] },
+      items.map((item) =>
+        el(
+          'button',
+          { type: 'button', class: 'w-full min-h-[68px] flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-surface-2 active:scale-[.99]', onClick: item.onClick },
+          el('span', { class: 'w-10 h-10 shrink-0 grid place-items-center rounded-xl bg-surface-2 text-accent' }, icon(item.iconName, 'w-5 h-5')),
+          el('span', { class: 'flex-1 min-w-0' }, el('span', { class: 'block font-bold' }, item.title), el('span', { class: 'block mt-0.5 text-xs leading-snug text-ink-3' }, item.sub)),
+          icon('next', 'w-5 h-5 text-ink-3'),
+        ),
+      ),
+    ),
+  );
 }
 
 /* --------------------------------------------------------------- program */
 
 function openProgram() {
   const current = activeTemplate();
-  sheet({
-    title: 'Programma',
+  let handle;
+  handle = sheet({
+    title: 'Training plan',
     body: el(
       'div',
-      { class: 'flex flex-col gap-3' },
-      el('p', { class: 'text-sm text-ink-2' }, 'Scegli in base a quanti giorni riesci davvero a venire in palestra.'),
+      { class: 'flex flex-col gap-4' },
+      el(
+        'div',
+        { class: 'rounded-2xl border border-accent/25 bg-accent/10 p-4' },
+        el('h3', { class: 'font-extrabold' }, 'Build around consistency'),
+        el('p', { class: 'mt-1.5 text-sm leading-relaxed text-ink-2' }, 'The best plan is one you can follow for months. If you are new or returning after a break, full-body training is a practical place to start. More days do not automatically mean better results.'),
+        el('p', { class: 'mt-2 text-xs leading-relaxed text-ink-3' }, 'Starting loads are only suggestions. Reduce them whenever form or control begins to slip.'),
+      ),
+      current.id === 'custom'
+        ? el(
+            'article',
+            { class: 'card border-accent bg-accent/5' },
+            el('div', { class: 'flex items-center gap-2' }, el('h3', { class: 'font-black text-lg' }, 'My plan'), el('span', { class: 'chip chip-on ml-auto' }, 'Active')),
+            el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2' }, `Set up for ${current.days} days per week, with ${current.sessions.reduce((total, session) => total + session.lifts.length, 0)} exercises across ${current.sessions.length} sessions.`),
+            el('p', { class: 'mt-3 text-xs text-ink-3' }, 'Run the setup again from Settings to change exercises. Choosing a plan below will replace this one.'),
+          )
+        : null,
       TEMPLATES.map((t) =>
         el(
-          'button',
-          {
-            type: 'button',
-            class: ['card text-left transition', t.id === current.id ? 'border-accent' : ''],
-            onClick: () => {
-              setTemplate(t.id);
-              toast(`Programma: ${t.name}`, { variant: 'ok' });
-              go('/');
-            },
-          },
+          'article',
+          { class: ['card transition', t.id === current.id ? 'border-accent bg-accent/5' : ''] },
           el(
             'div',
-            { class: 'flex items-center gap-2' },
-            el('span', { class: 'font-extrabold text-lg' }, t.name),
-            el('span', { class: 'chip' }, `${t.days} giorni`),
-            t.id === current.id ? el('span', { class: 'chip chip-on ml-auto' }, 'Attivo') : null,
+            { class: 'flex flex-wrap items-center gap-2' },
+            el('h3', { class: 'font-black text-lg' }, t.name),
+            el('span', { class: 'chip' }, `${t.days} days/week`),
+            t.id === current.id ? el('span', { class: 'chip chip-on ml-auto' }, 'Active') : null,
           ),
-          el('p', { class: 'text-sm text-ink-3 mt-1' }, t.blurb),
-          el('p', { class: 'text-xs text-ink-3 mt-2' }, `Livello: ${t.level}`),
+          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2' }, t.bestFor),
+          el(
+            'dl',
+            { class: 'mt-4 grid gap-2 text-sm' },
+            el('div', { class: 'flex gap-3' }, el('dt', { class: 'label w-20 pt-0.5 shrink-0' }, 'Schedule'), el('dd', { class: 'text-ink-2 leading-snug' }, t.schedule)),
+            el('div', { class: 'flex gap-3' }, el('dt', { class: 'label w-20 pt-0.5 shrink-0' }, 'Duration'), el('dd', { class: 'text-ink-2 leading-snug' }, t.duration)),
+            el('div', { class: 'flex gap-3' }, el('dt', { class: 'label w-20 pt-0.5 shrink-0' }, 'Sessions'), el('dd', { class: 'text-ink-2 leading-snug' }, t.sessions.map((session) => session.name).join(' · '))),
+          ),
+          t.id === current.id
+            ? el('p', { class: 'mt-4 text-sm font-bold text-accent' }, 'This plan is currently shaping your next workout.')
+            : el(
+                'button',
+                {
+                  type: 'button',
+                  class: 'btn-ghost mt-4 w-full sm:w-auto',
+                  onClick: () => {
+                    setTemplate(t.id);
+                    toast(`Plan selected: ${t.name}`, { variant: 'ok' });
+                    handle.close();
+                    go('/');
+                  },
+                },
+                `Use ${t.name}`,
+              ),
         ),
       ),
+      el('p', { class: 'text-xs leading-relaxed text-ink-3' }, 'A general plan is not enough when pain, medical conditions, movement limitations, or injury recovery are involved. Seek guidance from a qualified professional.'),
     ),
   });
 }
@@ -93,13 +164,13 @@ function openProgram() {
 /* ------------------------------------------------------------------ body */
 
 function openBody() {
-  const input = el('input', { type: 'number', inputmode: 'decimal', step: '0.1', class: 'field', placeholder: 'Peso in kg' });
+  const input = el('input', { type: 'number', inputmode: 'decimal', step: '0.1', class: 'field', placeholder: 'Weight in kg' });
   const history = el('div', { class: 'flex flex-col gap-2 mt-5' });
 
   const paint = () => {
     const rows = state.body.slice(0, 20);
     history.replaceChildren(
-      el('h3', { class: 'label mb-1' }, 'Storico'),
+      el('h3', { class: 'label mb-1' }, 'History'),
       ...(rows.length
         ? rows.map((b) =>
             el(
@@ -109,17 +180,23 @@ function openBody() {
               el('span', { class: 'font-bold num' }, `${kg(b.weight)} kg`),
             ),
           )
-        : [el('p', { class: 'text-sm text-ink-3' }, 'Nessuna misurazione.')]),
+        : [el('p', { class: 'text-sm text-ink-3' }, 'No measurements yet.')]),
     );
   };
   paint();
 
   sheet({
-    title: 'Peso corporeo',
+    title: 'Body weight',
     body: el(
       'div',
       null,
-      input,
+      el(
+        'div',
+        { class: 'mb-5 rounded-2xl border border-line bg-surface p-4' },
+        el('h3', { class: 'font-extrabold' }, 'Follow the trend, not a single day'),
+        el('p', { class: 'mt-1.5 text-sm leading-relaxed text-ink-2' }, 'Weigh under similar conditions, ideally in the morning, and look at the average across several weeks. Hydration, sodium, and digestion can move the scale without changing body fat.'),
+      ),
+      el('label', { class: 'flex flex-col gap-1.5' }, el('span', { class: 'label' }, 'Today’s weight (kg)'), input),
       el(
         'button',
         {
@@ -127,14 +204,14 @@ function openBody() {
           class: 'btn-primary w-full mt-3',
           onClick: async () => {
             const value = parseNum(input.value);
-            if (!value || value <= 0) return toast('Inserisci un peso valido', { variant: 'err' });
+            if (!value || value <= 0) return toast('Enter a valid weight', { variant: 'err' });
             await logBody({ weight: value });
             input.value = '';
             paint();
-            toast('Registrato', { variant: 'ok' });
+            toast('Weight logged', { variant: 'ok' });
           },
         },
-        'Registra',
+        'Log weight',
       ),
       history,
     ),
@@ -145,23 +222,24 @@ function openBody() {
 
 function openCalculators() {
   sheet({
-    title: 'Calcolatori',
+    title: 'Calculators and estimates',
     body: el(
       'div',
-      { class: 'flex flex-col gap-2' },
+      { class: 'flex flex-col gap-3' },
+      el('p', { class: 'text-sm leading-relaxed text-ink-2' }, 'Choose a tool based on the question you want to answer. These are estimates for practical context, not diagnoses.'),
       [
-        ['1RM e percentuali', oneRmCalc],
-        ['BMI', bmiCalc],
-        ['TDEE e macro', tdeeCalc],
-        ['Massa grassa', bodyFatCalc],
-        ['Dischi sul bilanciere', platesCalc],
-      ].map(([label, open]) => navRow({ title: label, iconName: 'calculator', onClick: open })),
+        ['Estimated one-rep max', 'Estimate maximal strength from a set you have already performed.', oneRmCalc],
+        ['Body mass index (BMI)', 'A broad adult screening ratio based on weight and height.', bmiCalc],
+        ['Energy and macronutrients', 'Estimate maintenance calories and a starting macro split.', tdeeCalc],
+        ['Estimated body fat', 'US Navy method based on body circumference measurements.', bodyFatCalc],
+        ['Barbell plates', 'Work out which plates to load on each side.', platesCalc],
+      ].map(([label, sub, open]) => navRow({ title: label, sub, iconName: 'calculator', onClick: open })),
     ),
   });
 }
 
 /** Small helper so each calculator is a form plus a live result panel. */
-function calcSheet(title, fields, compute) {
+function calcSheet(title, fields, compute, { intro = null } = {}) {
   const out = el('div', { class: 'tile mt-4' });
   const inputs = {};
 
@@ -198,7 +276,16 @@ function calcSheet(title, fields, compute) {
   );
 
   run();
-  sheet({ title, body: el('div', null, form, out) });
+  sheet({
+    title,
+    body: el(
+      'div',
+      null,
+      intro ? el('div', { class: 'mb-5 text-sm leading-relaxed text-ink-2' }, intro) : null,
+      form,
+      out,
+    ),
+  });
 }
 
 const line = (label, value, accent = false) =>
@@ -211,108 +298,148 @@ const line = (label, value, accent = false) =>
 
 function oneRmCalc() {
   calcSheet(
-    '1RM e percentuali',
+    '1RM and percentages',
     [
-      { key: 'weight', label: 'Peso sollevato (kg)', value: 60 },
-      { key: 'reps', label: 'Ripetizioni', value: 5, step: '1' },
+      { key: 'weight', label: 'Weight lifted (kg)' },
+      { key: 'reps', label: 'Completed reps', step: '1' },
     ],
     ({ weight, reps }) => {
       const orm = calc.oneRepMax(weight, reps);
-      if (!orm) return el('p', { class: 'text-sm text-ink-3' }, 'Inserisci peso e ripetizioni.');
+      if (!orm) return el('p', { class: 'text-sm text-ink-3' }, 'Enter weight and reps.');
       return [
-        line('Massimale stimato', `${kg(orm)} kg`, true),
+        line('Estimated one-rep max', `${kg(orm)} kg`, true),
         el('div', { class: 'h-px bg-line my-2' }),
-        ...calc.loadTable(orm).map((r) => line(`${r.pct}% · ~${r.reps} reps`, `${kg(r.weight)} kg`)),
-        el('p', { class: 'text-xs text-ink-3 mt-3' }, 'Formula di Epley. È una stima, non un test.'),
+        ...calc.loadTable(orm).map((r) => line(`${r.pct}% · about ${r.reps} reps`, `${kg(r.weight)} kg`)),
+        el('p', { class: 'text-xs text-ink-3 mt-3' }, 'Epley formula. This is an estimate, not a maximal test.'),
       ];
     },
+    { intro: 'Use a challenging set performed with clean technique, ideally between 2 and 10 reps. Longer sets produce less reliable estimates, and you do not need to attempt a true max.' },
   );
 }
 
 function bmiCalc() {
   calcSheet(
-    'BMI',
+    'Body mass index',
     [
-      { key: 'weight', label: 'Peso (kg)', value: 75 },
-      { key: 'height', label: 'Altezza (cm)', value: 175 },
+      { key: 'weight', label: 'Your weight (kg)' },
+      { key: 'height', label: 'Your height (cm)', step: '1' },
     ],
     ({ weight, height }) => {
       const r = calc.bmi(weight, height);
-      if (!r) return el('p', { class: 'text-sm text-ink-3' }, 'Inserisci peso e altezza.');
-      return [line('BMI', String(r.value), true), line('Fascia', r.band), el('p', { class: 'text-xs text-ink-3 mt-3' }, r.caveat)];
+      if (!r) return el('p', { class: 'text-sm text-ink-3' }, 'Enter weight and height to see an estimate.');
+
+      const metres = height / 100;
+      const lower = Math.round(18.5 * metres * metres * 10) / 10;
+      const upper = Math.round(24.9 * metres * metres * 10) / 10;
+      const interpretation =
+        r.band === 'underweight'
+          ? 'This is below the reference range. If your weight has changed unintentionally or you have concerns about nutrition or health, speak with a doctor or registered dietitian.'
+          : r.band === 'healthy range'
+            ? 'This sits within the statistical reference range. It does not describe body composition, fitness, or diet quality.'
+            : r.band === 'overweight'
+              ? 'This is above the reference range. Consider waist measurement, long-term trend, and muscle mass before drawing conclusions.'
+              : 'This range may be associated with higher health risk. Discuss it with a qualified professional rather than relying on BMI alone.';
+
+      return [
+        el('p', { class: 'label' }, 'Result'),
+        el('div', { class: 'mt-1 flex items-end gap-2' }, el('span', { class: 'text-4xl font-black text-accent num' }, String(r.value)), el('span', { class: 'pb-1 text-sm font-bold capitalize text-ink-2' }, r.band)),
+        el(
+          'div',
+          { class: 'mt-4 grid grid-cols-4 gap-1', 'aria-label': 'BMI ranges' },
+          [['< 18.5', 'Below'], ['18.5–24.9', 'Reference'], ['25–29.9', 'Above'], ['≥ 30', 'Higher']].map(([value, label], index) => {
+            const active = ['underweight', 'healthy range', 'overweight', 'obesity range'][index] === r.band;
+            return el('div', { class: ['rounded-lg p-2 text-center', active ? 'bg-accent text-accent-ink' : 'bg-surface-3 text-ink-3'] }, el('span', { class: 'block text-[10px] font-black num' }, value), el('span', { class: 'block mt-0.5 text-[9px] font-bold' }, label));
+          }),
+        ),
+        el('p', { class: 'mt-4 text-sm leading-relaxed text-ink-2' }, interpretation),
+        el('div', { class: 'mt-4 h-px bg-line' }),
+        line('Reference weight range for your height', `${kg(lower)}–${kg(upper)} kg`),
+        el('p', { class: 'mt-3 text-xs leading-relaxed text-ink-3' }, 'BMI is an adult screening tool. It does not distinguish muscle from fat and should not be used alone for children, pregnancy, very muscular athletes, or older adults.'),
+      ];
+    },
+    {
+      intro: el(
+        'div',
+        { class: 'rounded-2xl border border-line bg-surface p-4' },
+        el('h3', { class: 'font-extrabold text-ink' }, 'What does BMI measure?'),
+        el('p', { class: 'mt-1.5' }, 'BMI compares weight with height. It can provide a broad adult screening reference, but it does not directly measure body fat or determine whether someone is healthy.'),
+      ),
     },
   );
 }
 
 function tdeeCalc() {
   calcSheet(
-    'TDEE e macro',
+    'Energy and macronutrients',
     [
-      { key: 'weight', label: 'Peso (kg)', value: 75 },
-      { key: 'height', label: 'Altezza (cm)', value: 175 },
-      { key: 'age', label: 'Età', value: 30, step: '1' },
-      { key: 'sex', label: 'Sesso', options: [{ value: 'm', label: 'Uomo' }, { value: 'f', label: 'Donna' }] },
-      { key: 'activity', label: 'Attività', options: calc.ACTIVITY.map((a) => ({ value: a.id, label: `${a.label} — ${a.hint}` })) },
-      { key: 'goal', label: 'Obiettivo', options: [
-        { value: 'mantenimento', label: 'Mantenimento' },
-        { value: 'dimagrimento', label: 'Dimagrimento' },
-        { value: 'massa', label: 'Massa' },
+      { key: 'weight', label: 'Weight (kg)' },
+      { key: 'height', label: 'Height (cm)' },
+      { key: 'age', label: 'Age', step: '1' },
+      { key: 'sex', label: 'Sex used by the formula', options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
+      { key: 'activity', label: 'Activity level', options: calc.ACTIVITY.map((a) => ({ value: a.id, label: `${a.label} — ${a.hint}` })) },
+      { key: 'goal', label: 'Goal', options: [
+        { value: 'maintenance', label: 'Maintain weight' },
+        { value: 'fat-loss', label: 'Lose fat' },
+        { value: 'muscle-gain', label: 'Gain muscle' },
       ] },
     ],
     ({ weight, height, age, sex, activity, goal }) => {
       const bmr = calc.bmr({ weight, height, age, sex });
-      if (!bmr) return el('p', { class: 'text-sm text-ink-3' }, 'Compila i campi.');
+      if (!bmr) return el('p', { class: 'text-sm text-ink-3' }, 'Complete the fields to see an estimate.');
       const tdee = calc.tdee(bmr, activity);
       const m = calc.macros(tdee, weight, goal);
       return [
-        line('Metabolismo basale', `${bmr} kcal`),
-        line('Fabbisogno', `${tdee} kcal`),
-        line('Target', `${m.calories} kcal`, true),
+        line('Basal metabolic rate', `${bmr} kcal`),
+        line('Estimated maintenance', `${tdee} kcal`),
+        line('Starting target', `${m.calories} kcal`, true),
         el('div', { class: 'h-px bg-line my-2' }),
-        line('Proteine', `${m.protein} g`),
-        line('Grassi', `${m.fat} g`),
-        line('Carboidrati', `${m.carbs} g`),
-        el('p', { class: 'text-xs text-ink-3 mt-3' }, 'Mifflin–St Jeor. Proteine a 1,8 g per kg.'),
+        line('Protein', `${m.protein} g`),
+        line('Fat', `${m.fat} g`),
+        line('Carbohydrate', `${m.carbs} g`),
+        el('p', { class: 'text-xs text-ink-3 mt-3' }, 'Mifflin–St Jeor estimate with protein set to 1.8 g per kg.'),
       ];
     },
+    { intro: 'Treat this as a starting point, not a meal prescription. Follow it for 2–3 weeks, then adjust using average weight, energy, and training performance.' },
   );
 }
 
 function bodyFatCalc() {
   calcSheet(
-    'Massa grassa',
+    'Estimated body fat',
     [
-      { key: 'sex', label: 'Sesso', options: [{ value: 'm', label: 'Uomo' }, { value: 'f', label: 'Donna' }] },
-      { key: 'height', label: 'Altezza (cm)', value: 175 },
-      { key: 'neck', label: 'Collo (cm)', value: 38 },
-      { key: 'waist', label: 'Vita (cm)', value: 85 },
-      { key: 'hip', label: 'Fianchi (cm, solo donne)', value: 95 },
+      { key: 'sex', label: 'Sex used by the formula', options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
+      { key: 'height', label: 'Height (cm)' },
+      { key: 'neck', label: 'Neck circumference (cm)' },
+      { key: 'waist', label: 'Waist circumference (cm)' },
+      { key: 'hip', label: 'Hip circumference (cm, required for women)' },
     ],
     (v) => {
       const r = calc.bodyFat(v);
-      if (r === null) return el('p', { class: 'text-sm text-ink-3' }, 'Servono almeno altezza, collo e vita.');
-      return [line('Massa grassa', `${r}%`, true), el('p', { class: 'text-xs text-ink-3 mt-3' }, 'Metodo US Navy, con metro da sarto.')];
+      if (r === null) return el('p', { class: 'text-sm text-ink-3' }, 'Enter height, neck, and waist. Hip circumference is also required for women.');
+      return [line('Estimated body fat', `${r}%`, true), el('p', { class: 'text-xs text-ink-3 mt-3' }, 'US Navy circumference method.')];
     },
+    { intro: 'Measure without pulling the tape tight, using the same locations and conditions each time. The absolute value has a margin of error; the trend is more useful.' },
   );
 }
 
 function platesCalc() {
   calcSheet(
-    'Dischi sul bilanciere',
+    'Barbell plates',
     [
-      { key: 'target', label: 'Peso totale (kg)', value: 100 },
-      { key: 'bar', label: 'Bilanciere (kg)', value: 20 },
+      { key: 'target', label: 'Target total weight (kg)' },
+      { key: 'bar', label: 'Bar weight (kg)', value: 20 },
     ],
     ({ target, bar }) => {
       const r = calc.plates(target, bar ?? 20);
       if (!r.ok) return el('p', { class: 'text-sm text-danger' }, r.error);
       return [
-        el('p', { class: 'label mb-2' }, 'Per lato'),
+        el('p', { class: 'label mb-2' }, 'Per side'),
         ...r.plates.map((p) => line(`${kg(p.plate)} kg`, `× ${p.count}`)),
         r.error ? el('p', { class: 'text-sm text-warn mt-2' }, r.error) : null,
-        line('Totale reale', `${kg(r.achieved)} kg`, true),
+        line('Loadable total', `${kg(r.achieved)} kg`, true),
       ];
     },
+    { intro: 'Enter the total weight including the bar. The result shows which plates to load on each side.' },
   );
 }
 
@@ -327,7 +454,7 @@ function openHistory() {
   }
 
   sheet({
-    title: 'Storico',
+    title: 'Workout history',
     body: byDay.size
       ? el(
           'div',
@@ -360,7 +487,7 @@ function openHistory() {
             ),
           ),
         )
-      : el('p', { class: 'text-sm text-ink-3' }, 'Nessun allenamento registrato.'),
+      : el('p', { class: 'text-sm text-ink-3' }, 'No workouts logged yet.'),
   });
 }
 
@@ -377,18 +504,18 @@ async function openData() {
     );
 
   sheet({
-    title: 'I tuoi dati',
+    title: 'Your data',
     body: el(
       'div',
       { class: 'flex flex-col gap-3' },
       el(
         'div',
         { class: 'tile' },
-        el('p', { class: 'text-sm text-ink-2' }, 'Tutto resta sul dispositivo. Nessun account, nessun server.'),
+        el('p', { class: 'text-sm text-ink-2' }, 'Everything stays on this device. No account and no server.'),
         quota
-          ? el('p', { class: 'text-xs text-ink-3 mt-2 num' }, `Spazio usato: ${(used / 1048576).toFixed(1)} MB su ${(quota / 1048576).toFixed(0)} MB`)
+          ? el('p', { class: 'text-xs text-ink-3 mt-2 num' }, `Storage used: ${(used / 1048576).toFixed(1)} MB of ${(quota / 1048576).toFixed(0)} MB`)
           : null,
-        el('p', { class: 'text-xs text-ink-3 mt-1' }, `Connessione: ${net.online ? 'online' : 'offline'}`),
+        el('p', { class: 'text-xs text-ink-3 mt-1' }, `Connection: ${net.online ? 'online' : 'offline'}`),
       ),
       el(
         'button',
@@ -398,10 +525,10 @@ async function openData() {
           onClick: async () => {
             const blob = new Blob([payload()], { type: 'application/json' });
             await files.save(`gymlog-${new Date().toISOString().slice(0, 10)}.json`, blob);
-            toast('Esportato', { variant: 'ok' });
+            toast('Data exported', { variant: 'ok' });
           },
         },
-        'Esporta tutto (JSON)',
+        'Export all data (JSON)',
       ),
       share.supported
         ? el(
@@ -409,9 +536,9 @@ async function openData() {
             {
               type: 'button',
               class: 'btn-ghost w-full',
-              onClick: () => share.send({ title: 'GymLog', text: `Questa settimana: ${compact(volume(state.sets))} kg sollevati.` }),
+              onClick: () => share.send({ title: 'GymLog', text: `This week: ${compact(volume(state.sets))} kg of training volume.` }),
             },
-            'Condividi i progressi',
+            'Share progress',
           )
         : null,
       clipboard.supported
@@ -422,10 +549,10 @@ async function openData() {
               class: 'btn-ghost w-full',
               onClick: async () => {
                 await clipboard.copy(payload());
-                toast('Copiato negli appunti', { variant: 'ok' });
+                toast('Copied to clipboard', { variant: 'ok' });
               },
             },
-            'Copia negli appunti',
+            'Copy to clipboard',
           )
         : null,
     ),
@@ -436,6 +563,7 @@ async function openData() {
 
 function openSettings() {
   const p = prefs.get();
+  let handle;
 
   const toggle = (key, label, hint) => {
     const input = el('input', {
@@ -452,15 +580,15 @@ function openSettings() {
     );
   };
 
-  sheet({
-    title: 'Impostazioni',
+  handle = sheet({
+    title: 'Settings',
     body: el(
       'div',
       null,
       el(
         'label',
         { class: 'flex flex-col gap-1.5 mb-4' },
-        el('span', { class: 'label' }, 'Tema'),
+        el('span', { class: 'label' }, 'Theme'),
         el(
           'select',
           {
@@ -471,19 +599,19 @@ function openSettings() {
             },
           },
           [
-            { v: 'system', l: 'Come il sistema' },
-            { v: 'dark', l: 'Scuro' },
-            { v: 'light', l: 'Chiaro' },
+            { v: 'system', l: 'Use system setting' },
+            { v: 'dark', l: 'Dark' },
+            { v: 'light', l: 'Light' },
           ].map((o) => el('option', { value: o.v, selected: p.theme === o.v }, o.l)),
         ),
       ),
-      toggle('sound', 'Suono', 'Beep a fine recupero'),
-      toggle('vibration', 'Vibrazione', 'Feedback ai tocchi'),
-      toggle('keepAwake', 'Schermo acceso', 'Durante l’allenamento'),
+      toggle('sound', 'Sound', 'Play a tone when rest ends'),
+      toggle('vibration', 'Vibration', 'Tactile feedback for key actions'),
+      toggle('keepAwake', 'Keep screen awake', 'While a workout is open'),
       el(
         'label',
         { class: 'flex flex-col gap-1.5 mt-4' },
-        el('span', { class: 'label' }, 'Recupero predefinito'),
+        el('span', { class: 'label' }, 'Default rest time'),
         el('input', {
           type: 'number',
           class: 'field',
@@ -491,6 +619,25 @@ function openSettings() {
           step: '15',
           onChange: (e) => prefs.set({ restDefault: Number(e.target.value) || 90 }),
         }),
+      ),
+      el(
+        'div',
+        { class: 'mt-6 pt-5 border-t border-line' },
+        el('h3', { class: 'font-extrabold' }, 'Starting plan'),
+        el('p', { class: 'mt-1 text-xs leading-relaxed text-ink-3' }, 'Run the setup again to revisit experience, available days, and exercises. Existing workout history will stay intact.'),
+        el(
+          'button',
+          {
+            type: 'button',
+            class: 'btn-ghost mt-3 w-full sm:w-auto',
+            onClick: () => {
+              prefs.set({ onboarded: false });
+              handle.close();
+              go('/');
+            },
+          },
+          'Run setup again',
+        ),
       ),
     ),
   });

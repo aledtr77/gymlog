@@ -111,13 +111,15 @@ export async function removeGoal(id) {
 /** The template the user is following, defaulted from their stated level. */
 export function activeTemplate() {
   const chosen = prefs.get('template');
+  const custom = prefs.get('customTemplate');
+  if (chosen === 'custom' && custom?.sessions?.length) return custom;
   if (chosen) return templateById(chosen);
   const level = prefs.get('level');
   return TEMPLATES.find((t) => t.level === level) || TEMPLATES[0];
 }
 
-export function setTemplate(id) {
-  prefs.set({ template: id });
+export function setTemplate(id, options = {}) {
+  prefs.set({ template: id, onboarded: true, ...options });
   emit('state');
 }
 

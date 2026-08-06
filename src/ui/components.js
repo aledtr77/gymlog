@@ -16,8 +16,8 @@ export function appbar({ title, back = null, action = null, sub = null }) {
           'button',
           {
             type: 'button',
-            class: 'w-11 h-11 -ml-2 grid place-items-center rounded-full text-ink-2 active:bg-surface-2',
-            'aria-label': 'Indietro',
+            class: 'appbar-back w-11 h-11 -ml-2 grid place-items-center rounded-full text-ink-2 active:bg-surface-2',
+            'aria-label': 'Back',
             onClick: back,
           },
           icon('back', 'w-6 h-6'),
@@ -81,12 +81,12 @@ export function stepper({ label, value, step = 1, min = 0, format = String, onCh
   const display = el('button', {
     type: 'button',
     class: 'flex-1 min-w-0 h-14 text-3xl font-extrabold num truncate',
-    'aria-label': `${label}: ${format(current)}. Tocca per digitare`,
+    'aria-label': `${label}: ${format(current)}. Tap to type`,
   });
 
   const paint = () => {
     display.textContent = format(current);
-    display.setAttribute('aria-label', `${label}: ${format(current)}. Tocca per digitare`);
+    display.setAttribute('aria-label', `${label}: ${format(current)}. Tap to type`);
   };
 
   const bump = (delta) => {
@@ -185,9 +185,13 @@ export function toast(message, { variant = 'default', duration = 2600 } = {}) {
 export function sheet({ title, body, onClose }) {
   const layer = el(
     'div',
-    { class: 'fixed inset-0 z-50 bg-bg flex flex-col animate-rise', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-    appbar({ title, back: close }),
-    el('div', { class: 'flex-1 overflow-y-auto' }, el('div', { class: 'screen' }, body)),
+    { class: 'sheet-layer', role: 'presentation', onClick: (event) => event.target === layer && close() },
+    el(
+      'section',
+      { class: 'sheet-panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+      appbar({ title, back: close }),
+      el('div', { class: 'flex-1 overflow-y-auto' }, el('div', { class: 'screen' }, body)),
+    ),
   );
 
   function close() {

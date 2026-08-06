@@ -1088,6 +1088,54 @@ input[type="number"]::-webkit-inner-spin-button {
   line-height: 1.35;
 }
 
+/* Progression target ------------------------------------------------------
+   The engine's answer to "what do I put on the bar". It sits above the set
+   table because it is what you read first, and it carries its reasoning: a
+   number you do not understand is a number you will not trust. */
+.ex__target {
+  margin: 0 var(--sp-3) var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ex__target-head {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+
+.ex__target-why {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-2);
+}
+
+/* A deload is a deliberate step back, not a failure: warn, do not alarm. */
+.ex__target--deload {
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 35%, transparent);
+}
+
+.ex__target--deload .ex__target-head {
+  color: var(--warn);
+}
+
+/* No history yet: nothing to celebrate, so drop the accent entirely. */
+.ex__target--first {
+  background: var(--surface-2);
+  border-color: var(--line);
+}
+
+.ex__target--first .ex__target-head {
+  color: var(--text);
+}
+
 /* Set table -------------------------------------------------------------- */
 .set-head,
 .set-row {

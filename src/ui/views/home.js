@@ -12,6 +12,7 @@ import { pickExercises } from '../exercisePicker.js';
 import { openRoutineEditor } from './routineEditor.js';
 import {
   deleteRoutine,
+  planWorkout,
   saveRoutine,
   setActive,
   state,
@@ -343,7 +344,10 @@ export function homeView(ctx) {
 
   async function startRoutine(routine) {
     if (!(await confirmReplaceActive())) return;
-    await setActive(workoutFromRoutine(routine, new Date().toISOString()), { immediate: true });
+    await setActive(
+      planWorkout(workoutFromRoutine(routine, new Date().toISOString())),
+      { immediate: true },
+    );
     ctx.navigate('workout');
   }
 

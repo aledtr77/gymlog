@@ -190,6 +190,7 @@ export function workoutView(ctx) {
           icon('more'),
         ),
       ),
+      exerciseTarget(block),
       block.notes ? h('p', { class: 'ex__note' }, block.notes) : null,
       h(
         'div',
@@ -245,6 +246,28 @@ export function workoutView(ctx) {
     const fresh = buildCard(block);
     card.replaceWith(fresh);
     syncStats();
+  }
+
+  /**
+   * The line under the exercise name. When the progression engine has an
+   * opinion it goes first: "what do I put on the bar" beats "how many sets
+   * have I done" every time you look at this mid-session.
+   */
+  function exerciseTarget(block) {
+    const target = block.target;
+    if (!target) return null;
+
+    const headline =
+      target.weight === null
+        ? `Obiettivo ${target.reps} reps · trova il carico`
+        : `Obiettivo ${num(target.weight)} kg × ${target.reps}`;
+
+    return h(
+      'div',
+      { class: ['ex__target', `ex__target--${target.status}`] },
+      h('span', { class: 'ex__target-head' }, headline),
+      h('span', { class: 'ex__target-why' }, target.reason),
+    );
   }
 
   function exerciseMeta(block) {

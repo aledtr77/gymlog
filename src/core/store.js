@@ -16,6 +16,7 @@ import {
   rebuildRecords,
 } from './metrics.js';
 import { finishWorkout, hasLoggedSets } from './workout.js';
+import { countStalls, nextTarget } from './progression.js';
 
 const ACTIVE_KEY = 'activeWorkout';
 const SETTINGS_KEY = 'settings';
@@ -115,6 +116,37 @@ export async function addCustomExercise(exercise) {
   state.customExercises = [...state.customExercises, record];
   emit('exercises');
   return record;
+}
+
+/**
+ * Fills a freshly built session with the loads the progression engine
+ * suggests, so you open a workout onto targets instead of empty fields.
+ * The reasoning is attached to each block, because a number you do not
+ * understand is a number you will not trust.
+ */
+export function planWorkout(workout) {
+  const history = state.workouts.filter((w) => w.status === 'completed');
+
+  return {
+    ...workout,
+    exercises: (workout.exercises || []).map((block) => {
+      const target = nextTarget(state.lastPerformance.get(block.exerciseId) || null, {
+        exercise: findExercise(block.exerciseId),
+        repTarget: block.sets?.[0]?.reps,
+        stalls: countStalls(history, block.exerciseId),
+      });
+
+      return {
+        ...block,
+        target,
+        sets: (block.sets || []).map((set) => ({
+          ...set,
+          weight: target.weight ?? set.weight,
+          reps: target.reps ?? set.reps,
+        })),
+      };
+    }),
+  };
 }
 
 /* -------------------------------------------------------------------------

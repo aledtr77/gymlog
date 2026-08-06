@@ -1,25 +1,20 @@
 /**
- * IndexedDB persistence.
- * A single reused connection, promisified, with versioned migrations.
+ * Storage. One object store of entries, plus a scratch key/value store.
+ *
  * Falls back to memory when IndexedDB is unavailable (Safari in private
- * mode, locked-down WebViews): the app stays usable for this session.
+ * mode, locked-down WebViews) so the app still works for the session.
  */
 
 const DB_NAME = 'gymlog';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
-export const STORES = {
-  workouts: 'workouts',
-  routines: 'routines',
-  records: 'records',
-  exercises: 'exercises',
-  meta: 'meta',
-};
+export const ENTRIES = 'entries';
+export const META = 'meta';
 
 let dbPromise = null;
-let memoryFallback = null;
+let memory = null;
 
-function openDatabase() {
+function open() {
   if (dbPromise) return dbPromise;
 
   dbPromise = new Promise((resolve, reject) => {
@@ -30,16 +25,18 @@ function openDatabase() {
 
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = () => {
       const db = request.result;
-
-      if (event.oldVersion < 1) {
-        const workouts = db.createObjectStore(STORES.workouts, { keyPath: 'id' });
-        workouts.createIndex('startedAt', 'startedAt');
-        db.createObjectStore(STORES.routines, { keyPath: 'id' });
-        db.createObjectStore(STORES.records, { keyPath: 'exerciseId' });
-        db.createObjectStore(STORES.exercises, { keyPath: 'id' });
-        db.createObjectStore(STORES.meta, { keyPath: 'key' });
+      // v1 stored a much more elaborate model. It is gone; anything it held
+      // no longer maps onto a flat list of sets.
+      for (const name of [...db.objectStoreNames]) {
+        if (name !== ENTRIES && name !== META) db.deleteObjectStore(name);
+      }
+      if (!db.objectStoreNames.contains(ENTRIES)) {
+        db.createObjectStore(ENTRIES, { keyPath: 'id' }).createIndex('at', 'at');
+      }
+      if (!db.objectStoreNames.contains(META)) {
+        db.createObjectStore(META, { keyPath: 'key' });
       }
     };
 
@@ -52,39 +49,25 @@ function openDatabase() {
     request.onblocked = () => reject(new Error('Database blocked by another tab'));
   }).catch((error) => {
     console.warn('[gymlog] IndexedDB unusable, falling back to memory:', error);
-    memoryFallback = new Map(Object.values(STORES).map((name) => [name, new Map()]));
+    memory = new Map([[ENTRIES, new Map()], [META, new Map()]]);
     return null;
   });
 
   return dbPromise;
 }
 
-function memStore(storeName) {
-  if (!memoryFallback.has(storeName)) memoryFallback.set(storeName, new Map());
-  return memoryFallback.get(storeName);
-}
-
-function keyOf(storeName, value) {
-  if (storeName === STORES.records) return value.exerciseId;
-  if (storeName === STORES.meta) return value.key;
-  return value.id;
-}
-
-function run(storeName, mode, operation) {
-  return openDatabase().then((db) => {
-    if (!db) return operation(null, memStore(storeName));
+function run(store, mode, operation) {
+  return open().then((db) => {
+    if (!db) return operation(null, memory.get(store));
 
     return new Promise((resolve, reject) => {
-      const tx = db.transaction(storeName, mode);
-      const store = tx.objectStore(storeName);
+      const tx = db.transaction(store, mode);
       let result;
-
-      Promise.resolve(operation(store, null))
+      Promise.resolve(operation(tx.objectStore(store), null))
         .then((value) => {
           result = value;
         })
         .catch(reject);
-
       tx.oncomplete = () => resolve(result);
       tx.onerror = () => reject(tx.error);
       tx.onabort = () => reject(tx.error);
@@ -92,72 +75,59 @@ function run(storeName, mode, operation) {
   });
 }
 
-function request(req) {
-  return new Promise((resolve, reject) => {
+const request = (req) =>
+  new Promise((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
-}
 
-export function getAll(storeName) {
-  return run(storeName, 'readonly', (store, mem) =>
+export function all() {
+  return run(ENTRIES, 'readonly', (store, mem) =>
     store ? request(store.getAll()) : [...mem.values()],
   );
 }
 
-export function get(storeName, key) {
-  return run(storeName, 'readonly', (store, mem) =>
-    store ? request(store.get(key)) : (mem.get(key) ?? undefined),
-  );
-}
-
-export function put(storeName, value) {
-  return run(storeName, 'readwrite', (store, mem) => {
-    if (store) return request(store.put(value)).then(() => value);
-    mem.set(keyOf(storeName, value), value);
-    return value;
+export function put(entry) {
+  return run(ENTRIES, 'readwrite', (store, mem) => {
+    if (store) return request(store.put(entry)).then(() => entry);
+    mem.set(entry.id, entry);
+    return entry;
   });
 }
 
-export function putMany(storeName, values) {
-  return run(storeName, 'readwrite', (store, mem) => {
-    if (store) return Promise.all(values.map((v) => request(store.put(v))));
-    values.forEach((v) => mem.set(keyOf(storeName, v), v));
-    return values;
-  });
-}
-
-export function remove(storeName, key) {
-  return run(storeName, 'readwrite', (store, mem) => {
-    if (store) return request(store.delete(key));
-    mem.delete(key);
+export function remove(id) {
+  return run(ENTRIES, 'readwrite', (store, mem) => {
+    if (store) return request(store.delete(id));
+    mem.delete(id);
     return undefined;
   });
 }
 
-export function clear(storeName) {
-  return run(storeName, 'readwrite', (store, mem) => {
+export function clear() {
+  return run(ENTRIES, 'readwrite', (store, mem) => {
     if (store) return request(store.clear());
     mem.clear();
     return undefined;
   });
 }
 
-/* Plain key/value for preferences and the in-progress session. */
 export async function getMeta(key, fallback = null) {
-  const row = await get(STORES.meta, key);
-  return row === undefined || row === null ? fallback : row.value;
+  const row = await run(META, 'readonly', (store, mem) =>
+    store ? request(store.get(key)) : mem.get(key),
+  );
+  return row == null ? fallback : row.value;
 }
 
 export function setMeta(key, value) {
-  return put(STORES.meta, { key, value });
+  return run(META, 'readwrite', (store, mem) => {
+    if (store) return request(store.put({ key, value }));
+    mem.set(key, { key, value });
+    return undefined;
+  });
 }
 
-/**
- * Asks the browser not to evict our data under storage pressure.
- * Without this, months of training can vanish silently.
- */
-export async function requestPersistentStorage() {
+/** Ask the browser not to evict months of training under storage pressure. */
+export async function persist() {
   try {
     if (navigator.storage?.persist) {
       if (await navigator.storage.persisted()) return true;

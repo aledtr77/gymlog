@@ -1,51 +1,26 @@
 import './styles.css';
 import { h } from './ui/dom.js';
-import { init } from './core/store.js';
 import { mountApp } from './ui/app.js';
-import { maybeSuggestInstall, registerServiceWorker, watchInstallPrompt } from './pwa.js';
-
-// Must be attached before the first paint: Chrome fires beforeinstallprompt
-// exactly once and does not repeat it if nobody was listening.
-watchInstallPrompt();
+import { registerServiceWorker } from './pwa.js';
 
 async function boot() {
   const root = document.getElementById('app');
 
   try {
-    await init();
-    mountApp(root);
+    await mountApp(root);
   } catch (error) {
-    console.error('[gymlog] avvio fallito', error);
+    console.error('[gymlog] startup failed', error);
     root.replaceChildren(
       h(
         'div',
-        { class: 'main' },
-        h(
-          'div',
-          { class: 'card' },
-          h(
-            'div',
-            { class: 'empty' },
-            h('h3', null, 'Non riesco ad avviare l’app'),
-            h(
-              'p',
-              null,
-              'Ricarica la pagina. Se il problema resta, il browser potrebbe bloccare l’archiviazione locale (finestra anonima o restrizioni sui dati dei siti).',
-            ),
-            h(
-              'button',
-              { type: 'button', class: 'btn btn--primary', onClick: () => location.reload() },
-              'Ricarica',
-            ),
-          ),
-        ),
+        { class: 'wrap' },
+        h('p', { class: 'blank' }, 'Non riesco ad avviare l’app. Ricarica la pagina.'),
       ),
     );
     return;
   }
 
   registerServiceWorker();
-  setTimeout(maybeSuggestInstall, 4000);
 }
 
 boot();

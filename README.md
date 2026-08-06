@@ -1,92 +1,116 @@
-# GymLog — a PWA training log
+# GymLog — offline-first training journal
 
-An installable web app for logging gym sessions. Works fully offline, has no
-accounts and no server: data lives in IndexedDB on the device and can be
-exported to JSON at any time.
+> **Status: active development / public prototype.** GymLog is functional, but it is
+> not a stable release. The current version is the first stage of a partial but
+> substantial rebuild; training flows, persistence and interface details will continue
+> to change before the first stable release.
+
+GymLog is an installable PWA for planning workouts, logging sets and reviewing
+progress without requiring an account or a permanent connection. Training data stays
+on the device and can be exported by the user.
+
+The active application has been renamed from its original internal name, **Forgia**, to
+GymLog and now uses an English interface. The repository still contains legacy modules
+from earlier prototypes; they remain only while the new architecture is being
+consolidated and are not all part of the production bundle.
+
+## What works today
+
+- Guides first-time users through experience level and realistic weekly availability
+- Builds a starting plan that can be reviewed and adjusted before activation
+- Presents the next useful session through a guided **Today** screen
+- Logs planned sets with suggested loads based on previous performance
+- Provides a searchable exercise library with filters, favourites and movement guidance
+- Runs configurable rest timers
+- Tracks workout history, weekly volume, muscle distribution and personal records
+- Includes body-weight tracking and practical fitness calculators
+- Stores data locally in IndexedDB
+- Exports training data as JSON
+- Installs as a standalone PWA and works offline after the production build is cached
+
+## What is being rebuilt
+
+The goal is not to discard the working core. Offline storage, fast set logging, rest
+timers, history and progress tracking remain central. The first redesign pass has
+already replaced the original home screen, onboarding and desktop navigation. The
+remaining work focuses on making the full path from setup to repeated training feel
+coherent, especially for someone who does not already know how to structure gym
+training.
+
+Planned work includes:
+
+- Refining plan creation, exercise replacement and later plan changes
+- Making the relationship between Today, the active plan and completed sessions clearer
+- Improving training explanations without overwhelming beginners or slowing experts
+- Completing the mobile and desktop visual pass across secondary screens and sheets
+- Consolidating naming, English copy, metadata and remaining legacy modules
+- Finalizing persistence, migrations and recovery before declaring the data model stable
+- Adding current screenshots, deployment details and release notes once the UI settles
+
+Until this work is complete, routes, layout, wording and locally stored data structures
+may change between revisions.
+
+## Intended audience
+
+GymLog is being designed for both:
+
+- people recording an established routine who want a quick training journal;
+- beginners who need plain-language guidance before a workout appears on their home
+  screen.
+
+It is a general training tool, not a medical product or a replacement for qualified
+coaching when pain, injury, health conditions or movement limitations are involved.
+
+## Technical outline
+
+The current rebuild uses:
+
+- semantic HTML, Tailwind CSS and a small layer of shared component styles;
+- JavaScript ES modules with a small client-side router;
+- Vite and PostCSS for development and production builds;
+- IndexedDB for workouts, routines, records and preferences;
+- a service worker and web app manifest for offline installation;
+- browser APIs for audio, vibration and screen wake lock where available;
+- Node's built-in test runner for the logic layer.
+
+The interface is assembled from DOM nodes rather than injecting user-provided content
+through `innerHTML`.
+
+## Run locally
+
+Node.js and npm are required.
 
 ```bash
 npm install
-npm run dev        # development on http://localhost:5173
-npm test           # unit tests for the logic layer
-npm run build      # production bundle in dist/
-npm run preview    # serves dist/ (needed to exercise the service worker)
+npm run dev        # development server
+npm test           # logic tests
+npm run build      # production bundle
+npm run preview    # preview the production build and service worker
 ```
 
-> The service worker only runs in the production build; it is deliberately
-> disabled in `dev`, or it would serve cached files while you are editing them.
+The service worker is deliberately disabled during development so cached production
+files cannot interfere while the interface is being edited.
 
-## Where the interaction model comes from
+## Data and privacy
 
-The apps that dominate this category (Hevy, Strong) all converged on the same
-scheme, for good reasons. GymLog adopts it:
+GymLog currently has no account system and no application server. Workout data is
+stored in the browser on the current device. Clearing site data or changing browser
+profiles can remove it, so important records should be exported before testing
+development builds.
 
-| Choice | Why |
-|---|---|
-| **One card per exercise, one row per set** | The whole session reads at a glance. A single "pick exercise → enter → save" form forces you to remember what you have already done. |
-| **A permanently visible `previous` column** | It is the most useful thing to have while training: knowing you did 82.5 x 8 last time decides today's load. Tapping it copies the values across. |
-| **Logging = one tap on the tick** | Load and reps are prefilled from last time. If you repeat the same weight you touch nothing. |
-| **Rest starts automatically on the tick** | The timer starts on its own with the rest configured for that exercise, and stays a bottom bar rather than a modal screen: you keep using the app while resting. |
-| **Lettered set types (W / D / F)** | Warmup, drop set and failure are one tap on the number apart, and warmups stay out of volume and records. |
-| **Records celebrated on the spot** | A personal best is detected when you tick the set, not at the end of the month in a stats screen. |
+No cloud synchronization or cross-device backup should be assumed at this stage.
 
-## Layout
+## Before the first stable release
 
-The app is designed for the phone and unchanged there. From 700px the repeated
-card lists go to two columns; from 900px the bottom tab bar becomes a side
-column and the content widens, so an installed desktop PWA is not a narrow
-strip in the middle of an empty screen.
+- [x] Offline-capable workout logging
+- [x] Routines, history, rest timing and progress metrics
+- [x] Local export and import
+- [x] Introduce the GymLog name and English production interface
+- [x] Add guided setup and reviewable starting plans
+- [x] Add the first responsive desktop and mobile redesign pass
+- [ ] Refine plan editing, exercise replacement and repeat-use flows
+- [ ] Consolidate the active architecture and remove obsolete modules
+- [ ] Verify storage migrations and recovery paths
+- [ ] Publish an up-to-date demo, screenshots and release notes
 
-## Structure
-
-```
-src/
-  core/          pure logic, no DOM — this is the part the tests cover
-    metrics.js     1RM, volumes, records, last performance, progress
-    workout.js     session model (immutable)
-    plates.js      plate maths
-    restTimer.js   timer built on absolute timestamps
-    db.js          promisified IndexedDB with an in-memory fallback
-    store.js       application state + persistence
-    feedback.js    audio, vibration, wake lock
-    format.js      Italian-localised formatting
-  data/          exercise library and starter routines
-  ui/            views and components (hyperscript, never innerHTML)
-  pwa.js         service worker and install prompt
-public/          manifest, service worker, icons
-```
-
-Note the app's user interface is in Italian; the code, comments and docs are
-in English.
-
-## Non-obvious technical decisions
-
-- **No runtime dependencies.** No framework, no CDN fonts. The bundle is ~26 kB
-  gzipped and opens instantly even on gym-basement reception.
-- **The rest timer uses absolute timestamps**, not a counter decremented each
-  tick. Timers freeze when the phone sleeps; a decrementing counter would be
-  minutes wrong.
-- **The in-progress session is saved on every change** (debounced) and again
-  when the app backgrounds. Closing the app or running out of battery does not
-  cost you the workout.
-- **The DOM is built from real nodes**, never `innerHTML`: names the user types
-  (custom exercises, notes, routines) cannot turn into markup.
-- **`overscroll-behavior: none`** stops pull-to-refresh reloading the app
-  halfway through a set.
-- **Completed rows use an opaque background**, not a translucent one: the red
-  swipe-to-delete layer sits underneath.
-- **Sheets push a history entry**, so Android's back button closes them instead
-  of leaving the app.
-
-## Data
-
-Everything lives in IndexedDB (`gymlog`): workouts, routines, records, custom
-exercises, preferences and the in-progress session. `Tools → Your data` exports
-and re-imports a complete JSON file. Import merges without duplicating (keyed
-on workout id) and recomputes records from scratch.
-
-## Tests
-
-`npm test` covers the pure logic: 1RM estimation, volume counts with warmups
-excluded, record detection, rebuilding records from history, the last-performance
-index, plate maths (including unmakeable weights and floating-point drift) and
-the session's immutable mutations.
+Expect frequent changes while these items remain open.

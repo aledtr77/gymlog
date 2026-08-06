@@ -5,7 +5,6 @@ import {
   byDay,
   createEntry,
   lastSession,
-  recentExercises,
   today,
   todayFor,
   volume,
@@ -18,7 +17,10 @@ const at = (iso, exerciseId, weight, reps, name = exerciseId) =>
 
 test('an entry keeps only what a set actually is', () => {
   const entry = createEntry({ exerciseId: 'panca', name: 'Panca', weight: 80, reps: 8 });
-  assert.deepEqual(Object.keys(entry).sort(), ['at', 'exerciseId', 'id', 'name', 'reps', 'weight']);
+  assert.deepEqual(
+    Object.keys(entry).sort(),
+    ['at', 'dayId', 'exerciseId', 'id', 'name', 'reps', 'weight'],
+  );
 });
 
 test('non-numeric weight or reps never become NaN', () => {
@@ -73,38 +75,6 @@ test('today only covers today, and only that exercise', () => {
   ];
   assert.equal(todayFor(entries, 'panca', NOW).length, 1);
   assert.equal(today(entries, NOW).length, 2);
-});
-
-/* -------------------------------------------------------------- the list -- */
-
-test('the exercise list is ordered by what you used most recently', () => {
-  const entries = [
-    at('2026-03-10T17:00:00.000Z', 'squat', 100, 5),
-    at('2026-03-09T17:00:00.000Z', 'panca', 80, 8),
-    at('2026-03-08T17:00:00.000Z', 'stacco', 120, 3),
-  ];
-  assert.deepEqual(
-    recentExercises(entries, NOW).map((e) => e.exerciseId),
-    ['squat', 'panca', 'stacco'],
-  );
-});
-
-test('each list row carries last session and how many sets today', () => {
-  const entries = [
-    at('2026-03-10T17:00:00.000Z', 'panca', 85, 6),
-    at('2026-03-10T17:10:00.000Z', 'panca', 85, 6),
-    at('2026-03-03T17:00:00.000Z', 'panca', 80, 8),
-  ];
-  const [row] = recentExercises(entries, NOW);
-  assert.equal(row.doneToday, 2);
-  assert.equal(row.last.weight, 80, 'the hint is last session, not today');
-});
-
-test('an exercise done only today still shows a usable last value', () => {
-  const entries = [at('2026-03-10T17:00:00.000Z', 'panca', 85, 6)];
-  const [row] = recentExercises(entries, NOW);
-  assert.equal(row.last.weight, 85);
-  assert.equal(row.doneToday, 1);
 });
 
 /* ------------------------------------------------------------- history -- */

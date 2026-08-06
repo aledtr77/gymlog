@@ -32,8 +32,8 @@ export async function init() {
   db.persist();
 }
 
-export async function addSet({ exerciseId, name, weight, reps }) {
-  const entry = createEntry({ exerciseId, name, weight, reps });
+export async function addSet({ exerciseId, name, weight, reps, dayId }) {
+  const entry = createEntry({ exerciseId, name, weight, reps, dayId });
   state.entries = [entry, ...state.entries];
   await db.put(entry);
   emit();

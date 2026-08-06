@@ -18,7 +18,7 @@ export function uid() {
   return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export function createEntry({ exerciseId, name, weight, reps, at }) {
+export function createEntry({ exerciseId, name, weight, reps, at, dayId = null }) {
   return {
     id: uid(),
     at: at || new Date().toISOString(),
@@ -26,6 +26,9 @@ export function createEntry({ exerciseId, name, weight, reps, at }) {
     name,
     weight: Number(weight) || 0,
     reps: Number(reps) || 0,
+    // Which day of the plan this set belonged to, so the app can alternate
+    // A and B without asking.
+    dayId,
   };
 }
 
@@ -70,29 +73,6 @@ export function today(entries, now = new Date()) {
   return sortNewestFirst(entries)
     .filter((e) => sameDay(e.at, now))
     .reverse();
-}
-
-/**
- * The exercises to offer on the home screen: the ones you actually use,
- * most recently used first, each carrying its last numbers.
- *
- * An app that makes you search a 200-item library every time you bench is an
- * app you stop opening.
- */
-export function recentExercises(entries, now = new Date()) {
-  const seen = new Map();
-
-  for (const entry of sortNewestFirst(entries)) {
-    if (seen.has(entry.exerciseId)) continue;
-    seen.set(entry.exerciseId, {
-      exerciseId: entry.exerciseId,
-      name: entry.name,
-      last: lastSession(entries, entry.exerciseId, now) || entry,
-      doneToday: todayFor(entries, entry.exerciseId, now).length,
-    });
-  }
-
-  return [...seen.values()];
 }
 
 /** Groups the log into days, newest day first, for the history screen. */

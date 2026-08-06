@@ -18,7 +18,7 @@ export function historyScreen(ctx) {
       { class: 'top' },
       h(
         'button',
-        { type: 'button', class: 'top__back', onClick: ctx.toList, 'aria-label': 'Indietro' },
+        { type: 'button', class: 'top__back', onClick: ctx.toToday, 'aria-label': 'Indietro' },
         '‹',
       ),
       h('h1', { class: 'top__title' }, 'Storico'),

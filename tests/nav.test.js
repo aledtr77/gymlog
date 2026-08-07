@@ -7,6 +7,7 @@ test('mobile primary navigation maps nested routes to their section', () => {
     ['/', '/'],
     ['/session/new', '/'],
     ['/session/abc', '/'],
+    ['/training', '/training'],
     ['/timer', '/timer'],
     ['/exercises', '/exercises'],
     ['/exercises/squat', '/exercises'],

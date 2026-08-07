@@ -10,7 +10,7 @@ globalThis.localStorage = {
   removeItem: (key) => values.delete(key),
 };
 
-const { BACKUP_VERSION, backupText, restoreBackup, validateBackup } = await import('../src/services/backup.js');
+const { BACKUP_VERSION, backupText, deleteAllData, restoreBackup, validateBackup } = await import('../src/services/backup.js');
 const { readStores, restoreStores } = await import('../src/services/db.js');
 const prefs = await import('../src/services/prefs.js');
 
@@ -83,4 +83,15 @@ test('a failed multi-store restore rolls the IndexedDB transaction back', async 
     }, { mode: 'replace' }),
   );
   assert.deepEqual((await readStores()).sets.map((row) => row.id).sort(), before);
+});
+
+test('delete all data empties every store and restores default preferences', async () => {
+  await restoreBackup(base(), { mode: 'replace' });
+  await deleteAllData();
+
+  const stores = await readStores();
+  assert.ok(Object.values(stores).every((rows) => rows.length === 0));
+  assert.equal(prefs.get('template'), null);
+  assert.equal(prefs.get('onboarded'), false);
+  assert.equal(prefs.get('theme'), 'system');
 });

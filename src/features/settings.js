@@ -6,7 +6,7 @@ import { prefs, reload as reloadState } from '../core/state.js';
 import { go } from '../core/router.js';
 import { files, clipboard, net } from '../platform/index.js';
 import { storageStatus, usage } from '../services/db.js';
-import { backupText, restoreBackup } from '../services/backup.js';
+import { backupText, deleteAllData, restoreBackup } from '../services/backup.js';
 import { applyTheme } from '../services/theme.js';
 
 const CATEGORIES = [
@@ -142,6 +142,17 @@ export async function render() {
       settingRow('refresh', 'Import and merge', 'Add records from a GymLog backup. Matching IDs are updated.', actionControl('Choose backup', 'refresh', () => importData('merge'))),
       settingRow('database', 'Replace from backup', 'Replace local records and preferences after creating a safety backup.', actionControl('Replace data', 'database', () => importData('replace'))),
     ),
+    el(
+      'section',
+      { class: 'mt-5 rounded-2xl border border-danger/35 bg-danger/5 p-5' },
+      el(
+        'div',
+        { class: 'flex flex-col gap-4 sm:flex-row sm:items-center' },
+        el('span', { class: 'grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-danger/10 text-danger' }, icon('trash', 'w-5 h-5')),
+        el('div', { class: 'min-w-0 flex-1' }, el('strong', { class: 'block text-sm font-extrabold text-danger' }, 'Delete all data'), el('span', { class: 'mt-1 block text-xs leading-relaxed text-ink-3' }, 'Permanently remove workouts, sets, measurements, weekly marks, goals, plan, profile, and preferences from this device.')),
+        el('button', { type: 'button', class: 'settings-action border-danger/40 text-danger', onClick: eraseEverything }, icon('trash', 'w-4 h-4'), 'Delete all data'),
+      ),
+    ),
   );
 
   const plan = settingsPanel(
@@ -156,7 +167,7 @@ export async function render() {
       el('div', null, el('strong', null, 'Your workout history is safe'), el('p', null, 'Running setup again only changes the plan used for future workouts. Completed sets and progress remain untouched.')),
       actionControl('Run setup again', 'refresh', () => {
         prefs.set({ onboarded: false });
-        go('/');
+        go('/training');
       }, true),
     ),
   );
@@ -275,6 +286,29 @@ async function copyData() {
     if (copied) toast('Backup copied', { variant: 'ok' });
   } catch (error) {
     toast(`Copy failed: ${error.message}`, { variant: 'err', duration: 5000 });
+  }
+}
+
+async function eraseEverything(event) {
+  const confirmed = window.confirm(
+    'Delete every GymLog record and preference from this device? This cannot be undone unless you exported a backup.',
+  );
+  if (!confirmed) return;
+
+  const button = event.currentTarget;
+  button.disabled = true;
+  button.textContent = 'Deleting…';
+
+  try {
+    await deleteAllData();
+    await reloadState();
+    applyTheme('system');
+    toast('All GymLog data deleted', { variant: 'ok' });
+    go('/training');
+  } catch (error) {
+    button.disabled = false;
+    button.replaceChildren(icon('trash', 'w-4 h-4'), 'Delete all data');
+    toast(`Delete failed: ${error.message}`, { variant: 'err', duration: 6000 });
   }
 }
 

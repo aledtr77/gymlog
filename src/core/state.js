@@ -116,6 +116,43 @@ export function setTemplate(id, options = {}) {
   emit('state');
 }
 
+export function resetTemplate() {
+  prefs.set({
+    template: null,
+    customTemplate: null,
+    onboarded: false,
+    level: 'beginner',
+    split: 'full-body',
+    trainingDays: 3,
+  });
+  emit('state');
+}
+
+export async function setTrainingDay(date, status) {
+  const value = new Date(date);
+  const key = [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
+  const entry = {
+    id: `training-day:${key}`,
+    type: 'training-day',
+    date: key,
+    status: status === 'complete' ? 'complete' : 'planned',
+    at: new Date().toISOString(),
+  };
+  await durable(() => goals.put(entry));
+  state.goals = [entry, ...state.goals.filter((goal) => goal.id !== entry.id)];
+  emit('state');
+  return entry;
+}
+
+export async function clearTrainingDay(date) {
+  const value = new Date(date);
+  const key = [value.getFullYear(), String(value.getMonth() + 1).padStart(2, '0'), String(value.getDate()).padStart(2, '0')].join('-');
+  const id = `training-day:${key}`;
+  await durable(() => goals.remove(id));
+  state.goals = state.goals.filter((goal) => goal.id !== id);
+  emit('state');
+}
+
 /** Today's session: whatever is in progress, else the next in rotation. */
 export function plannedSession(now = new Date()) {
   const template = activeTemplate();

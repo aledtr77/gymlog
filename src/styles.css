@@ -174,7 +174,7 @@
   }
 
   .mobile-nav {
-    @apply fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line px-1 pt-1;
+    @apply fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-line px-1 pt-1;
     min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: rgb(var(--bg) / 0.94);

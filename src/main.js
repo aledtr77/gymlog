@@ -1,7 +1,7 @@
 import './styles.css';
 import { el } from './ui/el.js';
 import { toast } from './ui/components.js';
-import { define, setNotFound, start, go, refresh } from './core/router.js';
+import { define, setNotFound, start, refresh } from './core/router.js';
 import { on } from './core/bus.js';
 import { init } from './core/state.js';
 import { mountTimerBar } from './services/timer.js';
@@ -14,6 +14,7 @@ import { storageStatus } from './services/db.js';
 
 /* Routes are lazy: opening the dashboard never downloads the calculators. */
 define('/', () => import('./features/dashboard.js'));
+define('/training', () => import('./features/training.js'));
 define('/session', () => import('./features/session.js'));
 define('/session/:index', () => import('./features/session.js'));
 define('/timer', () => import('./features/timer.js'));
@@ -55,8 +56,8 @@ async function boot() {
   // Ask for notifications only after the first logged set, never on load.
   document.addEventListener('gymlog:first-set', () => notify.ask(), { once: true });
 
+  if (!location.hash) location.replace('#/training');
   await start(root);
-  if (!location.hash) go('/', { replace: true });
 
   if (storageStatus().mode === 'memory') {
     toast('Storage is temporary: new data will be lost when GymLog closes. Export a backup before leaving.', {

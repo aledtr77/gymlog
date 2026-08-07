@@ -142,3 +142,23 @@ export async function restoreBackup(input, { mode = 'merge' } = {}) {
     counts: Object.fromEntries(DATA_STORES.map((name) => [name, backup.stores[name].length])),
   };
 }
+
+export async function deleteAllData() {
+  const before = { stores: await readStores(), preferences: prefs.get() };
+  const empty = Object.fromEntries(DATA_STORES.map((name) => [name, []]));
+
+  await restoreStores(empty, { mode: 'replace' });
+  try {
+    prefs.replace(prefs.normalizePreferences());
+  } catch (error) {
+    await restoreStores(before.stores, { mode: 'replace' });
+    try {
+      prefs.replace(before.preferences);
+    } catch {
+      // IndexedDB has still been restored; preference storage is unavailable.
+    }
+    throw error;
+  }
+
+  return Object.fromEntries(DATA_STORES.map((name) => [name, 0]));
+}

@@ -9,7 +9,6 @@ import { mountNav } from './ui/nav.js';
 import { applyTheme, watchSystemTheme } from './services/theme.js';
 import { audio, screen as wakeScreen, net, notify } from './platform/index.js';
 import { watch as watchSync, drain } from './services/sync.js';
-import * as prefs from './services/prefs.js';
 import { storageStatus } from './services/db.js';
 
 /* Routes are lazy: opening the dashboard never downloads the calculators. */

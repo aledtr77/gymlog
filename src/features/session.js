@@ -12,7 +12,7 @@ import { icon } from '../ui/icons.js';
 import { appbar, stepper, toast } from '../ui/components.js';
 import { state, logSet, removeSet, plannedSession, prefs } from '../core/state.js';
 import { buildSession, isTimed, isBodyweight, stepFor } from '../core/training.js';
-import { go, back } from '../core/router.js';
+import { go } from '../core/router.js';
 import { startRest } from '../services/timer.js';
 import { screen as wakeScreen, haptics } from '../platform/index.js';
 import { kg } from '../utils/num.js';

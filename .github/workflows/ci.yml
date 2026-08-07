@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # The rules that decide what goes on the bar, and the persistence layer
+      # underneath them: double progression and deloads, loadable plate
+      # increments, personal records, weekly volume and cadence, preference
+      # validation, schema upgrades, legacy imports, backup validation and
+      # atomic restore. This is the half that runs without a DOM, so it is the
+      # half a machine can check — and it is where a defect does the real
+      # damage, because a wrong suggested load still renders as a perfectly
+      # convincing number, and a restore that half-succeeds takes the training
+      # history with it.
+      - name: Test
+        run: npm test
+
+      # The README advertises a test count in two places. Typed by hand they
+      # are right once and wrong from the next commit on, so this fails the
+      # build when the README and the suite disagree.
+      - name: Test-count badge
+        run: npm run badge:check
+
+      # This job does not deploy: `npm run deploy` publishes through Wrangler
+      # from a machine holding the Cloudflare credentials. Building here says
+      # that whoever clones the repo gets something that compiles, and that the
+      # next deploy is not about to fail on a broken bundle.
+      - name: Build
+        run: npm run build

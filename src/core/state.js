@@ -24,13 +24,26 @@ export const state = {
 const uid = () =>
   (crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
+async function durable(work) {
+  try {
+    return await work();
+  } catch (error) {
+    emit('storage:error', error);
+    throw error;
+  }
+}
+
 export async function init() {
+  await reload();
+  persist();
+}
+
+export async function reload() {
   const [s, b, g] = await Promise.all([sets.all(), body.all(), goals.all()]);
   state.sets = s.sort((a, b2) => new Date(b2.at) - new Date(a.at));
   state.body = b.sort((a, b2) => new Date(b2.at) - new Date(a.at));
   state.goals = g;
   state.ready = true;
-  persist();
   emit('state');
 }
 
@@ -48,18 +61,26 @@ export async function logSet({ exerciseId, name, weight, reps, rpe = null, note 
     note,
     sessionId,
   };
+  await durable(() => sets.put(entry));
   state.sets = [entry, ...state.sets];
-  await sets.put(entry);
-  await queue('set:add', entry);
+  try {
+    await queue('set:add', entry);
+  } catch (error) {
+    console.warn('[sync] set saved locally but could not be queued:', error);
+  }
   emit('state');
   emit('set:logged', entry);
   return entry;
 }
 
 export async function removeSet(id) {
+  await durable(() => sets.remove(id));
   state.sets = state.sets.filter((s) => s.id !== id);
-  await sets.remove(id);
-  await queue('set:remove', { id });
+  try {
+    await queue('set:remove', { id });
+  } catch (error) {
+    console.warn('[sync] deletion saved locally but could not be queued:', error);
+  }
   emit('state');
 }
 
@@ -67,9 +88,13 @@ export async function removeSet(id) {
 
 export async function logBody({ weight, note = '' }) {
   const entry = { id: uid(), at: new Date().toISOString(), weight: Number(weight) || 0, note };
+  await durable(() => body.put(entry));
   state.body = [entry, ...state.body];
-  await body.put(entry);
-  await queue('body:add', entry);
+  try {
+    await queue('body:add', entry);
+  } catch (error) {
+    console.warn('[sync] measurement saved locally but could not be queued:', error);
+  }
   emit('state');
   return entry;
 }

@@ -1,5 +1,6 @@
 import './styles.css';
 import { el } from './ui/el.js';
+import { toast } from './ui/components.js';
 import { define, setNotFound, start, go, refresh } from './core/router.js';
 import { on } from './core/bus.js';
 import { init } from './core/state.js';
@@ -9,6 +10,7 @@ import { applyTheme, watchSystemTheme } from './services/theme.js';
 import { audio, screen as wakeScreen, net, notify } from './platform/index.js';
 import { watch as watchSync, drain } from './services/sync.js';
 import * as prefs from './services/prefs.js';
+import { storageStatus } from './services/db.js';
 
 /* Routes are lazy: opening the dashboard never downloads the calculators. */
 define('/', () => import('./features/dashboard.js'));
@@ -56,8 +58,22 @@ async function boot() {
   await start(root);
   if (!location.hash) go('/', { replace: true });
 
+  if (storageStatus().mode === 'memory') {
+    toast('Storage is temporary: new data will be lost when GymLog closes. Export a backup before leaving.', {
+      variant: 'err',
+      duration: 10000,
+    });
+  }
+
   // Any state write redraws the current screen; nothing patches its own DOM.
   on('state', () => refresh());
+  on('storage:error', (error) => {
+    console.error('[gymlog] storage write failed', error);
+    toast('Could not save this change. Your previous data is still safe; export a backup and reload GymLog.', {
+      variant: 'err',
+      duration: 10000,
+    });
+  });
 
   registerServiceWorker();
 }

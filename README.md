@@ -1,80 +1,117 @@
 # GymLog — offline-first training journal
 
-> **Status: 1.0.0 / public prototype.** GymLog is functional, but it is
-> not a stable release. The current version is the first stage of a partial but
-> substantial rebuild; training flows, persistence and interface details will continue
-> to change before the first stable release.
+> **Status: 1.0.0 public prototype.** GymLog is a functional, installable PWA and
+> can be used as a personal training journal. It is not presented as a production
+> fitness service, a native Android application or a cloud-backed commercial product.
 
-GymLog is an installable PWA for planning workouts, logging sets and reviewing
-progress without requiring an account or a permanent connection. Training data stays
-on the device and can be exported by the user.
+GymLog plans simple workouts, records completed sets and derives useful progress
+metrics without requiring an account or a permanent connection. The application is
+deliberately local-first: its normal operation happens entirely in the browser.
 
-The active application has been renamed from its original internal name, **Forgia**, to
-GymLog and now uses an English interface. The repository still contains legacy modules
-from earlier prototypes; they remain only while the new architecture is being
-consolidated and are not all part of the production bundle.
+## Why this project exists
 
-## What works today
+GymLog has two practical purposes:
 
-- Guides first-time users through experience level and realistic weekly availability
-- Builds a starting plan that can be reviewed and adjusted before activation
-- Presents the next useful session through a guided **Today** screen
-- Logs planned sets with suggested loads based on previous performance
-- Provides a searchable exercise library with filters, favourites and movement guidance
-- Runs configurable rest timers
-- Tracks workout history, weekly volume, muscle distribution and personal records
-- Includes body-weight tracking and practical fitness calculators
-- Stores data locally in IndexedDB
-- Exports training data as JSON
-- Installs as a standalone PWA and works offline after the production build is cached
+- provide a self-contained PWA that can accompany larger website templates as an
+  optional demonstration application;
+- serve as a distinct, complete GitHub project rather than another variation of a
+  presentation template.
 
-## What is being rebuilt
+It is also useful on its own for occasional or personal training. The current scope is
+intentionally that of a polished prototype: enough real behaviour to demonstrate the
+architecture and product idea without pretending that a PWA with device-local data is
+already a distributable consumer platform.
 
-The goal is not to discard the working core. Offline storage, fast set logging, rest
-timers, history and progress tracking remain central. The first redesign pass has
-already replaced the original home screen, onboarding and desktop navigation. The
-remaining work focuses on making the full path from setup to repeated training feel
-coherent, especially for someone who does not already know how to structure gym
-training.
+Cloud accounts, multi-device synchronization and a hosted user database are therefore
+not part of version 1.0.0. That investment would make sense if GymLog evolves into a
+native Android product with an explicit account and recovery model.
 
-Planned work includes:
+## Current functionality
 
-- Refining plan creation, exercise replacement and later plan changes
-- Making the relationship between Today, the active plan and completed sessions clearer
-- Improving training explanations without overwhelming beginners or slowing experts
-- Completing the mobile and desktop visual pass across secondary screens and sheets
-- Consolidating naming, English copy, metadata and remaining legacy modules
-- Finalizing persistence, migrations and recovery before declaring the data model stable
-- Adding current screenshots, deployment details and release notes once the UI settles
+- Guided setup based on experience and realistic weekly availability
+- Reviewable full-body, upper/lower and push/pull/legs starting plans
+- A focused **Today** screen with suggested loads and repetitions
+- Fast set logging with configurable rest timers
+- Searchable exercise library, favourites and movement guidance
+- Workout history, weekly volume, muscle distribution and personal records
+- Body-weight tracking and practical fitness calculators
+- Responsive mobile and desktop interface
+- Installable app shell with offline support
+- Local, versioned persistence and portable JSON backup/restore
 
-Until this work is complete, routes, layout, wording and locally stored data structures
-may change between revisions.
+## Persistence, migrations and recovery
 
-## Intended audience
+GymLog treats user data as more important than the cached application shell.
 
-GymLog is being designed for both:
+### Persistence
 
-- people recording an established routine who want a quick training journal;
-- beginners who need plain-language guidance before a workout appears on their home
-  screen.
+- Growing training data is stored in IndexedDB.
+- Small synchronous preferences are stored in a separately versioned LocalStorage
+  document.
+- State changes become visible only after the corresponding IndexedDB transaction has
+  committed.
+- Multi-store restore operations are atomic and roll back if any write fails.
+- The application asks the browser for persistent storage when the API is available.
+- If IndexedDB cannot be opened, GymLog switches to a volatile in-memory mode and
+  displays an explicit warning that new data will disappear when the page closes.
 
-It is a general training tool, not a medical product or a replacement for qualified
-coaching when pain, injury, health conditions or movement limitations are involved.
+### Migrations
 
-## Technical outline
+The active IndexedDB schema is version 4. Upgrade steps preserve the legacy stores as a
+safety net while converting useful records:
 
-The current rebuild uses:
+- v1 nested completed workouts are flattened into the current set log;
+- v2 flat entries and pinned exercises become sets and favourites;
+- v3 records are retained unchanged while the database advances to v4.
 
-- semantic HTML, Tailwind CSS and a small layer of shared component styles;
-- JavaScript ES modules with a small client-side router;
+Preferences and backup files have their own versions, independent from the IndexedDB
+version. Migration behaviour is covered with real IndexedDB-compatible automated tests
+through `fake-indexeddb`.
+
+### Backup and restore
+
+The **Data and privacy** settings allow the user to:
+
+- export all user-owned stores and preferences as versioned JSON;
+- copy the same backup to the clipboard;
+- merge another GymLog backup with local records;
+- replace local data from a backup.
+
+Imports are validated before writing. A safety backup must be saved before either
+import mode proceeds. Existing legacy GymLog JSON exports remain importable. Binary
+photo values are encoded into the portable backup format when present. The transient
+sync outbox is intentionally excluded because it is transport state, not user data.
+
+## Important limitations
+
+- There is no account system, application API or server-side user database.
+- There is no automatic cloud or cross-device backup.
+- Clearing browser site data can remove the local database.
+- Browser storage belongs to an origin. The `workers.dev` address and a future custom
+  domain would have separate IndexedDB databases.
+- Installing the PWA does not turn it into a native Android application or provide
+  Play Store distribution and platform-level account recovery.
+- Training suggestions are general guidance, not medical advice or a replacement for
+  qualified coaching.
+
+For important personal records, export a backup periodically.
+
+## Architecture
+
+The project intentionally has no runtime framework dependency. It uses:
+
+- semantic HTML and DOM nodes instead of injecting user content through `innerHTML`;
+- JavaScript ES modules and a small hash-based router;
+- Tailwind CSS plus shared component styles;
 - Vite and PostCSS for development and production builds;
-- IndexedDB for workouts, routines, records and preferences;
-- a service worker and web app manifest for offline installation;
-- browser APIs for audio, vibration and screen wake lock where available;
-- Node's built-in test runner for the logic layer.
+- IndexedDB repositories behind a small persistence API;
+- a service worker and web app manifest for installation and offline startup;
+- browser APIs for audio, vibration, wake lock, file access and clipboard support;
+- Node's built-in test runner for domain, migration and recovery tests;
+- Cloudflare Workers Static Assets for the public deployment.
 
-The interface is assembled from DOM nodes rather than injecting user-provided content
-through `innerHTML`.
+The persistence boundary is isolated under `src/services/`, so a future backend can be
+added without coupling feature screens directly to a storage vendor.
 
 ## Run locally
 
@@ -82,35 +119,39 @@ Node.js and npm are required.
 
 ```bash
 npm install
-npm run dev        # development server
-npm test           # logic tests
-npm run build      # production bundle
-npm run preview    # preview the production build and service worker
+npm run dev       # development server
+npm test          # complete automated test suite
+npm run build     # production bundle in dist/
+npm run preview   # preview the production build
 ```
 
-The service worker is deliberately disabled during development so cached production
-files cannot interfere while the interface is being edited.
+The service worker is disabled during development so an old production cache cannot
+interfere with active UI work.
 
-## Data and privacy
+## Cloudflare deployment
 
-GymLog currently has no account system and no application server. Workout data is
-stored in the browser on the current device. Clearing site data or changing browser
-profiles can remove it, so important records should be exported before testing
-development builds.
+The public prototype is deployed as static assets, without a backend Worker script or
+Cloudflare database:
 
-No cloud synchronization or cross-device backup should be assumed at this stage.
+**https://gymlog.aledtr-77.workers.dev**
 
-## Before the first stable release
+`wrangler.jsonc` points Cloudflare at the Vite `dist/` directory. After authenticating
+Wrangler, a release can be built and deployed with:
 
-- [x] Offline-capable workout logging
-- [x] Routines, history, rest timing and progress metrics
-- [x] Local export and import
-- [x] Introduce the GymLog name and English production interface
-- [x] Add guided setup and reviewable starting plans
-- [x] Add the first responsive desktop and mobile redesign pass
-- [ ] Refine plan editing, exercise replacement and repeat-use flows
-- [ ] Consolidate the active architecture and remove obsolete modules
-- [ ] Verify storage migrations and recovery paths
-- [ ] Publish an up-to-date demo, screenshots and release notes
+```bash
+npm run deploy
+```
 
-Expect frequent changes while these items remain open.
+Static hosting does not change the persistence model: workout data remains in the
+visitor's browser and is never uploaded to Cloudflare.
+
+## Project boundary after 1.0.0
+
+This repository can continue receiving focused fixes, compatibility updates and small
+interface improvements. It does not need a speculative backend merely to make the
+prototype look more substantial.
+
+A separate product phase would be justified by a native Android release. That phase
+would need to define authentication, encrypted transport, cloud backup, device
+reconciliation, conflict handling, account deletion, privacy obligations and operating
+costs before cloud synchronization is enabled.

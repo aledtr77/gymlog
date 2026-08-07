@@ -2,10 +2,11 @@
 import { el } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
 import { appbar, toast } from '../ui/components.js';
-import { state, prefs } from '../core/state.js';
+import { prefs, reload as reloadState } from '../core/state.js';
 import { go } from '../core/router.js';
 import { files, clipboard, net } from '../platform/index.js';
-import { usage } from '../services/db.js';
+import { storageStatus, usage } from '../services/db.js';
+import { backupText, restoreBackup } from '../services/backup.js';
 import { applyTheme } from '../services/theme.js';
 
 const CATEGORIES = [
@@ -18,6 +19,7 @@ const CATEGORIES = [
 export async function render() {
   const current = prefs.get();
   const storage = await usage();
+  const storageHealth = storageStatus();
   let active = 'appearance';
 
   const categoryButtons = new Map();
@@ -122,14 +124,23 @@ export async function render() {
       'div',
       { class: 'settings-data-summary' },
       el('span', { class: 'settings-data-summary__icon' }, icon('database', 'w-6 h-6')),
-      el('div', { class: 'min-w-0 flex-1' }, el('strong', null, net.online ? 'Stored locally' : 'Available offline'), el('span', null, storage.quota ? `${(storage.used / 1048576).toFixed(1)} MB currently used` : 'Local storage is available')),
-      el('span', { class: 'settings-data-summary__state' }, el('i'), 'Private'),
+      el(
+        'div',
+        { class: 'min-w-0 flex-1' },
+        el('strong', null, storageHealth.mode === 'memory' ? 'Temporary storage only' : net.online ? 'Stored locally' : 'Available offline'),
+        el('span', null, storageHealth.mode === 'memory'
+          ? 'IndexedDB is unavailable. New data will be lost when this page closes.'
+          : storage.quota ? `${(storage.used / 1048576).toFixed(1)} MB currently used` : 'IndexedDB is available'),
+      ),
+      el('span', { class: 'settings-data-summary__state' }, el('i'), storageHealth.mode === 'memory' ? 'Volatile' : 'Private'),
     ),
     settingsGroup(
       settingRow('download', 'Export a backup', 'Download your profile, workouts, measurements, and goals.', actionControl('Export backup', 'download', exportData, true)),
       clipboard.supported
         ? settingRow('copy', 'Copy your data', 'Copy the same complete backup to your clipboard.', actionControl('Copy data', 'copy', copyData))
         : null,
+      settingRow('refresh', 'Import and merge', 'Add records from a GymLog backup. Matching IDs are updated.', actionControl('Choose backup', 'refresh', () => importData('merge'))),
+      settingRow('database', 'Replace from backup', 'Replace local records and preferences after creating a safety backup.', actionControl('Replace data', 'database', () => importData('replace'))),
     ),
   );
 
@@ -248,16 +259,66 @@ function actionControl(label, iconName, onClick, accent = false) {
   return el('button', { type: 'button', class: ['settings-action', accent && 'is-accent'], onClick }, icon(iconName, 'w-4 h-4'), label);
 }
 
-function dataPayload() {
-  return JSON.stringify({ app: 'gymlog', version: 3, at: new Date().toISOString(), profile: prefs.get('profile'), sets: state.sets, body: state.body, goals: state.goals }, null, 2);
-}
-
 async function exportData() {
-  const saved = await files.save(`gymlog-${new Date().toISOString().slice(0, 10)}.json`, new Blob([dataPayload()], { type: 'application/json' }));
-  if (saved) toast('Backup exported', { variant: 'ok' });
+  try {
+    const text = await backupText();
+    const saved = await files.save(`gymlog-${new Date().toISOString().slice(0, 10)}.json`, new Blob([text], { type: 'application/json' }));
+    if (saved) toast('Backup exported', { variant: 'ok' });
+  } catch (error) {
+    toast(`Backup failed: ${error.message}`, { variant: 'err', duration: 5000 });
+  }
 }
 
 async function copyData() {
-  const copied = await clipboard.copy(dataPayload());
-  if (copied) toast('Backup copied', { variant: 'ok' });
+  try {
+    const copied = await clipboard.copy(await backupText());
+    if (copied) toast('Backup copied', { variant: 'ok' });
+  } catch (error) {
+    toast(`Copy failed: ${error.message}`, { variant: 'err', duration: 5000 });
+  }
+}
+
+async function chooseBackupFile() {
+  if (window.showOpenFilePicker) {
+    try {
+      const [handle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [{ description: 'GymLog JSON backup', accept: { 'application/json': ['.json'] } }],
+      });
+      return handle ? handle.getFile() : null;
+    } catch (error) {
+      if (error.name === 'AbortError') return null;
+      throw error;
+    }
+  }
+
+  return new Promise((resolve) => {
+    const input = el('input', { type: 'file', accept: 'application/json,.json' });
+    input.addEventListener('change', () => resolve(input.files?.[0] || null), { once: true });
+    input.addEventListener('cancel', () => resolve(null), { once: true });
+    input.click();
+  });
+}
+
+async function importData(mode) {
+  try {
+    const file = await chooseBackupFile();
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) throw new Error('Backup exceeds the 50 MB safety limit');
+    if (mode === 'replace' && !window.confirm('Replace local GymLog data with this backup? A safety backup will be downloaded first.')) return;
+
+    const safety = await backupText();
+    const saved = await files.save(
+      `gymlog-before-import-${new Date().toISOString().replaceAll(':', '-').slice(0, 19)}.json`,
+      new Blob([safety], { type: 'application/json' }),
+    );
+    if (!saved) return toast('Import cancelled: safety backup was not saved', { variant: 'err' });
+
+    const result = await restoreBackup(await file.text(), { mode });
+    await reloadState();
+    applyTheme();
+    toast(`${result.counts.sets} sets restored`, { variant: 'ok', duration: 4000 });
+  } catch (error) {
+    toast(`Import failed: ${error.message}`, { variant: 'err', duration: 6000 });
+  }
 }

@@ -3,6 +3,7 @@
 **An offline-first training journal that makes logging a set fast and keeps the
 workout moving.**
 
+[![lint · tests · build](https://img.shields.io/github/actions/workflow/status/aledtr77/gymlog/ci.yml?branch=main&label=lint%20%C2%B7%20tests%20%C2%B7%20build)](https://github.com/aledtr77/gymlog/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/version-1.0.0-111827)](https://github.com/aledtr77/gymlog/releases/tag/v1.0.0)
 [![Tests](https://img.shields.io/badge/tests-120%20passing-16a34a)](#quality-and-testing)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2563eb.svg)](LICENSE)
@@ -11,6 +12,8 @@ workout moving.**
 [Open GymLog](https://gymlog.aledtr-77.workers.dev/) ·
 [Report a bug](https://github.com/aledtr77/gymlog/issues) ·
 [View the source](https://github.com/aledtr77/gymlog)
+
+![Today: an upper-body session under way at 18 per cent, the week strip, sets and volume logged today, and the next exercise with its prescribed load](docs/screenshots/today.jpg)
 
 ## What GymLog is
 
@@ -37,6 +40,18 @@ recovery behaviour.
 - Light, dark and system themes across mobile and desktop layouts
 - Installable PWA shell with offline startup
 - Versioned local persistence and portable JSON backup/restore
+
+## The two screens that matter
+
+Logging a set is two steppers and one button, because the screen is used out of
+breath. The completed sets stack up beside it and the rest timer starts on its own.
+
+![The workout screen: bench press at 4 × 6 · 40 kg, kilogram and repetition steppers, three completed sets listed beside them and one set left](docs/screenshots/session.jpg)
+
+Progress is what the log is for: volume moved, balance across muscle groups, and
+personal bests, all derived from completed working sets.
+
+![Progress: kilograms this week, sets and day streak, an eight-week volume chart, muscle balance and personal bests](docs/screenshots/progress.jpg)
 
 ## Typical flow
 
@@ -143,11 +158,13 @@ The automated suite currently contains **120 tests** covering:
 - legacy imports, backup validation, atomic restore and rollback;
 - navigation state and local-data deletion.
 
-Run the complete checks locally:
+Run the complete checks locally — the same four a push to `main` has to pass:
 
 ```bash
 npm install
+npm run lint
 npm test
+npm run badge:check
 npm run build
 ```
 
@@ -166,6 +183,8 @@ Additional commands:
 
 ```bash
 npm run test      # complete automated test suite
+npm run lint      # ESLint over src/, the service worker, tests and config
+npm run badge     # rewrite the README test count to match the suite
 npm run build     # production bundle in dist/
 npm run preview   # preview the production build
 npm run deploy    # build and deploy through Wrangler

@@ -54,5 +54,3 @@ export function icon(name, className = 'w-6 h-6') {
   svg.appendChild(path);
   return svg;
 }
-
-export const iconNames = Object.keys(P);

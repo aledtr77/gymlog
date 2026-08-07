@@ -108,10 +108,6 @@
     box-shadow: 0 8px 26px rgb(var(--accent) / 0.26);
   }
 
-  .btn-ghost {
-    @apply btn bg-surface-2 text-ink-2 border border-line;
-  }
-
   .btn-quiet {
     @apply btn bg-transparent text-ink-3 min-h-[44px] px-3;
   }
@@ -123,10 +119,6 @@
 
   .card {
     @apply rounded-xl2 bg-surface border border-line p-5;
-  }
-
-  .tile {
-    @apply rounded-2xl bg-surface-2 border border-line p-4;
   }
 
   .chip {
@@ -188,68 +180,9 @@
     @apply mx-auto w-full max-w-5xl;
   }
 
-  .setup-intro {
-    @apply mb-8 max-w-2xl;
-  }
-
   .setup-eyebrow {
     @apply inline-flex items-center rounded-full bg-accent/10 px-3 py-1.5 text-[11px]
            font-extrabold uppercase tracking-[0.14em] text-accent;
-  }
-
-  .setup-title {
-    @apply mt-5 max-w-xl font-black tracking-[-0.045em];
-    font-size: clamp(2.25rem, 5vw, 3.5rem);
-    line-height: 0.98;
-  }
-
-  .setup-copy {
-    @apply mt-4 max-w-2xl text-[15px] leading-7 text-ink-2;
-  }
-
-  .setup-section {
-    @apply rounded-xl3 border border-line bg-surface p-4 md:p-6;
-  }
-
-  .setup-section + .setup-section {
-    @apply mt-4;
-  }
-
-  .setup-section-head {
-    @apply mb-5 grid grid-cols-[36px_minmax(0,1fr)] items-start gap-3;
-  }
-
-  .setup-step {
-    @apply grid h-9 w-9 place-items-center rounded-full bg-accent text-sm font-black text-accent-ink;
-  }
-
-  .setup-question {
-    @apply text-[17px] font-extrabold leading-snug;
-  }
-
-  .setup-hint {
-    @apply mt-1 text-[13px] leading-relaxed text-ink-3;
-  }
-
-  .setup-choice {
-    @apply min-h-[112px] rounded-2xl border border-line bg-surface-2 p-4 text-left
-           transition hover:border-ink-3 hover:bg-surface-3;
-  }
-
-  .setup-choice.is-selected {
-    @apply border-accent bg-accent/10 shadow-[inset_0_0_0_1px_rgb(var(--accent)/.16)];
-  }
-
-  .setup-choice-title {
-    @apply block text-[15px] font-extrabold leading-tight;
-  }
-
-  .setup-choice.is-selected .setup-choice-title {
-    @apply text-accent;
-  }
-
-  .setup-choice-copy {
-    @apply mt-2 block text-[13px] leading-[1.55] text-ink-3;
   }
 
   .workspace {
@@ -853,18 +786,6 @@
 
   .more-tools__settings small {
     @apply mt-0.5 text-[10px] text-ink-3;
-  }
-
-  .more-guidance {
-    @apply flex items-start gap-3 rounded-2xl border border-accent/20 bg-accent/10 p-4 text-sm leading-relaxed text-ink-2;
-  }
-
-  .more-guidance > svg {
-    @apply mt-0.5 shrink-0 text-accent;
-  }
-
-  .more-guidance strong {
-    @apply text-ink;
   }
 
   .more-plan-list {
@@ -1531,40 +1452,6 @@
     .onboarding__option { @apply min-h-[68px]; }
   }
 
-  .segmented {
-    @apply inline-flex rounded-xl bg-surface-2 border border-line p-1;
-  }
-
-  .segmented > button {
-    @apply min-h-[40px] rounded-lg px-3.5 text-sm font-bold text-ink-2 transition;
-  }
-
-  .segmented > button[aria-pressed='true'] {
-    @apply bg-surface text-ink shadow-sm;
-  }
-
-  .sheet-layer {
-    @apply fixed inset-0 z-50 bg-bg flex flex-col animate-rise;
-  }
-
-  .sheet-panel {
-    @apply min-h-0 flex-1 flex flex-col overflow-hidden;
-  }
-
-  .sheet-content > *:first-child {
-    @apply mt-0;
-  }
-}
-
-@layer utilities {
-  /* Horizontal strips (chips, day pickers) scroll without a visible bar. */
-  .no-bar {
-    scrollbar-width: none;
-  }
-
-  .no-bar::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1755,43 +1642,6 @@
     padding-bottom: 2rem;
   }
 
-  /* Two columns where the content is genuinely independent. Marked by the
-     feature rather than assumed, so a dense screen can opt out. */
-  .lg-split {
-    @apply grid grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-6 items-start;
-  }
-
-  .lg-cols-2 {
-    @apply grid grid-cols-2 gap-3;
-  }
-
-  .sheet-layer {
-    @apply bg-black/55 p-8 items-center justify-center;
-    backdrop-filter: blur(8px);
-  }
-
-  .sheet-panel {
-    @apply w-full max-w-4xl flex-none rounded-xl3 border border-line bg-bg shadow-2xl;
-    height: auto;
-    max-height: min(860px, calc(100dvh - 4rem));
-  }
-
-  .sheet-panel .appbar {
-    @apply static border-b border-line bg-surface/80 px-7;
-  }
-
-  .sheet-scroll {
-    background: linear-gradient(180deg, rgb(var(--surface) / 0.25), transparent 220px);
-  }
-
-  .sheet-panel .screen {
-    @apply max-w-none px-7 pt-6;
-    padding-bottom: 3rem;
-  }
-
-  .sheet-panel .appbar-back {
-    @apply grid;
-  }
 }
 
 @media (min-width: 1280px) {

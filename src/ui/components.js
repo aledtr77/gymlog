@@ -2,7 +2,7 @@
  * Shared UI. Only what appears on three or more screens; anything used once
  * stays in its feature file.
  */
-import { el, replace } from './el.js';
+import { el } from './el.js';
 import { icon } from './icons.js';
 import { haptics } from '../platform/index.js';
 
@@ -73,34 +73,6 @@ export function stat(value, label, { accent = false } = {}) {
       value,
     ),
     el('span', { class: 'label mt-0.5' }, label),
-  );
-}
-
-/** Row that navigates. 64px tall so it is a comfortable thumb target. */
-export function navRow({ title, sub, iconName, badge = null, onClick }) {
-  return el(
-    'button',
-    {
-      type: 'button',
-      class:
-        'w-full min-h-[64px] flex items-center gap-3 rounded-2xl bg-surface border border-line px-4 py-3 text-left transition active:scale-[0.99] active:border-accent/40',
-      onClick,
-    },
-    iconName
-      ? el(
-          'span',
-          { class: 'w-10 h-10 grid place-items-center rounded-xl bg-surface-2 text-accent shrink-0' },
-          icon(iconName, 'w-5 h-5'),
-        )
-      : null,
-    el(
-      'span',
-      { class: 'flex-1 min-w-0 flex flex-col' },
-      el('span', { class: 'font-bold truncate' }, title),
-      sub ? el('span', { class: 'text-sm text-ink-3 truncate num' }, sub) : null,
-    ),
-    badge,
-    icon('next', 'w-5 h-5 text-ink-3'),
   );
 }
 
@@ -209,30 +181,3 @@ export function toast(message, { variant = 'default', duration = 2600 } = {}) {
   toastHost.appendChild(node);
   setTimeout(() => node.remove(), duration);
 }
-
-/** Full-screen panel. Pushes history so Android back closes it. */
-export function sheet({ title, body, onClose }) {
-  const layer = el(
-    'div',
-    { class: 'sheet-layer', role: 'presentation', onClick: (event) => event.target === layer && close() },
-    el(
-      'section',
-      { class: 'sheet-panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
-      appbar({ title, back: close }),
-      el('div', { class: 'sheet-scroll flex-1 overflow-y-auto' }, el('div', { class: 'screen sheet-content' }, body)),
-    ),
-  );
-
-  function close() {
-    layer.remove();
-    window.removeEventListener('popstate', close);
-    onClose?.();
-  }
-
-  history.pushState({ sheet: true }, '');
-  window.addEventListener('popstate', close, { once: true });
-  document.body.appendChild(layer);
-  return { close, node: layer };
-}
-
-export { replace };

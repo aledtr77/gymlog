@@ -3,7 +3,7 @@ import { el } from './ui/el.js';
 import { define, setNotFound, start, go, refresh } from './core/router.js';
 import { on } from './core/bus.js';
 import { init } from './core/state.js';
-import { mountRestBar } from './features/timer.js';
+import { mountTimerBar } from './services/timer.js';
 import { mountNav } from './ui/nav.js';
 import { applyTheme, watchSystemTheme } from './services/theme.js';
 import { audio, screen as wakeScreen, net, notify } from './platform/index.js';
@@ -43,7 +43,7 @@ async function boot() {
 
   root.removeAttribute('aria-busy');
   mountNav(document.body);
-  mountRestBar(document.body);
+  mountTimerBar(document.body);
   wakeScreen.watch();
   watchSync();
   net.watch((online) => online && drain());

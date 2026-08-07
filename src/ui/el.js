@@ -30,7 +30,7 @@ export function el(tag, props = null, ...children) {
   return node;
 }
 
-export function append(parent, children) {
+function append(parent, children) {
   for (const child of children.flat(Infinity)) {
     if (child === null || child === undefined || child === false) continue;
     parent.append(child instanceof Node ? child : document.createTextNode(String(child)));
@@ -41,12 +41,4 @@ export function replace(parent, ...children) {
   parent.replaceChildren();
   append(parent, children);
   return parent;
-}
-
-/** Event delegation: one listener per list rather than one per row. */
-export function delegate(root, type, selector, handler) {
-  root.addEventListener(type, (event) => {
-    const hit = event.target.closest(selector);
-    if (hit && root.contains(hit)) handler(event, hit);
-  });
 }

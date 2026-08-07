@@ -12,13 +12,11 @@ import { TEMPLATES, templateById, nextSession } from '../data/programs.js';
 
 const sets = repo('sets');
 const body = repo('body');
-const favourites = repo('favourites');
 const goals = repo('goals');
 
 export const state = {
   sets: [],
   body: [],
-  favourites: [],
   goals: [],
   ready: false,
 };
@@ -27,10 +25,9 @@ const uid = () =>
   (crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
 export async function init() {
-  const [s, b, f, g] = await Promise.all([sets.all(), body.all(), favourites.all(), goals.all()]);
+  const [s, b, g] = await Promise.all([sets.all(), body.all(), goals.all()]);
   state.sets = s.sort((a, b2) => new Date(b2.at) - new Date(a.at));
   state.body = b.sort((a, b2) => new Date(b2.at) - new Date(a.at));
-  state.favourites = f;
   state.goals = g;
   state.ready = true;
   persist();
@@ -75,35 +72,6 @@ export async function logBody({ weight, note = '' }) {
   await queue('body:add', entry);
   emit('state');
   return entry;
-}
-
-export async function toggleFavourite(exerciseId, name) {
-  const existing = state.favourites.find((f) => f.id === exerciseId);
-  if (existing) {
-    state.favourites = state.favourites.filter((f) => f.id !== exerciseId);
-    await favourites.remove(exerciseId);
-  } else {
-    const entry = { id: exerciseId, name, at: Date.now() };
-    state.favourites = [...state.favourites, entry];
-    await favourites.put(entry);
-  }
-  emit('state');
-}
-
-export const isFavourite = (id) => state.favourites.some((f) => f.id === id);
-
-export async function saveGoal(goal) {
-  const entry = { id: goal.id || uid(), ...goal };
-  state.goals = [...state.goals.filter((g) => g.id !== entry.id), entry];
-  await goals.put(entry);
-  emit('state');
-  return entry;
-}
-
-export async function removeGoal(id) {
-  state.goals = state.goals.filter((g) => g.id !== id);
-  await goals.remove(id);
-  emit('state');
 }
 
 /* -------------------------------------------------------------- planning */

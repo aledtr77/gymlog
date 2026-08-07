@@ -118,20 +118,6 @@ export const notify = {
   },
 };
 
-/* ----------------------------------------------------------------- share */
-export const share = {
-  supported: can(() => navigator.share),
-  async send(data) {
-    if (!share.supported) return false;
-    try {
-      await navigator.share(data);
-      return true;
-    } catch {
-      return false;
-    }
-  },
-};
-
 export const clipboard = {
   supported: can(() => navigator.clipboard?.writeText),
   async copy(text) {
@@ -150,57 +136,9 @@ export const net = {
   get online() {
     return navigator.onLine !== false;
   },
-  /** Used to hold back non-essential work on a metered connection. */
-  get saveData() {
-    return can(() => navigator.connection?.saveData);
-  },
-  get effectiveType() {
-    return navigator.connection?.effectiveType ?? 'unknown';
-  },
   watch(fn) {
     window.addEventListener('online', () => fn(true));
     window.addEventListener('offline', () => fn(false));
-  },
-};
-
-/* --------------------------------------------------------------- battery */
-export const battery = {
-  async status() {
-    if (!can(() => navigator.getBattery)) return null;
-    try {
-      const b = await navigator.getBattery();
-      return { level: b.level, charging: b.charging };
-    } catch {
-      return null;
-    }
-  },
-};
-
-/* ------------------------------------------------------------ fullscreen */
-export const fullscreen = {
-  supported: can(() => document.documentElement.requestFullscreen),
-  get active() {
-    return Boolean(document.fullscreenElement);
-  },
-  toggle(el = document.documentElement) {
-    if (!fullscreen.supported) return;
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else el.requestFullscreen().catch(() => {});
-  },
-};
-
-/* ------------------------------------------------------------ the camera */
-export const camera = {
-  supported: can(() => navigator.mediaDevices?.getUserMedia),
-  async stream() {
-    if (!camera.supported) return null;
-    try {
-      return await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1080 } },
-      });
-    } catch {
-      return null;
-    }
   },
 };
 

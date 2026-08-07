@@ -4,8 +4,6 @@ const nf1 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
 const nf0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 export const kg = (v) => nf1.format(Number(v) || 0);
-export const int = (v) => nf0.format(Math.round(Number(v) || 0));
-
 /** Big volumes shrink so a stat tile can never break its layout. */
 export const compact = (v) => {
   const n = Number(v) || 0;

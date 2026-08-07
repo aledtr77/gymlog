@@ -13,76 +13,12 @@
 import { el } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
 import { appbar, workspace } from '../ui/components.js';
-import { emit, on } from '../core/bus.js';
-import { audio, haptics, notify } from '../platform/index.js';
+import { on } from '../core/bus.js';
+import { audio, haptics } from '../platform/index.js';
 import { prefs } from '../core/state.js';
-import { go, currentPath } from '../core/router.js';
+import { go } from '../core/router.js';
 import { mmss } from '../utils/date.js';
-
-/* ============================================================ rest timer */
-
-let endsAt = 0;
-let total = 0;
-let ticker = null;
-let fired = false;
-let timerKind = 'rest';
-
-export function restState() {
-  if (!endsAt) return { running: false, remaining: 0, total: 0, over: false, kind: timerKind };
-  const ms = endsAt - Date.now();
-  return {
-    running: true,
-    remaining: Math.max(0, Math.round(ms / 1000)),
-    total,
-    over: ms <= 0,
-    kind: timerKind,
-  };
-}
-
-export function startTimer(seconds, kind = 'rest') {
-  stopRest();
-  total = seconds;
-  timerKind = kind;
-  endsAt = Date.now() + seconds * 1000;
-  fired = false;
-
-  ticker = setInterval(() => {
-    if (endsAt - Date.now() <= 0 && !fired) {
-      fired = true;
-      if (prefs.get('sound')) audio.beep();
-      if (prefs.get('vibration')) haptics.alarm();
-      notify.show(kind === 'training' ? 'Training timer complete' : 'Rest complete', kind === 'training' ? 'Your training block has ended.' : 'You are ready for the next set.');
-      emit('rest', restState());
-      // Lingers a few seconds past zero: people look up late.
-      setTimeout(stopRest, 6000);
-      return;
-    }
-    emit('rest', restState());
-  }, 250);
-
-  emit('rest', restState());
-}
-
-export function startRest(seconds = prefs.get('restDefault')) {
-  startTimer(seconds, 'rest');
-}
-
-export function addRest(seconds) {
-  if (!endsAt) return;
-  endsAt += seconds * 1000;
-  total += seconds;
-  fired = false;
-  emit('rest', restState());
-}
-
-export function stopRest() {
-  clearInterval(ticker);
-  ticker = null;
-  endsAt = 0;
-  total = 0;
-  fired = false;
-  emit('rest', restState());
-}
+import { timerState, startTimer, stopTimer } from '../services/timer.js';
 
 /* ------------------------------------------------------------ the screen */
 
@@ -91,7 +27,7 @@ export function render() {
     training: { label: 'Training', hint: 'Your active session', min: 300, max: 5400, step: 300, color: 'green' },
     rest: { label: 'Rest', hint: 'Recovery between sets', min: 30, max: 300, step: 15, color: 'blue' },
   };
-  const initial = restState();
+  const initial = timerState();
   const values = {
     training: initial.running && initial.kind === 'training' ? initial.total : 1800,
     rest: initial.running && initial.kind === 'rest' ? initial.total : Number(prefs.get('restDefault')) || 90,
@@ -121,7 +57,7 @@ export function render() {
       el('span', { class: 'dual-ring__hand' }, el('i', { class: 'dual-ring__handle' })),
     );
     ring.onkeydown = (event) => {
-      if (!['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp'].includes(event.key) || restState().running) return;
+      if (!['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp'].includes(event.key) || timerState().running) return;
       event.preventDefault();
       active = mode;
       const direction = ['ArrowRight', 'ArrowUp'].includes(event.key) ? 1 : -1;
@@ -144,7 +80,7 @@ export function render() {
   const mobileStartButton = el('button', { type: 'button', class: 'dual-timer__mobile-start' });
   const startButtons = [startButton, mobileStartButton];
 
-  const paint = (timer = restState()) => {
+  const paint = (timer = timerState()) => {
     if (timer.running) active = timer.kind;
     const remaining = timer.running ? timer.remaining : pausedRemaining ?? values[active];
     const counting = timer.running && !timer.over;
@@ -179,22 +115,22 @@ export function render() {
   };
 
   const selectMode = (mode) => {
-    if (restState().running) return;
+    if (timerState().running) return;
     active = mode;
     pausedRemaining = null;
     paint();
   };
 
   const toggleTimer = () => {
-    const timer = restState();
+    const timer = timerState();
     if (timer.over) {
-      stopRest();
+      stopTimer();
       pausedRemaining = null;
       audio.unlock();
       startTimer(values[active], active);
     } else if (timer.running) {
       pausedRemaining = Math.max(1, timer.remaining);
-      stopRest();
+      stopTimer();
     } else {
       audio.unlock();
       startTimer(pausedRemaining ?? values[active], active);
@@ -206,7 +142,7 @@ export function render() {
   mobileStartButton.onclick = toggleTimer;
 
   const adjust = (direction) => {
-    if (restState().running) return;
+    if (timerState().running) return;
     values[active] = clampAndSnap(values[active] + modes[active].step * direction, modes[active]);
     pausedRemaining = null;
     paint();
@@ -229,7 +165,7 @@ export function render() {
   );
 
   const setFromPointer = (event) => {
-    if (!dragging || restState().running) return;
+    if (!dragging || timerState().running) return;
     const rect = dial.getBoundingClientRect();
     const x = event.clientX - (rect.left + rect.width / 2);
     const y = event.clientY - (rect.top + rect.height / 2);
@@ -241,7 +177,7 @@ export function render() {
   };
 
   dial.onpointerdown = (event) => {
-    if (restState().running) return;
+    if (timerState().running) return;
     const rect = dial.getBoundingClientRect();
     const radius = Math.hypot(event.clientX - (rect.left + rect.width / 2), event.clientY - (rect.top + rect.height / 2));
     const outerDistance = Math.abs(radius - rect.width * 0.44);
@@ -294,7 +230,7 @@ export function render() {
                 'div',
                 { class: 'dual-timer__actions' },
                 startButton,
-                el('button', { type: 'button', class: 'btn-quiet', onClick: () => { stopRest(); pausedRemaining = null; paint(); } }, icon('refresh', 'w-4 h-4'), 'Reset'),
+                el('button', { type: 'button', class: 'btn-quiet', onClick: () => { stopTimer(); pausedRemaining = null; paint(); } }, icon('refresh', 'w-4 h-4'), 'Reset'),
               ),
               el('p', { class: 'dual-timer__persist' }, icon('check', 'w-4 h-4'), 'The active timer keeps running when you leave this page.'),
             ),
@@ -323,62 +259,4 @@ function readable(seconds, mode) {
   if (mode === 'rest') return mmss(seconds);
   const minutes = Math.round(seconds / 60);
   return `${minutes} min`;
-}
-
-/* ------------------------------------------------- the persistent rest bar */
-
-export function mountRestBar(root) {
-  const host = el('div');
-  root.appendChild(host);
-
-  on('rest', (rest) => {
-    // The full timer screen already shows the countdown prominently. The
-    // compact floating bar appears only after navigating somewhere else.
-    if (!rest.running || currentPath() === '/timer') {
-      host.replaceChildren();
-      return;
-    }
-
-    const left = rest.total ? Math.max(0, rest.remaining / rest.total) : 0;
-
-    host.replaceChildren(
-      el(
-        'div',
-        {
-          class: [
-            'fixed left-3 right-3 z-40 mx-auto max-w-lg flex items-stretch rounded-2xl overflow-hidden shadow-2xl transition-colors',
-            rest.over ? 'bg-accent text-accent-ink' : 'bg-surface-3',
-          ],
-          style: { bottom: 'calc(112px + env(safe-area-inset-bottom, 0px))' },
-          role: 'timer',
-          'aria-live': 'off',
-        },
-        el(
-          'button',
-          {
-            type: 'button',
-            class: 'flex-1 min-w-0 flex items-center justify-between gap-3 px-5 py-4 text-left',
-            'aria-label': `Stop ${rest.kind} timer`,
-            onClick: stopRest,
-          },
-          el('span', { class: 'label' }, rest.over ? 'Done' : rest.kind === 'training' ? 'Training' : 'Rest'),
-          el('span', { class: 'text-2xl font-black num' }, mmss(rest.remaining)),
-          // Hairline progress: tinting the whole bar makes the time harder to read.
-          el('span', {
-            class: 'absolute left-0 bottom-0 h-[3px] bg-accent origin-left',
-            style: { width: '100%', transform: `scaleX(${left.toFixed(3)})` },
-          }),
-        ),
-        el(
-          'button',
-          {
-            type: 'button',
-            class: 'px-5 font-extrabold border-l border-black/20',
-            onClick: () => addRest(rest.kind === 'training' ? 60 : 30),
-          },
-          rest.kind === 'training' ? '+1 min' : '+30 sec',
-        ),
-      ),
-    );
-  });
 }

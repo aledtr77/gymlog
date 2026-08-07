@@ -7,33 +7,6 @@
  * time would be pointless friction.
  */
 
-export const MUSCLES = [
-  'Chest',
-  'Back',
-  'Shoulders',
-  'Biceps',
-  'Triceps',
-  'Quads',
-  'Hamstrings',
-  'Glutes',
-  'Calves',
-  'Core',
-  'Forearms',
-  'Total body',
-  'Cardio',
-];
-
-export const EQUIPMENT = [
-  'Barbell',
-  'Dumbbells',
-  'Cable',
-  'Machine',
-  'Bodyweight',
-  'Kettlebell',
-  'Band',
-  'Other',
-];
-
 const RAW = [
   // Chest -----------------------------------------------------------------
   ['panca-piana', 'Bench press', 'Chest', 'Barbell', 150],

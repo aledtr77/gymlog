@@ -146,9 +146,6 @@ export const TEMPLATES = [
 
 export const templateById = (id) => TEMPLATES.find((t) => t.id === id) || TEMPLATES[0];
 
-export const sessionById = (templateId, sessionId) =>
-  templateById(templateId).sessions.find((s) => s.id === sessionId) || null;
-
 /** Rotates through a template's sessions from whatever you did last. */
 export function nextSession(template, lastSessionId) {
   const list = template.sessions;

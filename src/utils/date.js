@@ -21,11 +21,9 @@ export const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const dfLong = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 const dfShort = new Intl.DateTimeFormat('en-US', { month: '2-digit', day: '2-digit' });
-const dfMonth = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
 
 export const longDate = (d) => dfLong.format(new Date(d));
 export const shortDate = (d) => dfShort.format(new Date(d));
-export const monthLabel = (d) => dfMonth.format(new Date(d));
 
 export function dayLabel(d) {
   const gap = daysBetween(d, new Date());

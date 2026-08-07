@@ -1,7 +1,6 @@
 /**
- * Secondary training tools and app preferences live here. Personal profile
- * data and body-weight tracking belong to the dashboard, where their effect
- * on the plan and estimates stays visible.
+ * A short list of practical training tools. App behaviour and data management
+ * deliberately live in Settings, so this page stays useful to a beginner.
  */
 import { el } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
@@ -11,9 +10,6 @@ import { TEMPLATES } from '../data/programs.js';
 import { go } from '../core/router.js';
 import { volume } from '../core/training.js';
 import * as calc from '../utils/calc.js';
-import { files, share, clipboard, net } from '../platform/index.js';
-import { usage } from '../services/db.js';
-import { applyTheme } from '../services/theme.js';
 import { kg, compact, parseNum } from '../utils/num.js';
 import { dayLabel } from '../utils/date.js';
 
@@ -24,44 +20,29 @@ export function render() {
     node: el(
       'div',
       null,
-      appbar({ title: 'More', heading: 'Tools and preferences', back: () => go('/') }),
+      appbar({ title: 'More', heading: 'Useful training tools', back: () => go('/') }),
       el(
         'main',
-        { class: 'screen' },
+        { class: 'screen more-screen lg:max-w-5xl' },
         el(
           'header',
           { class: 'mb-6 max-w-2xl' },
-          el('h2', { class: 'text-2xl font-black tracking-tight lg:hidden' }, 'Tools and preferences'),
-          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2 lg:mt-0' }, 'Adjust your training, review your data, and manage the app. Estimates can provide context, but they are not medical advice.'),
+          el('h2', { class: 'text-2xl font-black tracking-tight lg:hidden' }, 'Useful training tools'),
+          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2 lg:mt-0' }, 'Everything here answers a practical training question. Choose what you need and ignore the rest.'),
         ),
         el(
           'div',
-          { class: 'grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5 items-start' },
-          toolSection({
-            title: 'Training',
-            body: 'Shape your plan and review previous sessions.',
-            items: [
-              { title: 'Training plan', sub: `${template.name} · ${template.days} days per week`, iconName: 'calendar', onClick: openProgram },
-              { title: 'Workout history', sub: state.sets.length ? `${state.sets.length} logged sets` : 'Your first logged set will appear here', iconName: 'trophy', onClick: openHistory },
-            ],
-          }),
-          toolSection({
-            title: 'Profile and estimates',
-            body: 'Personal details stay out of your training flow and on this device.',
-            items: [
-              { title: 'Personal profile', sub: personalProfileSummary(), iconName: 'scale', onClick: openPersonalProfile },
-              { title: 'Training and health estimates', sub: 'BMI, energy needs, 1RM, body fat, and plates', iconName: 'calculator', onClick: openCalculators },
-            ],
-          }),
-          toolSection({
-            title: 'App and privacy',
-            body: 'Personalize GymLog and stay in control of your data.',
-            className: 'lg:col-span-2',
-            items: [
-              { title: 'Settings', sub: 'Theme, sound, vibration, and rest', iconName: 'info', onClick: openSettings },
-              { title: 'Your data', sub: 'Export a copy and review storage use', iconName: 'share', onClick: openData },
-            ],
-          }),
+          { class: 'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:gap-4' },
+          toolCard('Training plan', `${template.name} · ${template.days} days per week`, 'See the workouts GymLog will rotate through.', 'calendar', openProgram),
+          toolCard('Personal profile', personalProfileSummary(), 'Keep the basic details used by your training estimates up to date.', 'scale', openPersonalProfile),
+          toolCard('Workout history', state.sets.length ? `${state.sets.length} logged sets` : 'No workouts logged yet', 'Review the weights and reps you have already completed.', 'trophy', openHistory),
+          toolCard('Quick calculations', 'Strength estimate and barbell plates', 'Two simple calculators for questions that come up in the gym.', 'calculator', openCalculators),
+        ),
+        el(
+          'button',
+          { type: 'button', class: 'mt-5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border border-line text-sm font-bold text-ink-2 lg:hidden', onClick: () => go('/settings') },
+          icon('settings', 'w-5 h-5'),
+          'App settings',
         ),
       ),
     ),
@@ -76,24 +57,18 @@ function personalProfileSummary() {
     : 'Add details for weight trends and calorie estimates';
 }
 
-function toolSection({ title, body, items, className = '' }) {
+function toolCard(title, meta, body, iconName, onClick) {
   return el(
-    'section',
-    { class: `card p-3 lg:p-4 ${className}` },
-    el('div', { class: 'px-2 pt-1 pb-3' }, el('h3', { class: 'font-extrabold' }, title), el('p', { class: 'mt-1 text-xs leading-relaxed text-ink-3' }, body)),
+    'button',
+    { type: 'button', class: 'card group min-h-[156px] text-left transition hover:border-ink-3 hover:bg-surface-2 active:scale-[.99]', onClick },
     el(
-      'div',
-      { class: ['grid grid-cols-1 gap-1', className && 'lg:grid-cols-2'] },
-      items.map((item) =>
-        el(
-          'button',
-          { type: 'button', class: 'w-full min-h-[68px] flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-surface-2 active:scale-[.99]', onClick: item.onClick },
-          el('span', { class: 'w-10 h-10 shrink-0 grid place-items-center rounded-xl bg-surface-2 text-accent' }, icon(item.iconName, 'w-5 h-5')),
-          el('span', { class: 'flex-1 min-w-0' }, el('span', { class: 'block font-bold' }, item.title), el('span', { class: 'block mt-0.5 text-xs leading-snug text-ink-3' }, item.sub)),
-          icon('next', 'w-5 h-5 text-ink-3'),
-        ),
-      ),
+      'span',
+      { class: 'flex items-start gap-3' },
+      el('span', { class: 'grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface-2 text-accent group-hover:bg-surface-3' }, icon(iconName, 'w-5 h-5')),
+      el('span', { class: 'min-w-0 flex-1 pt-0.5' }, el('strong', { class: 'block text-base font-black' }, title), el('span', { class: 'mt-1 block text-xs font-bold text-accent' }, meta)),
+      icon('next', 'mt-2 w-5 h-5 text-ink-3'),
     ),
+    el('span', { class: 'mt-4 block text-sm leading-relaxed text-ink-2' }, body),
   );
 }
 
@@ -281,16 +256,13 @@ function validProfile(profile) {
 
 function openCalculators() {
   sheet({
-    title: 'Calculators and estimates',
+    title: 'Quick calculations',
     body: el(
       'div',
       { class: 'flex flex-col gap-3' },
-      el('p', { class: 'text-sm leading-relaxed text-ink-2' }, 'Choose a tool based on the question you want to answer. These are estimates for practical context, not diagnoses.'),
+      el('p', { class: 'text-sm leading-relaxed text-ink-2' }, 'Two practical tools for common questions during strength training.'),
       [
         ['Estimated one-rep max', 'Estimate maximal strength from a set you have already performed.', oneRmCalc],
-        ['Body mass index (BMI)', 'A broad adult screening ratio based on weight and height.', bmiCalc],
-        ['Energy and macronutrients', 'Estimate maintenance calories and a starting macro split.', tdeeCalc],
-        ['Estimated body fat', 'US Navy method based on body circumference measurements.', bodyFatCalc],
         ['Barbell plates', 'Work out which plates to load on each side.', platesCalc],
       ].map(([label, sub, open]) => navRow({ title: label, sub, iconName: 'calculator', onClick: open })),
     ),
@@ -376,114 +348,6 @@ function oneRmCalc() {
   );
 }
 
-function bmiCalc() {
-  const profile = prefs.get('profile') || {};
-  calcSheet(
-    'Body mass index',
-    [
-      { key: 'weight', label: 'Your weight (kg)', value: state.body[0]?.weight || profile.weight },
-      { key: 'height', label: 'Your height (cm)', step: '1', value: profile.height },
-    ],
-    ({ weight, height }) => {
-      const r = calc.bmi(weight, height);
-      if (!r) return el('p', { class: 'text-sm text-ink-3' }, 'Enter weight and height to see an estimate.');
-
-      const metres = height / 100;
-      const lower = Math.round(18.5 * metres * metres * 10) / 10;
-      const upper = Math.round(24.9 * metres * metres * 10) / 10;
-      const interpretation =
-        r.band === 'underweight'
-          ? 'This is below the reference range. If your weight has changed unintentionally or you have concerns about nutrition or health, speak with a doctor or registered dietitian.'
-          : r.band === 'healthy range'
-            ? 'This sits within the statistical reference range. It does not describe body composition, fitness, or diet quality.'
-            : r.band === 'overweight'
-              ? 'This is above the reference range. Consider waist measurement, long-term trend, and muscle mass before drawing conclusions.'
-              : 'This range may be associated with higher health risk. Discuss it with a qualified professional rather than relying on BMI alone.';
-
-      return [
-        el('p', { class: 'label' }, 'Result'),
-        el('div', { class: 'mt-1 flex items-end gap-2' }, el('span', { class: 'text-4xl font-black text-accent num' }, String(r.value)), el('span', { class: 'pb-1 text-sm font-bold capitalize text-ink-2' }, r.band)),
-        el(
-          'div',
-          { class: 'mt-4 grid grid-cols-4 gap-1', 'aria-label': 'BMI ranges' },
-          [['< 18.5', 'Below'], ['18.5–24.9', 'Reference'], ['25–29.9', 'Above'], ['≥ 30', 'Higher']].map(([value, label], index) => {
-            const active = ['underweight', 'healthy range', 'overweight', 'obesity range'][index] === r.band;
-            return el('div', { class: ['rounded-lg p-2 text-center', active ? 'bg-accent text-accent-ink' : 'bg-surface-3 text-ink-3'] }, el('span', { class: 'block text-[10px] font-black num' }, value), el('span', { class: 'block mt-0.5 text-[9px] font-bold' }, label));
-          }),
-        ),
-        el('p', { class: 'mt-4 text-sm leading-relaxed text-ink-2' }, interpretation),
-        el('div', { class: 'mt-4 h-px bg-line' }),
-        line('Reference weight range for your height', `${kg(lower)}–${kg(upper)} kg`),
-        el('p', { class: 'mt-3 text-xs leading-relaxed text-ink-3' }, 'BMI is an adult screening tool. It does not distinguish muscle from fat and should not be used alone for children, pregnancy, very muscular athletes, or older adults.'),
-      ];
-    },
-    {
-      intro: el(
-        'div',
-        { class: 'rounded-2xl border border-line bg-surface p-4' },
-        el('h3', { class: 'font-extrabold text-ink' }, 'What does BMI measure?'),
-        el('p', { class: 'mt-1.5' }, 'BMI compares weight with height. It can provide a broad adult screening reference, but it does not directly measure body fat or determine whether someone is healthy.'),
-      ),
-    },
-  );
-}
-
-function tdeeCalc() {
-  const profile = prefs.get('profile') || {};
-  calcSheet(
-    'Energy and macronutrients',
-    [
-      { key: 'weight', label: 'Weight (kg)', value: state.body[0]?.weight || profile.weight },
-      { key: 'height', label: 'Height (cm)', value: profile.height },
-      { key: 'age', label: 'Age', step: '1', value: profile.age },
-      { key: 'sex', label: 'Sex used by the formula', value: profile.sex, options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
-      { key: 'activity', label: 'Activity level', options: calc.ACTIVITY.map((a) => ({ value: a.id, label: `${a.label} — ${a.hint}` })) },
-      { key: 'goal', label: 'Goal', options: [
-        { value: 'maintenance', label: 'Maintain weight' },
-        { value: 'fat-loss', label: 'Lose fat' },
-        { value: 'muscle-gain', label: 'Gain muscle' },
-      ] },
-    ],
-    ({ weight, height, age, sex, activity, goal }) => {
-      const bmr = calc.bmr({ weight, height, age, sex });
-      if (!bmr) return el('p', { class: 'text-sm text-ink-3' }, 'Complete the fields to see an estimate.');
-      const tdee = calc.tdee(bmr, activity);
-      const m = calc.macros(tdee, weight, goal);
-      return [
-        line('Basal metabolic rate', `${bmr} kcal`),
-        line('Estimated maintenance', `${tdee} kcal`),
-        line('Starting target', `${m.calories} kcal`, true),
-        el('div', { class: 'h-px bg-line my-2' }),
-        line('Protein', `${m.protein} g`),
-        line('Fat', `${m.fat} g`),
-        line('Carbohydrate', `${m.carbs} g`),
-        el('p', { class: 'text-xs text-ink-3 mt-3' }, 'Mifflin–St Jeor estimate with protein set to 1.8 g per kg.'),
-      ];
-    },
-    { intro: 'Treat this as a starting point, not a meal prescription. Follow it for 2–3 weeks, then adjust using average weight, energy, and training performance.' },
-  );
-}
-
-function bodyFatCalc() {
-  const profile = prefs.get('profile') || {};
-  calcSheet(
-    'Estimated body fat',
-    [
-      { key: 'sex', label: 'Sex used by the formula', value: profile.sex, options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
-      { key: 'height', label: 'Height (cm)', value: profile.height },
-      { key: 'neck', label: 'Neck circumference (cm)' },
-      { key: 'waist', label: 'Waist circumference (cm)' },
-      { key: 'hip', label: 'Hip circumference (cm, required for women)' },
-    ],
-    (v) => {
-      const r = calc.bodyFat(v);
-      if (r === null) return el('p', { class: 'text-sm text-ink-3' }, 'Enter height, neck, and waist. Hip circumference is also required for women.');
-      return [line('Estimated body fat', `${r}%`, true), el('p', { class: 'text-xs text-ink-3 mt-3' }, 'US Navy circumference method.')];
-    },
-    { intro: 'Measure without pulling the tape tight, using the same locations and conditions each time. The absolute value has a margin of error; the trend is more useful.' },
-  );
-}
-
 function platesCalc() {
   calcSheet(
     'Barbell plates',
@@ -550,157 +414,5 @@ function openHistory() {
           ),
         )
       : el('p', { class: 'text-sm text-ink-3' }, 'No workouts logged yet.'),
-  });
-}
-
-/* ------------------------------------------------------------------ data */
-
-async function openData() {
-  const { used, quota } = await usage();
-
-  const payload = () =>
-    JSON.stringify(
-      { app: 'gymlog', version: 3, at: new Date().toISOString(), profile: prefs.get('profile'), sets: state.sets, body: state.body, goals: state.goals },
-      null,
-      2,
-    );
-
-  sheet({
-    title: 'Your data',
-    body: el(
-      'div',
-      { class: 'flex flex-col gap-3' },
-      el(
-        'div',
-        { class: 'tile' },
-        el('p', { class: 'text-sm text-ink-2' }, 'Everything stays on this device. No account and no server.'),
-        quota
-          ? el('p', { class: 'text-xs text-ink-3 mt-2 num' }, `Storage used: ${(used / 1048576).toFixed(1)} MB of ${(quota / 1048576).toFixed(0)} MB`)
-          : null,
-        el('p', { class: 'text-xs text-ink-3 mt-1' }, `Connection: ${net.online ? 'online' : 'offline'}`),
-      ),
-      el(
-        'button',
-        {
-          type: 'button',
-          class: 'btn-ghost w-full',
-          onClick: async () => {
-            const blob = new Blob([payload()], { type: 'application/json' });
-            await files.save(`gymlog-${new Date().toISOString().slice(0, 10)}.json`, blob);
-            toast('Data exported', { variant: 'ok' });
-          },
-        },
-        'Export all data (JSON)',
-      ),
-      share.supported
-        ? el(
-            'button',
-            {
-              type: 'button',
-              class: 'btn-ghost w-full',
-              onClick: () => share.send({ title: 'GymLog', text: `This week: ${compact(volume(state.sets))} kg of training volume.` }),
-            },
-            'Share progress',
-          )
-        : null,
-      clipboard.supported
-        ? el(
-            'button',
-            {
-              type: 'button',
-              class: 'btn-ghost w-full',
-              onClick: async () => {
-                await clipboard.copy(payload());
-                toast('Copied to clipboard', { variant: 'ok' });
-              },
-            },
-            'Copy to clipboard',
-          )
-        : null,
-    ),
-  });
-}
-
-/* -------------------------------------------------------------- settings */
-
-function openSettings() {
-  const p = prefs.get();
-  let handle;
-
-  const toggle = (key, label, hint) => {
-    const input = el('input', {
-      type: 'checkbox',
-      class: 'w-6 h-6 accent-current',
-      checked: p[key],
-      onChange: (e) => prefs.set({ [key]: e.target.checked }),
-    });
-    return el(
-      'label',
-      { class: 'flex items-center gap-3 py-3 border-b border-line' },
-      el('span', { class: 'flex-1' }, el('span', { class: 'font-bold block' }, label), el('span', { class: 'text-xs text-ink-3' }, hint)),
-      input,
-    );
-  };
-
-  handle = sheet({
-    title: 'Settings',
-    body: el(
-      'div',
-      null,
-      el(
-        'label',
-        { class: 'flex flex-col gap-1.5 mb-4' },
-        el('span', { class: 'label' }, 'Theme'),
-        el(
-          'select',
-          {
-            class: 'field',
-            onChange: (e) => {
-              prefs.set({ theme: e.target.value });
-              applyTheme(e.target.value);
-            },
-          },
-          [
-            { v: 'system', l: 'Use system setting' },
-            { v: 'dark', l: 'Dark' },
-            { v: 'light', l: 'Light' },
-          ].map((o) => el('option', { value: o.v, selected: p.theme === o.v }, o.l)),
-        ),
-      ),
-      toggle('sound', 'Sound', 'Play a tone when rest ends'),
-      toggle('vibration', 'Vibration', 'Tactile feedback for key actions'),
-      toggle('keepAwake', 'Keep screen awake', 'While a workout is open'),
-      el(
-        'label',
-        { class: 'flex flex-col gap-1.5 mt-4' },
-        el('span', { class: 'label' }, 'Default rest time'),
-        el('input', {
-          type: 'number',
-          class: 'field',
-          value: p.restDefault,
-          step: '15',
-          onChange: (e) => prefs.set({ restDefault: Number(e.target.value) || 90 }),
-        }),
-      ),
-      el(
-        'div',
-        { class: 'mt-6 pt-5 border-t border-line' },
-        el('h3', { class: 'font-extrabold' }, 'Starting plan'),
-        el('p', { class: 'mt-1 text-xs leading-relaxed text-ink-3' }, 'Run the setup again to revisit experience, available days, and exercises. Existing workout history will stay intact.'),
-        el(
-          'button',
-          {
-            type: 'button',
-            class: 'btn-ghost mt-3 w-full sm:w-auto',
-            onClick: () => {
-              prefs.set({ onboarded: false });
-              handle.close();
-              go('/');
-            },
-          },
-          'Run setup again',
-        ),
-      ),
-    ),
   });
 }

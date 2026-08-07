@@ -542,6 +542,15 @@
     @apply pt-6;
   }
 
+  .screen.exercises-screen {
+    padding-bottom: 2rem;
+  }
+
+  .screen.more-screen,
+  .screen.settings-screen {
+    padding-bottom: 2rem;
+  }
+
   /* Pinning the action to the bottom edge is a thumb affordance. With a
      pointer it only opens a void between the content and the button, so on
      desktop the dock returns to the flow, directly under what it acts on. */

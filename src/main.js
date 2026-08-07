@@ -18,6 +18,7 @@ define('/timer', () => import('./features/timer.js'));
 define('/exercises', () => import('./features/exercises.js'));
 define('/stats', () => import('./features/stats.js'));
 define('/more', () => import('./features/more.js'));
+define('/settings', () => import('./features/settings.js'));
 setNotFound(() => import('./features/dashboard.js'));
 
 async function boot() {

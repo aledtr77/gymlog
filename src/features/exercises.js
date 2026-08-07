@@ -142,7 +142,7 @@ export function render() {
       appbar({ title: 'Exercises', heading: 'Browse your exercise library', back: () => go('/') }),
       el(
         'main',
-        { class: 'screen' },
+        { class: 'screen exercises-screen' },
         el(
           'div',
           { class: 'flex flex-col gap-3 lg:rounded-xl3 lg:border lg:border-line lg:bg-surface/45 lg:p-5' },

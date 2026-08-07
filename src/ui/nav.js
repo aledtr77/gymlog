@@ -18,8 +18,11 @@ const ITEMS = [
   { path: '/more', label: 'More', icon: 'more' },
 ];
 
+const SETTINGS = { path: '/settings', label: 'Settings', icon: 'settings' };
+
 export function mountNav(root) {
   const list = el('nav', { class: 'flex flex-col gap-1.5 px-4', 'aria-label': 'Main navigation' });
+  const settingsList = el('nav', { class: 'mt-3 flex flex-col gap-1.5 border-t border-line/70 px-4 pt-3', 'aria-label': 'App settings' });
 
   const rail = el(
     'aside',
@@ -37,6 +40,7 @@ export function mountNav(root) {
     ),
     el('p', { class: 'label px-7 pt-7 pb-3' }, 'Workspace'),
     list,
+    settingsList,
     el(
       'div',
       { class: 'mt-auto p-4' },
@@ -51,8 +55,7 @@ export function mountNav(root) {
 
   const paint = () => {
     const here = currentPath();
-    list.replaceChildren(
-      ...ITEMS.map((item) => {
+    const navButton = (item) => {
         // "/session/2" still belongs to "Today"; only "/" matches exactly.
         const active = item.path === '/' ? here === '/' || here.startsWith('/session') : here.startsWith(item.path);
         return el(
@@ -69,8 +72,10 @@ export function mountNav(root) {
           icon(item.icon, 'w-5 h-5'),
           item.label,
         );
-      }),
-    );
+    };
+
+    list.replaceChildren(...ITEMS.map(navButton));
+    settingsList.replaceChildren(navButton(SETTINGS));
   };
 
   paint();

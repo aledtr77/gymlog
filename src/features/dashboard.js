@@ -69,17 +69,11 @@ export function render() {
       }),
       el(
         'main',
-        { class: 'screen lg:max-w-6xl' },
-        el(
-          'header',
-          { class: 'mb-5 lg:mb-7 max-w-2xl' },
-          el('h2', { class: 'text-2xl font-black tracking-tight lg:hidden' }, heading),
-          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2 lg:mt-0 lg:text-[15px]' }, guidance),
-        ),
+        { class: 'screen today-screen' },
         el(
           'div',
           { class: 'lg:grid lg:grid-cols-[minmax(0,1.45fr)_minmax(300px,.8fr)] lg:gap-6 lg:items-start' },
-          sessionCard({ session, template, nextLift }),
+          sessionCard({ session, template, nextLift, guidance }),
           el(
             'aside',
             { class: 'mt-4 lg:mt-0 flex flex-col gap-4' },
@@ -93,7 +87,7 @@ export function render() {
 }
 
 function renderSetup() {
-  const main = el('main', { class: 'screen setup-screen lg:max-w-6xl' });
+  const main = el('main', { class: 'screen setup-screen' });
 
   const paint = () => {
     replace(main, setupDraft.reviewing ? proposalStep(paint) : questionsStep(paint));
@@ -321,7 +315,7 @@ function activateProposal(base) {
   setTemplate('custom', { level, split, trainingDays, customTemplate: custom });
 }
 
-function sessionCard({ session, template, nextLift }) {
+function sessionCard({ session, template, nextLift, guidance }) {
   const completedPct = session.setsTotal ? Math.round((session.setsDone / session.setsTotal) * 100) : 0;
   const minutes = Math.max(30, Math.round(session.setsTotal * 2.7 / 5) * 5);
   const profileWeight = state.body[0]?.weight || prefs.get('profile')?.weight;
@@ -330,7 +324,7 @@ function sessionCard({ session, template, nextLift }) {
   return el(
     'section',
     {
-      class: 'rounded-xl3 border border-line p-5 lg:p-7 relative overflow-hidden',
+      class: 'workspace today-session relative p-5 lg:p-7',
       style: {
         backgroundImage:
           'linear-gradient(145deg, rgb(var(--accent) / 0.11), transparent 48%), linear-gradient(rgb(var(--surface)), rgb(var(--surface)))',
@@ -345,6 +339,7 @@ function sessionCard({ session, template, nextLift }) {
         el('p', { class: 'label text-accent' }, session.complete ? 'Complete' : session.started ? 'In progress' : 'Your next workout'),
         el('h3', { class: 'mt-1 text-2xl lg:text-3xl font-black tracking-tight' }, session.name),
         el('p', { class: 'mt-1 text-sm text-ink-2' }, session.focus),
+        el('p', { class: 'mt-3 max-w-2xl text-sm leading-relaxed text-ink-2' }, guidance),
       ),
       session.started
         ? el('span', { class: 'chip chip-on shrink-0 num' }, `${completedPct}%`)
@@ -421,7 +416,7 @@ function weekCard(todaySets) {
 
   return el(
     'section',
-    { class: 'card' },
+    { class: 'surface-group p-5' },
     el('div', { class: 'flex items-baseline justify-between gap-3' }, el('h3', { class: 'font-extrabold' }, 'This week'), el('span', { class: 'text-xs text-ink-3' }, 'Mon–Sun')),
     weekStrip(),
     el(
@@ -446,7 +441,7 @@ function coachingCard({ firstWorkout, session, nextLift }) {
 
   return el(
     'section',
-    { class: 'card' },
+    { class: 'surface-group p-5' },
     el('div', { class: 'w-9 h-9 grid place-items-center rounded-xl bg-accent/12 text-accent' }, icon('info', 'w-5 h-5')),
     el('h3', { class: 'mt-3 font-extrabold' }, title),
     el('p', { class: 'mt-1.5 text-sm leading-relaxed text-ink-2' }, body),

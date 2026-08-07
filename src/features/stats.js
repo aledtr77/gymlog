@@ -4,7 +4,7 @@
  * no library, and they inherit the theme tokens.
  */
 import { el } from '../ui/el.js';
-import { appbar, stat, blank } from '../ui/components.js';
+import { appbar, stat, blank, workspace, groupHeading } from '../ui/components.js';
 import { state } from '../core/state.js';
 import { volume, weeklyVolume, personalBests, muscleSplit, streak } from '../core/training.js';
 import { exerciseById } from '../data/exercises.js';
@@ -23,8 +23,13 @@ export function render() {
         appbar({ title: 'Progress', heading: 'Review your training trends', back: () => go('/') }),
         el(
           'main',
-          { class: 'screen lg:max-w-4xl' },
-          blank({ title: 'Nothing here yet', body: 'Complete your first workout to see training volume, personal bests, and muscle-group balance.' }),
+          { class: 'screen progress-screen' },
+          workspace({
+            iconName: 'chart',
+            title: 'Your progress',
+            body: 'Training trends will appear here after your first completed workout.',
+            content: blank({ title: 'Nothing here yet', body: 'Complete your first workout to see training volume, personal bests, and muscle-group balance.' }),
+          }),
         ),
       ),
     };
@@ -42,70 +47,59 @@ export function render() {
       appbar({ title: 'Progress', heading: 'Review your training trends', back: () => go('/') }),
       el(
         'main',
-        { class: 'screen lg:grid lg:grid-cols-2 lg:gap-4' },
-
-        el(
-          'section',
-          { class: 'tile grid grid-cols-3 gap-3 lg:col-span-2' },
-          stat(compact(volume(thisWeek)), 'kg this week', { accent: true }),
-          stat(String(thisWeek.length), 'sets'),
-          stat(String(streak(sets)), 'day streak'),
-        ),
-
-        el(
-          'section',
-          { class: 'card mt-4 lg:mt-0 lg:col-span-2' },
-          el('h2', { class: 'label mb-3' }, 'Weekly volume'),
-          bars(weeks),
-        ),
-
-        el(
-          'section',
-          { class: 'card mt-4 lg:mt-0' },
-          el('h2', { class: 'label mb-3' }, 'Volume by muscle group'),
-          el(
+        { class: 'screen progress-screen' },
+        workspace({
+          iconName: 'chart',
+          title: 'Training overview',
+          body: 'See whether your work is becoming more consistent, balanced, and strong over time.',
+          action: el('span', { class: 'chip' }, `${sets.length} sets logged`),
+          content: el(
             'div',
-            { class: 'flex flex-col gap-2.5' },
-            split.map((row) => {
-              const pct = Math.round((row.volume / split[0].volume) * 100);
-              return el(
-                'div',
-                null,
-                el(
-                  'div',
-                  { class: 'flex justify-between text-sm mb-1' },
-                  el('span', { class: 'font-bold' }, row.muscle),
-                  el('span', { class: 'text-ink-3 num' }, `${compact(row.volume)} kg`),
-                ),
-                el(
-                  'div',
-                  { class: 'h-2 rounded-full bg-surface-2 overflow-hidden' },
-                  el('div', { class: 'h-full bg-accent rounded-full', style: { width: `${pct}%` } }),
-                ),
-              );
-            }),
-          ),
-        ),
-
-        el(
-          'section',
-          { class: 'card mt-4 lg:mt-0' },
-          el('h2', { class: 'label mb-3' }, 'Personal bests'),
-          el(
-            'div',
-            { class: 'flex flex-col gap-2' },
-            bests.map((b) =>
+            { class: 'progress-layout' },
+            el(
+              'section',
+              { class: 'progress-summary' },
+              stat(compact(volume(thisWeek)), 'kg this week', { accent: true }),
+              stat(String(thisWeek.length), 'sets'),
+              stat(String(streak(sets)), 'day streak'),
+            ),
+            el(
+              'section',
+              { class: 'surface-group progress-chart' },
+              groupHeading({ iconName: 'chart', title: 'Weekly volume', body: 'Total weight moved across the last eight weeks.' }),
+              el('div', { class: 'mt-5' }, bars(weeks)),
+            ),
+            el(
+              'section',
+              { class: 'surface-group progress-detail' },
+              groupHeading({ iconName: 'dumbbell', title: 'Muscle balance', body: 'Relative training volume by muscle group.' }),
               el(
                 'div',
-                { class: 'flex items-center gap-3 py-2 border-b border-line last:border-0' },
-                el('span', { class: 'flex-1 min-w-0 font-bold truncate' }, b.name),
-                el('span', { class: 'num text-sm text-ink-2' }, `${kg(b.weight)} kg × ${b.reps}`),
-                el('span', { class: 'num text-sm font-extrabold text-accent w-16 text-right' }, `${kg(b.oneRm)}`),
+                { class: 'mt-5 flex flex-col gap-3' },
+                split.map((row) => {
+                  const pct = Math.round((row.volume / split[0].volume) * 100);
+                  return el(
+                    'div',
+                    null,
+                    el('div', { class: 'mb-1 flex justify-between text-sm' }, el('span', { class: 'font-bold' }, row.muscle), el('span', { class: 'num text-ink-3' }, `${compact(row.volume)} kg`)),
+                    el('div', { class: 'h-2 overflow-hidden rounded-full bg-surface-2' }, el('div', { class: 'h-full rounded-full bg-accent', style: { width: `${pct}%` } })),
+                  );
+                }),
               ),
             ),
+            el(
+              'section',
+              { class: 'surface-group progress-detail' },
+              groupHeading({ iconName: 'trophy', title: 'Personal bests', body: 'Your strongest logged performances.' }),
+              el(
+                'div',
+                { class: 'mt-4' },
+                bests.map((b) => el('div', { class: 'flex items-center gap-3 border-b border-line py-2.5 last:border-0' }, el('span', { class: 'min-w-0 flex-1 truncate font-bold' }, b.name), el('span', { class: 'num text-sm text-ink-2' }, `${kg(b.weight)} kg × ${b.reps}`), el('span', { class: 'num w-16 text-right text-sm font-extrabold text-accent' }, `${kg(b.oneRm)}`))),
+              ),
+              el('p', { class: 'mt-3 text-xs text-ink-3' }, 'Final column: estimated one-rep max.'),
+            ),
           ),
-          el('p', { class: 'mt-3 text-xs text-ink-3' }, 'The final column is an estimated one-rep max using the Epley formula.'),
-        ),
+        }),
       ),
     ),
   };

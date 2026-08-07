@@ -48,6 +48,7 @@ export function render({ params }) {
     null,
     appbar({
       title: session.name,
+      heading: lift.name,
       back: () => go('/'),
       action: el(
         'span',
@@ -75,100 +76,65 @@ export function render({ params }) {
 
     el(
       'main',
-      { class: 'screen lg:max-w-4xl' },
-
-      el(
-        'div',
-        { class: 'mb-5' },
-        el('h2', { class: 'text-3xl font-black tracking-tighter leading-none' }, lift.name),
-        el(
-          'p',
-          { class: 'mt-2 text-lg font-bold text-accent num' },
-          timed
-            ? `${lift.sets} sets of ${lift.target.reps}s`
-            : bodyweight
-              ? `${lift.sets} sets of ${lift.target.reps}`
-              : `${lift.sets} × ${lift.target.reps} · ${kg(lift.target.weight)} kg`,
-        ),
-        el('p', { class: 'mt-2 text-[13px] text-ink-3' }, lift.target.why),
-      ),
-
-      /* The two numbers. Weight is hidden where it has no meaning. */
-      el(
-        'div',
-        { class: 'flex flex-col gap-3' },
-        timed || bodyweight
-          ? null
-          : stepper({
-              label: 'KG',
-              value: weight,
-              step: stepFor(lift),
-              format: kg,
-              onChange: (v) => {
-                weight = v;
-              },
-            }),
-        stepper({
-          label: timed ? 'SEC' : 'REPS',
-          value: reps,
-          step: timed ? 5 : 1,
-          min: 1,
-          onChange: (v) => {
-            reps = v;
-          },
-        }),
-      ),
-
-      /* What is left, as dots you can read without counting. */
+      { class: 'screen workout-screen' },
       el(
         'section',
-        { class: 'mt-7' },
+        { class: 'workspace workout-workspace' },
         el(
-          'h3',
-          { class: 'label mb-2' },
-          lift.done
-            ? `All ${lift.sets} sets complete`
-            : `${lift.sets - lift.logged.length} of ${lift.sets} sets left`,
-        ),
-        el(
-          'div',
-          { class: 'flex gap-1.5 mb-3', 'aria-hidden': 'true' },
-          Array.from({ length: lift.sets }, (_, i) =>
-            el('span', {
-              class: [
-                'flex-1 h-1.5 rounded-full',
-                i < lift.logged.length ? 'bg-accent' : 'bg-surface-2',
-              ],
-            }),
+          'header',
+          { class: 'workspace__head' },
+          el('span', { class: 'workspace__icon' }, icon('dumbbell', 'w-6 h-6')),
+          el(
+            'div',
+            { class: 'min-w-0 flex-1' },
+            el('h2', { class: 'workspace__title' }, lift.name),
+            el(
+              'p',
+              { class: 'mt-1.5 text-base font-bold text-accent num' },
+              timed
+                ? `${lift.sets} sets of ${lift.target.reps}s`
+                : bodyweight
+                  ? `${lift.sets} sets of ${lift.target.reps}`
+                  : `${lift.sets} × ${lift.target.reps} · ${kg(lift.target.weight)} kg`,
+            ),
+            el('p', { class: 'workspace__copy' }, lift.target.why),
           ),
         ),
         el(
           'div',
-          { class: 'flex flex-col gap-2' },
-          lift.logged.map((entry, i) =>
+          { class: 'workspace__body workout-layout' },
+          el(
+            'section',
+            { class: 'workout-entry' },
+            el('p', { class: 'label mb-3' }, 'Log your next set'),
             el(
               'div',
-              { class: 'flex items-center gap-3 rounded-xl bg-surface border border-line px-4 py-3' },
-              el(
-                'span',
-                { class: 'w-6 h-6 grid place-items-center rounded-lg bg-surface-2 text-[13px] font-black text-ink-3' },
-                String(i + 1),
-              ),
-              el(
-                'span',
-                { class: 'font-bold num' },
-                timed ? `${entry.reps}s` : `${kg(entry.weight)} kg × ${entry.reps}`,
-              ),
-              el(
-                'button',
-                {
-                  type: 'button',
-                  class: 'ml-auto w-10 h-10 grid place-items-center rounded-full text-ink-3 active:text-danger',
-                  'aria-label': `Delete set ${i + 1}`,
-                  onClick: () => removeSet(entry.id),
-                },
-                icon('close', 'w-5 h-5'),
-              ),
+              { class: 'flex flex-col gap-3' },
+              timed || bodyweight
+                ? null
+                : stepper({ label: 'KG', value: weight, step: stepFor(lift), format: kg, onChange: (v) => { weight = v; } }),
+              stepper({ label: timed ? 'SEC' : 'REPS', value: reps, step: timed ? 5 : 1, min: 1, onChange: (v) => { reps = v; } }),
+            ),
+          ),
+          el(
+            'section',
+            { class: 'surface-group workout-sets' },
+            el('div', { class: 'flex items-center justify-between gap-3' }, el('h3', { class: 'font-black' }, 'Sets in this exercise'), el('span', { class: 'chip' }, lift.done ? 'Complete' : `${lift.sets - lift.logged.length} left`)),
+            el('div', { class: 'my-4 flex gap-1.5', 'aria-hidden': 'true' }, Array.from({ length: lift.sets }, (_, i) => el('span', { class: ['h-1.5 flex-1 rounded-full', i < lift.logged.length ? 'bg-accent' : 'bg-surface-2'] }))),
+            el(
+              'div',
+              { class: 'flex flex-col gap-2' },
+              lift.logged.length
+                ? lift.logged.map((entry, i) =>
+                    el(
+                      'div',
+                      { class: 'flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3' },
+                      el('span', { class: 'grid h-7 w-7 place-items-center rounded-lg bg-surface-2 text-[13px] font-black text-ink-3' }, String(i + 1)),
+                      el('span', { class: 'font-bold num' }, timed ? `${entry.reps}s` : `${kg(entry.weight)} kg × ${entry.reps}`),
+                      el('button', { type: 'button', class: 'ml-auto grid h-10 w-10 place-items-center rounded-full text-ink-3 active:text-danger', 'aria-label': `Delete set ${i + 1}`, onClick: () => removeSet(entry.id) }, icon('close', 'w-5 h-5')),
+                    ),
+                  )
+                : el('div', { class: 'rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-ink-3' }, 'Your completed sets will appear here.'),
             ),
           ),
         ),
@@ -177,7 +143,7 @@ export function render({ params }) {
 
     el(
       'div',
-      { class: 'dock lg:max-w-4xl' },
+      { class: 'dock' },
       lift.done
         ? el(
             'button',

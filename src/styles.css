@@ -252,6 +252,1093 @@
     @apply mt-2 block text-[13px] leading-[1.55] text-ink-3;
   }
 
+  .workspace {
+    @apply overflow-hidden rounded-[28px] border border-line bg-surface;
+    box-shadow: 0 30px 90px rgb(0 0 0 / 0.2), inset 0 1px rgb(255 255 255 / 0.035);
+  }
+
+  .workspace__head {
+    @apply grid grid-cols-[48px_minmax(0,1fr)] items-start gap-4 border-b border-line p-5 sm:flex sm:flex-nowrap sm:p-7 lg:p-8;
+    background: linear-gradient(115deg, rgb(var(--accent) / 0.08), transparent 58%);
+  }
+
+  .workspace__icon {
+    @apply grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-accent/20 bg-accent/10 text-accent;
+  }
+
+  .workspace__title {
+    @apply text-xl font-black tracking-tight sm:text-2xl;
+  }
+
+  .workspace__copy {
+    @apply mt-1.5 max-w-3xl text-sm leading-relaxed text-ink-2;
+  }
+
+  .workspace__action {
+    @apply col-start-2 shrink-0 sm:ml-auto;
+  }
+
+  .workspace__body {
+    @apply p-4 sm:p-6 lg:p-7;
+  }
+
+  .group-heading {
+    @apply flex items-start gap-3;
+  }
+
+  .group-heading__icon {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-accent;
+  }
+
+  .group-heading h3 {
+    @apply font-black tracking-tight;
+  }
+
+  .group-heading p {
+    @apply mt-0.5 text-xs leading-relaxed text-ink-3;
+  }
+
+  .surface-group {
+    @apply overflow-hidden rounded-2xl border border-line bg-bg/25;
+  }
+
+  .progress-layout {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  .progress-summary {
+    @apply grid grid-cols-3 gap-3 rounded-2xl border border-accent/20 bg-accent/10 p-4 sm:p-5;
+  }
+
+  .progress-chart,
+  .progress-detail {
+    @apply p-4 sm:p-5;
+  }
+
+  .dual-timer {
+    @apply grid grid-cols-1 gap-5;
+  }
+
+  .dual-timer__visual {
+    @apply flex min-w-0 flex-col items-center justify-center overflow-hidden rounded-2xl border border-line bg-bg/25 px-3 py-6 sm:p-7;
+    background-image:
+      radial-gradient(circle at 50% 43%, rgb(var(--accent) / 0.11), transparent 58%),
+      linear-gradient(145deg, rgb(var(--surface-2) / 0.7), transparent 70%);
+  }
+
+  .dual-timer__dial {
+    @apply relative grid aspect-square w-full max-w-[390px] select-none place-items-center rounded-full;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .dual-timer__dial:active {
+    cursor: grabbing;
+  }
+
+  .dual-timer__dial::before {
+    content: '';
+    @apply absolute rounded-full;
+    inset: 2%;
+    background: radial-gradient(circle, rgb(var(--accent) / 0.08), transparent 69%);
+    filter: blur(18px);
+  }
+
+  .dual-ring {
+    --ring-color: var(--accent);
+    --ring-angle: 180deg;
+    @apply absolute rounded-full outline-none transition-[filter,opacity] duration-200;
+    background: conic-gradient(from 0deg, rgb(var(--ring-color)) 0deg var(--ring-angle), rgb(var(--surface-3)) var(--ring-angle) 360deg);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.035), 0 14px 35px rgb(0 0 0 / 0.2);
+  }
+
+  .dual-ring::before {
+    content: '';
+    @apply absolute rounded-full border border-line;
+    inset: 12px;
+    background: radial-gradient(circle at 50% 38%, rgb(var(--surface-2)), rgb(var(--surface)) 72%);
+  }
+
+  .dual-ring--green {
+    inset: 4%;
+  }
+
+  .dual-ring--blue {
+    --ring-color: 87 155 255;
+    inset: 21%;
+  }
+
+  .dual-ring.is-active {
+    filter: drop-shadow(0 0 12px rgb(var(--ring-color) / 0.24));
+  }
+
+  .dual-ring:focus-visible {
+    box-shadow: 0 0 0 3px rgb(var(--ring-color) / 0.35);
+  }
+
+  .dual-ring__hand {
+    @apply pointer-events-none absolute inset-0 rounded-full;
+    transform: rotate(var(--ring-angle));
+  }
+
+  .dual-ring__handle {
+    @apply absolute left-1/2 top-0 block h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-[5px] border-surface;
+    background: rgb(var(--ring-color));
+    box-shadow: 0 7px 18px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(var(--ring-color) / 0.65);
+  }
+
+  .dual-ring--blue .dual-ring__handle {
+    @apply h-6 w-6 border-4;
+  }
+
+  .dual-timer__dial.is-running .dual-ring:not(.is-active) {
+    @apply opacity-40;
+  }
+
+  .dual-timer__dial.is-done .dual-ring.is-active {
+    animation: timer-pulse 1.2s ease-in-out infinite;
+  }
+
+  .dual-timer__core {
+    @apply pointer-events-none relative z-10 flex max-w-[42%] flex-col items-center text-center;
+  }
+
+  .dual-timer__phase {
+    @apply text-[10px] font-extrabold uppercase tracking-[0.18em] text-accent sm:text-xs;
+  }
+
+  .dual-timer__clock {
+    @apply mt-1 text-4xl font-black tracking-[-0.06em] text-ink sm:text-6xl;
+  }
+
+  .dual-timer__hint {
+    @apply mt-1 text-[10px] font-bold leading-tight text-ink-3 sm:text-xs;
+  }
+
+  .dual-timer__gesture {
+    @apply mt-5 flex items-center justify-center gap-2 text-center text-xs font-bold text-ink-3;
+  }
+
+  .dual-timer__gesture svg,
+  .dual-timer__persist svg {
+    @apply shrink-0 text-accent;
+  }
+
+  .dual-timer__controls {
+    @apply min-w-0 rounded-2xl border border-line bg-bg/25 p-4 sm:p-6;
+  }
+
+  .dual-timer__controls-head {
+    @apply flex items-start gap-3;
+  }
+
+  .dual-timer__controls-head h3 {
+    @apply font-black tracking-tight;
+  }
+
+  .dual-timer__controls-head p {
+    @apply mt-1 text-xs leading-relaxed text-ink-3;
+  }
+
+  .dual-timer__modes {
+    @apply mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2;
+  }
+
+  .dual-timer__mode {
+    @apply grid min-h-[88px] grid-cols-[10px_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl border border-line bg-surface p-3 text-left transition hover:bg-surface-2;
+  }
+
+  .dual-timer__mode > i {
+    @apply h-10 w-1.5 rounded-full bg-ink-3/30;
+  }
+
+  .dual-timer__mode span,
+  .dual-timer__mode strong,
+  .dual-timer__mode small {
+    @apply block;
+  }
+
+  .dual-timer__mode strong {
+    @apply font-black;
+  }
+
+  .dual-timer__mode small {
+    @apply mt-0.5 text-[11px] leading-tight text-ink-3;
+  }
+
+  .dual-timer__mode b {
+    @apply text-lg font-black;
+  }
+
+  .dual-timer__mode--green.is-active {
+    @apply border-accent bg-accent/10;
+  }
+
+  .dual-timer__mode--green.is-active > i {
+    @apply bg-accent;
+  }
+
+  .dual-timer__mode--blue.is-active {
+    border-color: rgb(87 155 255 / 0.75);
+    background: rgb(87 155 255 / 0.1);
+  }
+
+  .dual-timer__mode--blue.is-active > i {
+    background: rgb(87 155 255);
+  }
+
+  .dual-timer__fine-tune {
+    @apply mt-4 grid grid-cols-[52px_minmax(0,1fr)_52px] items-center overflow-hidden rounded-2xl border border-line bg-surface;
+  }
+
+  .dual-timer__fine-tune button {
+    @apply grid min-h-[58px] place-items-center text-ink-2 transition hover:bg-surface-2 active:bg-surface-3;
+  }
+
+  .dual-timer__fine-tune span {
+    @apply flex min-h-[58px] flex-col items-center justify-center border-x border-line text-center;
+  }
+
+  .dual-timer__fine-tune small {
+    @apply text-[10px] font-bold uppercase tracking-wider text-ink-3;
+  }
+
+  .dual-timer__fine-tune strong {
+    @apply mt-0.5 text-lg font-black;
+  }
+
+  .dual-timer__actions {
+    @apply mt-5 grid grid-cols-2 gap-2;
+  }
+
+  .dual-timer__start {
+    @apply col-span-2 min-h-[56px] w-full text-base;
+  }
+
+  .dual-timer__persist {
+    @apply mt-4 flex items-center justify-center gap-2 text-center text-[11px] font-bold text-ink-3;
+  }
+
+  .dual-timer__mobile-action {
+    @apply mt-6 w-full max-w-[390px];
+  }
+
+  .dual-timer__mobile-start {
+    @apply btn min-h-[62px] w-full text-base font-black text-accent-ink;
+    background: linear-gradient(160deg, rgb(var(--accent)), rgb(var(--accent-2)));
+    box-shadow: 0 12px 34px rgb(var(--accent) / 0.26);
+  }
+
+  .dual-timer__mobile-start.is-rest {
+    @apply text-white;
+    background: linear-gradient(160deg, rgb(87 155 255), rgb(55 119 224));
+    box-shadow: 0 12px 34px rgb(87 155 255 / 0.28);
+  }
+
+  .dual-timer__dial.is-rest .dual-timer__phase {
+    color: rgb(87 155 255);
+  }
+
+  @keyframes timer-pulse {
+    50% { filter: drop-shadow(0 0 20px rgb(var(--ring-color) / 0.5)); }
+  }
+
+  .workout-layout {
+    @apply grid grid-cols-1 gap-5;
+  }
+
+  .workout-entry {
+    @apply min-w-0;
+  }
+
+  .workout-sets {
+    @apply min-w-0 p-4 sm:p-5;
+  }
+
+  /* Settings uses a master/detail workspace. Desktop gets a persistent
+     category column; compact screens keep the same categories as a 2×2
+     tab grid. Only one topic is visible at a time. */
+  .settings-workspace {
+    @apply overflow-hidden rounded-[28px] border border-line bg-surface;
+    box-shadow: 0 30px 90px rgb(0 0 0 / 0.22), inset 0 1px rgb(255 255 255 / 0.035);
+  }
+
+  .settings-nav {
+    @apply border-b border-line bg-bg/30 p-4;
+  }
+
+  .settings-nav__head {
+    @apply flex items-center gap-3 px-1 pb-4;
+  }
+
+  .settings-nav__head h2 {
+    @apply mt-0.5 text-lg font-black tracking-tight;
+  }
+
+  .settings-nav__brand {
+    @apply grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-accent-ink;
+    background: linear-gradient(145deg, rgb(var(--accent)), rgb(var(--accent-2)));
+    box-shadow: 0 10px 28px rgb(var(--accent) / 0.18);
+  }
+
+  .settings-nav__items {
+    @apply grid grid-cols-2 gap-2;
+  }
+
+  .settings-nav__item {
+    @apply relative flex min-h-[66px] items-center gap-2.5 rounded-xl border border-transparent px-3 py-2.5 text-left text-ink-2 transition;
+  }
+
+  .settings-nav__item:hover {
+    @apply border-line bg-surface-2 text-ink;
+  }
+
+  .settings-nav__item.is-active {
+    @apply border-accent/25 bg-accent/10 text-ink;
+    box-shadow: inset 3px 0 rgb(var(--accent));
+  }
+
+  .settings-nav__item-icon {
+    @apply grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface-2 text-ink-3 transition;
+  }
+
+  .settings-nav__item.is-active .settings-nav__item-icon {
+    @apply bg-accent text-accent-ink;
+  }
+
+  .settings-nav__item strong,
+  .settings-nav__item small {
+    @apply block;
+  }
+
+  .settings-nav__item strong {
+    @apply text-xs font-extrabold sm:text-sm;
+  }
+
+  .settings-nav__item small {
+    @apply mt-0.5 hidden text-[11px] leading-tight text-ink-3 sm:block;
+  }
+
+  .settings-nav__arrow {
+    @apply ml-auto hidden text-ink-3 lg:block;
+  }
+
+  .settings-nav__item.is-active .settings-nav__arrow {
+    @apply text-accent;
+  }
+
+  .settings-nav__status {
+    @apply mt-4 hidden items-center gap-2 rounded-xl border border-line bg-surface/60 p-3 lg:flex;
+  }
+
+  .settings-nav__status span:last-child,
+  .settings-nav__status strong,
+  .settings-nav__status small {
+    @apply block;
+  }
+
+  .settings-nav__status strong {
+    @apply text-xs;
+  }
+
+  .settings-nav__status small {
+    @apply mt-0.5 text-[10px] text-ink-3;
+  }
+
+  .settings-content {
+    @apply min-w-0;
+  }
+
+  .settings-pane {
+    @apply animate-rise;
+  }
+
+  .settings-pane[hidden] {
+    display: none;
+  }
+
+  .settings-pane__head {
+    @apply flex items-start gap-4 border-b border-line p-5 sm:p-7 lg:p-8;
+    background: linear-gradient(115deg, rgb(var(--accent) / 0.08), transparent 58%);
+  }
+
+  .settings-pane__head h2 {
+    @apply text-xl font-black tracking-tight sm:text-2xl;
+  }
+
+  .settings-pane__head p {
+    @apply mt-1.5 max-w-2xl text-sm leading-relaxed text-ink-2;
+  }
+
+  .settings-pane__icon {
+    @apply grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-accent/20 bg-accent/10 text-accent;
+  }
+
+  .settings-pane__body {
+    @apply p-5 sm:p-7 lg:p-8;
+  }
+
+  .settings-group {
+    @apply overflow-hidden rounded-2xl border border-line bg-bg/25 divide-y divide-line;
+  }
+
+  .settings-row {
+    @apply grid grid-cols-[40px_minmax(0,1fr)] gap-x-3 gap-y-3 px-4 py-4 transition sm:grid-cols-[40px_minmax(0,1fr)_auto] sm:items-center sm:px-5;
+  }
+
+  .settings-row:hover {
+    background: rgb(var(--surface-2) / 0.45);
+  }
+
+  .settings-row__icon {
+    @apply grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-ink-2 transition;
+  }
+
+  .settings-row:hover .settings-row__icon {
+    @apply bg-surface-3 text-accent;
+    transform: translateY(-1px);
+  }
+
+  .settings-row__control {
+    @apply col-start-2 min-w-0 sm:col-start-3 sm:row-start-1;
+  }
+
+  .settings-select {
+    @apply min-h-[42px] w-full rounded-xl border border-line bg-surface-2 px-3 pr-9 text-sm font-bold text-ink outline-none transition sm:w-[190px];
+  }
+
+  .settings-select:hover,
+  .settings-select:focus {
+    @apply border-accent/50 bg-surface-3;
+  }
+
+  .settings-toggle {
+    @apply inline-flex cursor-pointer items-center py-1;
+  }
+
+  .settings-toggle__track {
+    @apply relative block h-7 w-12 rounded-full border border-line bg-surface-3 transition duration-200;
+  }
+
+  .settings-toggle__thumb {
+    @apply absolute left-[3px] top-[3px] block h-5 w-5 rounded-full bg-ink-3 shadow-md transition duration-200;
+  }
+
+  .settings-toggle input:checked + .settings-toggle__track {
+    @apply border-accent bg-accent;
+    box-shadow: 0 0 20px rgb(var(--accent) / 0.18);
+  }
+
+  .settings-toggle input:checked + .settings-toggle__track .settings-toggle__thumb {
+    @apply bg-accent-ink;
+    transform: translateX(20px);
+  }
+
+  .settings-toggle input:focus-visible + .settings-toggle__track {
+    @apply ring-2 ring-accent ring-offset-2;
+    --tw-ring-offset-color: rgb(var(--surface));
+  }
+
+  .settings-action {
+    @apply inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface-2 px-4 text-sm font-extrabold text-ink-2 transition hover:border-ink-3 hover:bg-surface-3 hover:text-ink sm:w-auto;
+  }
+
+  .settings-action.is-accent {
+    @apply border-accent/30 bg-accent/10 text-accent hover:border-accent hover:bg-accent hover:text-accent-ink;
+  }
+
+  .settings-theme-grid {
+    @apply grid grid-cols-3 gap-2 sm:gap-3;
+  }
+
+  .settings-theme {
+    @apply relative min-h-[132px] rounded-2xl border border-line bg-bg/25 p-3 text-left transition hover:border-ink-3 hover:bg-surface-2 sm:min-h-[150px] sm:p-4;
+  }
+
+  .settings-theme.is-active {
+    @apply border-accent bg-accent/10;
+    box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.14);
+  }
+
+  .settings-theme__icon {
+    @apply grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-ink-2;
+  }
+
+  .settings-theme.is-active .settings-theme__icon {
+    @apply bg-accent text-accent-ink;
+  }
+
+  .settings-theme strong,
+  .settings-theme small {
+    @apply block;
+  }
+
+  .settings-theme strong {
+    @apply mt-4 text-sm font-black sm:text-base;
+  }
+
+  .settings-theme small {
+    @apply mt-1 hidden text-xs leading-relaxed text-ink-3 sm:block;
+  }
+
+  .settings-theme__check {
+    @apply absolute right-3 top-3 hidden h-6 w-6 place-items-center rounded-full bg-accent text-accent-ink;
+  }
+
+  .settings-theme.is-active .settings-theme__check {
+    @apply grid;
+  }
+
+  .settings-data-summary {
+    @apply mb-5 flex flex-wrap items-center gap-3 rounded-2xl border border-accent/20 bg-accent/10 p-4;
+  }
+
+  .settings-data-summary__icon,
+  .settings-plan-callout__icon {
+    @apply grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-ink;
+  }
+
+  .settings-data-summary strong,
+  .settings-data-summary span {
+    @apply block;
+  }
+
+  .settings-data-summary span:not(.settings-data-summary__icon):not(.settings-data-summary__state) {
+    @apply mt-0.5 text-xs text-ink-2;
+  }
+
+  .settings-data-summary__state {
+    @apply ml-auto inline-flex items-center gap-2 rounded-full bg-bg/45 px-3 py-2 text-[11px] font-extrabold uppercase tracking-wider text-ink-2;
+  }
+
+  .settings-data-summary__state i {
+    @apply h-2 w-2 rounded-full bg-ok;
+  }
+
+  .settings-plan-callout {
+    @apply flex flex-col items-start gap-4 rounded-2xl border border-line bg-bg/25 p-5 sm:flex-row sm:items-center sm:p-6;
+  }
+
+  .settings-plan-callout > div {
+    @apply min-w-0 flex-1;
+  }
+
+  .settings-plan-callout strong {
+    @apply font-black;
+  }
+
+  .settings-plan-callout p {
+    @apply mt-1 text-sm leading-relaxed text-ink-2;
+  }
+
+  /* More is a stable workspace like Settings. Tools swap inside the content
+     pane; none of them creates a modal or a second navigation layer. */
+  .more-tools {
+    @apply mx-auto max-w-6xl;
+  }
+
+  .more-tools__settings {
+    @apply mt-4 flex min-h-[58px] items-center gap-3 rounded-xl border border-line bg-surface/60 px-3 text-left text-ink-2 transition hover:border-accent/30 hover:bg-surface-2 hover:text-ink lg:mt-auto;
+  }
+
+  .more-tools__settings span,
+  .more-tools__settings strong,
+  .more-tools__settings small {
+    @apply block;
+  }
+
+  .more-tools__settings strong {
+    @apply text-xs font-extrabold;
+  }
+
+  .more-tools__settings small {
+    @apply mt-0.5 text-[10px] text-ink-3;
+  }
+
+  .more-guidance {
+    @apply flex items-start gap-3 rounded-2xl border border-accent/20 bg-accent/10 p-4 text-sm leading-relaxed text-ink-2;
+  }
+
+  .more-guidance > svg {
+    @apply mt-0.5 shrink-0 text-accent;
+  }
+
+  .more-guidance strong {
+    @apply text-ink;
+  }
+
+  .more-plan-list {
+    @apply mx-auto flex max-w-4xl flex-col gap-2.5;
+  }
+
+  .more-plan {
+    @apply overflow-hidden rounded-2xl border border-line bg-bg/25 transition;
+  }
+
+  .more-plan.is-active {
+    @apply border-accent/40 bg-accent/5;
+    box-shadow: inset 3px 0 rgb(var(--accent));
+  }
+
+  .more-plan__summary {
+    @apply flex min-h-[76px] items-center gap-3 px-4 py-3 sm:px-5;
+  }
+
+  .more-plan__icon {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-ink-3;
+  }
+
+  .more-plan.is-active .more-plan__icon {
+    @apply bg-accent text-accent-ink;
+  }
+
+  .more-plan h3 {
+    @apply font-black tracking-tight;
+  }
+
+  .more-plan__summary p {
+    @apply mt-0.5 text-xs text-ink-3;
+  }
+
+  .more-plan__active {
+    @apply inline-flex shrink-0 items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-accent-ink;
+  }
+
+  .more-plan__active[hidden],
+  .more-plan__choose[hidden] {
+    display: none;
+  }
+
+  .more-plan__actions {
+    @apply flex items-center gap-2 border-t border-line px-4 py-2.5 sm:justify-end sm:px-5;
+  }
+
+  .more-plan__details-button,
+  .more-plan__choose {
+    @apply inline-flex min-h-[40px] items-center justify-center gap-2 rounded-xl px-3.5 text-xs font-extrabold transition;
+  }
+
+  .more-plan__details-button {
+    @apply border border-line bg-surface-2 text-ink-2 hover:bg-surface-3 hover:text-ink;
+  }
+
+  .more-plan__choose {
+    @apply ml-auto border border-accent/30 bg-accent/10 text-accent hover:bg-accent hover:text-accent-ink sm:ml-0;
+  }
+
+  .more-plan__details {
+    @apply border-t border-line bg-surface/45 p-4 animate-rise sm:p-5;
+  }
+
+  .more-plan__details[hidden] {
+    display: none;
+  }
+
+  .more-plan__purpose {
+    @apply text-sm leading-relaxed text-ink-2;
+  }
+
+  .more-plan__detail-facts {
+    @apply mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2;
+  }
+
+  .more-plan__detail-facts > div {
+    @apply rounded-xl border border-line bg-bg/35 p-3;
+  }
+
+  .more-plan__detail-facts dt {
+    @apply text-[10px] font-extrabold uppercase tracking-wider text-ink-3;
+  }
+
+  .more-plan__detail-facts dd {
+    @apply mt-1 text-xs leading-relaxed text-ink-2;
+  }
+
+  .more-plan__sessions {
+    @apply mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2;
+  }
+
+  .more-plan__sessions > section {
+    @apply overflow-hidden rounded-xl border border-line bg-bg/35;
+  }
+
+  .more-plan__sessions header {
+    @apply flex items-start justify-between gap-3 border-b border-line px-3.5 py-3;
+  }
+
+  .more-plan__sessions h4 {
+    @apply text-sm font-black;
+  }
+
+  .more-plan__sessions header p {
+    @apply mt-0.5 text-[10px] text-ink-3;
+  }
+
+  .more-plan__sessions header > span {
+    @apply shrink-0 rounded-full bg-surface-2 px-2 py-1 text-[9px] font-bold text-ink-3;
+  }
+
+  .more-plan__sessions ul {
+    @apply divide-y divide-line;
+  }
+
+  .more-plan__sessions li {
+    @apply flex items-center justify-between gap-3 px-3.5 py-2 text-xs;
+  }
+
+  .more-plan__sessions li span {
+    @apply min-w-0 flex-1 truncate text-ink-2;
+  }
+
+  .more-plan__sessions li small {
+    @apply shrink-0 font-bold text-ink-3;
+  }
+
+  .more-disclaimer {
+    @apply mt-4 text-xs leading-relaxed text-ink-3;
+  }
+
+  .more-profile-summary {
+    @apply mb-4 grid grid-cols-2 gap-3;
+  }
+
+  .more-profile-summary > span {
+    @apply rounded-2xl border border-accent/20 bg-accent/10 p-4;
+  }
+
+  .more-profile-summary strong,
+  .more-profile-summary small {
+    @apply block;
+  }
+
+  .more-profile-summary strong {
+    @apply text-xl font-black text-accent;
+  }
+
+  .more-profile-summary small {
+    @apply mt-1 text-[11px] font-bold text-ink-3;
+  }
+
+  .more-form,
+  .more-history-block,
+  .more-calc {
+    @apply overflow-hidden rounded-2xl border border-line bg-bg/25;
+  }
+
+  .more-form__head,
+  .more-history-block > header,
+  .more-calc > header {
+    @apply flex items-center justify-between gap-3 border-b border-line bg-surface-2/55 px-4 py-3 sm:px-5;
+  }
+
+  .more-form__head {
+    @apply justify-start;
+  }
+
+  .more-form__head > span {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-3 text-accent;
+  }
+
+  .more-form h3,
+  .more-history-block h3,
+  .more-calc h3 {
+    @apply font-black;
+  }
+
+  .more-form__head p,
+  .more-history-block header p,
+  .more-calc header p {
+    @apply mt-0.5 text-xs leading-relaxed text-ink-3;
+  }
+
+  .more-form__grid {
+    @apply grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-5;
+  }
+
+  .more-field {
+    @apply flex min-w-0 flex-col gap-1.5;
+  }
+
+  .more-sex {
+    @apply grid min-h-[52px] grid-cols-2 gap-1 rounded-2xl border border-line bg-surface-2 p-1;
+  }
+
+  .more-sex button {
+    @apply flex items-center justify-center gap-2 rounded-xl text-sm font-extrabold text-ink-3 transition hover:text-ink;
+  }
+
+  .more-sex button i {
+    @apply h-2.5 w-2.5 rounded-full border-2 border-ink-3 transition;
+  }
+
+  .more-sex button.is-active {
+    @apply bg-accent text-accent-ink shadow-sm;
+  }
+
+  .more-sex button.is-active i {
+    @apply border-accent-ink bg-accent-ink;
+    box-shadow: inset 0 0 0 2px rgb(var(--accent));
+  }
+
+  .more-form__save {
+    @apply mb-4 ml-4 w-[calc(100%-2rem)] sm:mb-5 sm:ml-5 sm:w-auto;
+  }
+
+  .more-history-block {
+    @apply mt-4 first:mt-0;
+  }
+
+  .more-history-block > header > strong {
+    @apply shrink-0 text-sm font-black text-accent;
+  }
+
+  .more-rows {
+    @apply divide-y divide-line;
+  }
+
+  .more-rows > div {
+    @apply flex items-center justify-between gap-4 px-4 py-3 text-sm sm:px-5;
+  }
+
+  .more-rows span {
+    @apply min-w-0 flex-1 truncate text-ink-2;
+  }
+
+  .more-rows strong {
+    @apply shrink-0 font-extrabold;
+  }
+
+  .more-calc-tabs {
+    @apply mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2;
+  }
+
+  .more-calc-tabs button {
+    @apply flex min-h-[72px] items-center gap-3 rounded-2xl border border-line bg-bg/25 p-3 text-left text-ink-2 transition hover:bg-surface-2;
+  }
+
+  .more-calc-tabs button.is-active {
+    @apply border-accent/40 bg-accent/10 text-ink;
+  }
+
+  .more-calc-tabs button > span:first-child {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-ink-3;
+  }
+
+  .more-calc-tabs button.is-active > span:first-child {
+    @apply bg-accent text-accent-ink;
+  }
+
+  .more-calc-tabs strong,
+  .more-calc-tabs small {
+    @apply block;
+  }
+
+  .more-calc-tabs strong {
+    @apply text-sm font-black;
+  }
+
+  .more-calc-tabs small {
+    @apply mt-0.5 text-[11px] text-ink-3;
+  }
+
+  .more-calc__body {
+    @apply grid grid-cols-1 gap-4 p-4 sm:p-5 lg:grid-cols-[minmax(260px,.75fr)_minmax(0,1.25fr)];
+  }
+
+  .more-calc__fields {
+    @apply flex flex-col gap-3;
+  }
+
+  .more-calc__result {
+    @apply min-h-[150px] rounded-2xl border border-line bg-surface/60 p-4;
+  }
+
+  .more-calc__empty {
+    @apply grid min-h-[118px] place-items-center text-center text-sm text-ink-3;
+  }
+
+  .more-calc__hero {
+    @apply mb-3 flex items-center justify-between gap-4 rounded-xl bg-accent/10 px-4 py-3;
+  }
+
+  .more-calc__hero span {
+    @apply text-xs font-bold text-ink-2;
+  }
+
+  .more-calc__hero strong {
+    @apply text-xl font-black text-accent;
+  }
+
+  .more-plate-list {
+    @apply grid grid-cols-2 gap-2 sm:grid-cols-3;
+  }
+
+  .more-plate-list > span {
+    @apply rounded-xl border border-line bg-bg/35 p-3 text-center;
+  }
+
+  .more-plate-list strong,
+  .more-plate-list small {
+    @apply block;
+  }
+
+  .more-plate-list strong {
+    @apply text-lg font-black;
+  }
+
+  .more-plate-list small {
+    @apply text-[10px] text-ink-3;
+  }
+
+  /* The exercise library follows the same master/detail hierarchy as
+     Settings, then uses compact grouped rows instead of a wall of cards. */
+  .exercise-pane__head {
+    @apply items-center;
+    scroll-margin-top: 68px;
+  }
+
+  .exercise-pane__count {
+    @apply ml-auto shrink-0 rounded-full border border-line bg-bg/40 px-3 py-1.5 text-xs font-extrabold text-ink-2;
+  }
+
+  .exercise-tools {
+    @apply grid grid-cols-1 gap-3 rounded-2xl border border-line bg-bg/25 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center;
+  }
+
+  .exercise-tools > p {
+    @apply hidden max-w-xs text-xs leading-relaxed text-ink-3 sm:block;
+  }
+
+  .exercise-groups {
+    @apply mt-5 grid grid-cols-1 items-start gap-4;
+  }
+
+  .exercise-group {
+    @apply min-w-0 overflow-hidden rounded-2xl border border-line bg-bg/25;
+  }
+
+  .exercise-group__head {
+    @apply flex min-h-[72px] items-center justify-between gap-4 border-b border-line bg-surface-2/55 px-4 py-3;
+  }
+
+  .exercise-group__head h3 {
+    @apply font-black tracking-tight;
+  }
+
+  .exercise-group__head p {
+    @apply mt-0.5 text-[11px] text-ink-3;
+  }
+
+  .exercise-group__rows {
+    @apply divide-y divide-line;
+  }
+
+  .exercise-row {
+    @apply flex min-h-[64px] items-center transition hover:bg-surface-2/60;
+  }
+
+  .exercise-row__main {
+    @apply flex min-w-0 flex-1 self-stretch flex-row items-center gap-3 px-4 py-2.5 text-left;
+  }
+
+  .exercise-row__name {
+    @apply block w-full truncate text-sm font-extrabold transition group-hover:text-accent;
+  }
+
+  .exercise-row__main small {
+    @apply mt-0.5 text-[11px] text-ink-3;
+  }
+
+  .exercise-row__next {
+    @apply shrink-0 text-ink-3 transition group-hover:translate-x-0.5 group-hover:text-accent;
+  }
+
+  .exercise-pane__action {
+    @apply ml-auto shrink-0;
+  }
+
+  .exercise-detail__back {
+    @apply inline-flex min-h-[42px] items-center gap-1.5 rounded-xl border border-line bg-bg/40 px-3 text-xs font-extrabold text-ink-2 transition hover:border-accent/40 hover:text-ink;
+  }
+
+  .exercise-detail {
+    @apply animate-rise;
+  }
+
+  .exercise-detail__summary {
+    @apply flex flex-col items-start gap-4 rounded-2xl border border-accent/20 bg-accent/10 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5;
+  }
+
+  .exercise-detail__tags {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .exercise-detail__best {
+    @apply flex w-full items-center justify-between gap-4 rounded-xl bg-bg/40 px-4 py-3 sm:w-auto sm:min-w-[180px] sm:flex-col sm:items-end sm:gap-0;
+  }
+
+  .exercise-detail__best span,
+  .exercise-detail__new {
+    @apply text-xs font-bold text-ink-3;
+  }
+
+  .exercise-detail__best strong {
+    @apply text-xl font-black text-ink;
+  }
+
+  .exercise-detail__section {
+    @apply mt-4 overflow-hidden rounded-2xl border border-line bg-bg/25;
+  }
+
+  .exercise-detail__section > header {
+    @apply flex items-center gap-3 border-b border-line bg-surface-2/55 px-4 py-3;
+  }
+
+  .exercise-detail__section > header span {
+    @apply grid h-9 w-9 place-items-center rounded-xl bg-surface-3 text-accent;
+  }
+
+  .exercise-detail__section h3 {
+    @apply font-black;
+  }
+
+  .exercise-detail__section > p {
+    @apply p-4 text-sm leading-relaxed text-ink-2 sm:p-5;
+  }
+
+  .exercise-detail__section ul {
+    @apply divide-y divide-line;
+  }
+
+  .exercise-detail__section li {
+    @apply flex items-start gap-3 px-4 py-3 text-sm leading-relaxed text-ink-2;
+  }
+
+  .exercise-detail__section li svg {
+    @apply mt-0.5 shrink-0 text-accent;
+  }
+
+  .exercise-detail__grid {
+    @apply grid grid-cols-1 gap-4 lg:grid-cols-2;
+  }
+
+  .exercise-detail__note {
+    @apply mt-4 text-xs text-ink-3;
+  }
+
+  @media (min-width: 1280px) {
+    .exercise-groups {
+      display: block;
+      columns: 2;
+      column-gap: 1rem;
+    }
+
+    .exercise-group {
+      break-inside: avoid;
+      margin-bottom: 1rem;
+    }
+  }
+
   /* Onboarding is one continuous decision surface. The visual hierarchy
      replaces numbered steps, so it feels like shaping a plan rather than
      completing an administrative form. */
@@ -463,6 +1550,10 @@
   .sheet-panel {
     @apply min-h-0 flex-1 flex flex-col overflow-hidden;
   }
+
+  .sheet-content > *:first-child {
+    @apply mt-0;
+  }
 }
 
 @layer utilities {
@@ -482,6 +1573,50 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* On touch screens the rings are the controls. The surrounding desktop
+   explanation and configuration panels would only repeat what the thumb is
+   already doing, so the timer becomes one uninterrupted interaction. */
+@media (max-width: 1023px) {
+  .timer-screen {
+    @apply max-w-none px-4 pt-3;
+  }
+
+  .timer-workspace {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .timer-workspace > .workspace__head,
+  .dual-timer__controls,
+  .dual-timer__gesture {
+    display: none;
+  }
+
+  .timer-workspace > .workspace__body {
+    padding: 0;
+  }
+
+  .dual-timer {
+    display: block;
+  }
+
+  .dual-timer__visual {
+    min-height: calc(100dvh - 184px);
+    overflow: clip;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  .dual-timer__dial {
+    width: min(88vw, 390px);
   }
 }
 
@@ -534,7 +1669,7 @@
   /* Wider, but not unbounded: past ~60rem a line of text stops being
      comfortable and a card grid reads better than a stretched one. */
   .screen {
-    @apply max-w-6xl px-10 pt-8;
+    @apply max-w-[90rem] px-10 pt-8;
     padding-bottom: 8rem;
   }
 
@@ -551,6 +1686,56 @@
     padding-bottom: 2rem;
   }
 
+  .settings-workspace {
+    @apply grid grid-cols-[260px_minmax(0,1fr)];
+  }
+
+  .settings-nav {
+    @apply flex flex-col border-b-0 border-r border-line p-5;
+  }
+
+  .settings-nav__head {
+    @apply px-2 pb-6;
+  }
+
+  .settings-nav__items {
+    @apply grid-cols-1;
+  }
+
+  .settings-content {
+    @apply flex min-h-0;
+  }
+
+  .settings-pane {
+    @apply w-full;
+  }
+
+  .dual-timer {
+    @apply grid-cols-[minmax(380px,.9fr)_minmax(440px,1.1fr)] items-stretch gap-6;
+  }
+
+  .dual-timer__visual,
+  .dual-timer__controls {
+    min-height: 500px;
+  }
+
+  .dual-timer__mobile-action {
+    display: none;
+  }
+
+  .progress-layout {
+    @apply grid-cols-2;
+  }
+
+  .progress-summary,
+  .progress-chart {
+    @apply col-span-2;
+  }
+
+  .workout-layout {
+    @apply grid-cols-[minmax(0,1.1fr)_minmax(360px,.9fr)] items-start gap-6;
+  }
+
   /* Pinning the action to the bottom edge is a thumb affordance. With a
      pointer it only opens a void between the content and the button, so on
      desktop the dock returns to the flow, directly under what it acts on. */
@@ -558,7 +1743,7 @@
      padding — so the action sits on the content column's left edge instead
      of floating in the middle of the page. */
   .dock {
-    @apply static inset-auto z-auto mx-auto w-full max-w-6xl justify-start px-10 pt-6 pb-20;
+    @apply static inset-auto z-auto mx-auto w-full max-w-[90rem] justify-start px-10 pt-6 pb-20;
     background: none;
   }
 
@@ -567,7 +1752,7 @@
   }
 
   .screen {
-    padding-bottom: 0;
+    padding-bottom: 2rem;
   }
 
   /* Two columns where the content is genuinely independent. Marked by the
@@ -586,9 +1771,17 @@
   }
 
   .sheet-panel {
-    @apply w-full max-w-3xl flex-none rounded-xl3 border border-line bg-bg shadow-2xl;
+    @apply w-full max-w-4xl flex-none rounded-xl3 border border-line bg-bg shadow-2xl;
     height: auto;
     max-height: min(860px, calc(100dvh - 4rem));
+  }
+
+  .sheet-panel .appbar {
+    @apply static border-b border-line bg-surface/80 px-7;
+  }
+
+  .sheet-scroll {
+    background: linear-gradient(180deg, rgb(var(--surface) / 0.25), transparent 220px);
   }
 
   .sheet-panel .screen {
@@ -603,5 +1796,21 @@
 
 @media (min-width: 1280px) {
   .screen,
-  .dock { @apply max-w-6xl; }
+  .dock { @apply max-w-[90rem]; }
+
+  .progress-layout {
+    @apply grid-cols-12;
+  }
+
+  .progress-summary {
+    @apply col-span-12;
+  }
+
+  .progress-chart {
+    @apply col-span-7 row-span-2;
+  }
+
+  .progress-detail {
+    @apply col-span-5;
+  }
 }

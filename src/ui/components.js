@@ -35,6 +35,33 @@ export function appbar({ title, back = null, action = null, sub = null, heading 
   );
 }
 
+/** Shared page surface: contextual heading above content, responsive by CSS. */
+export function workspace({ iconName, title, body, action = null, content, className = '' }) {
+  return el(
+    'section',
+    { class: `workspace ${className}`.trim() },
+    el(
+      'header',
+      { class: 'workspace__head' },
+      iconName ? el('span', { class: 'workspace__icon', 'aria-hidden': 'true' }, icon(iconName, 'w-6 h-6')) : null,
+      el('div', { class: 'min-w-0 flex-1' }, el('h2', { class: 'workspace__title' }, title), body ? el('p', { class: 'workspace__copy' }, body) : null),
+      action ? el('div', { class: 'workspace__action' }, action) : null,
+    ),
+    el('div', { class: 'workspace__body' }, content),
+  );
+}
+
+/** Heading for a distinct group inside a workspace. */
+export function groupHeading({ iconName, title, body = null, action = null }) {
+  return el(
+    'header',
+    { class: 'group-heading' },
+    iconName ? el('span', { class: 'group-heading__icon', 'aria-hidden': 'true' }, icon(iconName, 'w-5 h-5')) : null,
+    el('div', { class: 'min-w-0 flex-1' }, el('h3', null, title), body ? el('p', null, body) : null),
+    action,
+  );
+}
+
 /** Big number with a caption. The dashboard is mostly these. */
 export function stat(value, label, { accent = false } = {}) {
   return el(
@@ -192,7 +219,7 @@ export function sheet({ title, body, onClose }) {
       'section',
       { class: 'sheet-panel', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
       appbar({ title, back: close }),
-      el('div', { class: 'flex-1 overflow-y-auto' }, el('div', { class: 'screen' }, body)),
+      el('div', { class: 'sheet-scroll flex-1 overflow-y-auto' }, el('div', { class: 'screen sheet-content' }, body)),
     ),
   );
 

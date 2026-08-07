@@ -1,8 +1,4 @@
-/**
- * App behaviour and data management live here, separate from training tools.
- * The page stays explicit: each setting says what it changes before the user
- * touches it.
- */
+/** Settings uses master/detail navigation: one category at a time. */
 import { el } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
 import { appbar, toast } from '../ui/components.js';
@@ -12,164 +8,252 @@ import { files, clipboard, net } from '../platform/index.js';
 import { usage } from '../services/db.js';
 import { applyTheme } from '../services/theme.js';
 
+const CATEGORIES = [
+  { id: 'appearance', label: 'Appearance', short: 'Theme', icon: 'palette' },
+  { id: 'workout', label: 'Workout', short: 'Feedback and rest', icon: 'dumbbell' },
+  { id: 'data', label: 'Data & privacy', short: 'Local data and backup', icon: 'shield' },
+  { id: 'plan', label: 'Plan setup', short: 'Build the plan again', icon: 'calendar' },
+];
+
 export async function render() {
   const current = prefs.get();
   const storage = await usage();
+  let active = 'appearance';
+
+  const categoryButtons = new Map();
+  const panels = new Map();
+
+  const selectCategory = (id) => {
+    active = id;
+    for (const [key, button] of categoryButtons) {
+      const selected = key === active;
+      button.classList.toggle('is-active', selected);
+      button.setAttribute('aria-selected', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    }
+    for (const [key, panel] of panels) panel.hidden = key !== active;
+  };
+
+  const categoryNav = el(
+    'nav',
+    { class: 'settings-nav__items', role: 'tablist', 'aria-label': 'Settings categories' },
+    CATEGORIES.map((category) => {
+      const button = el(
+        'button',
+        {
+          type: 'button',
+          class: ['settings-nav__item', category.id === active && 'is-active'],
+          role: 'tab',
+          'aria-selected': String(category.id === active),
+          onClick: () => selectCategory(category.id),
+        },
+        el('span', { class: 'settings-nav__item-icon' }, icon(category.icon, 'w-5 h-5')),
+        el('span', { class: 'min-w-0' }, el('strong', null, category.label), el('small', null, category.short)),
+        icon('next', 'settings-nav__arrow w-4 h-4'),
+      );
+      categoryButtons.set(category.id, button);
+      return button;
+    }),
+  );
+
+  const appearance = settingsPanel(
+    'appearance',
+    'Appearance',
+    'Choose one theme. The change applies immediately across GymLog.',
+    'palette',
+    el(
+      'div',
+      { class: 'settings-theme-grid' },
+      [
+        ['system', 'Use device', 'Follow your system setting', 'screen'],
+        ['dark', 'Dark', 'High contrast for dim spaces', 'moon'],
+        ['light', 'Light', 'Bright background and dark text', 'sun'],
+      ].map(([value, label, body, iconName]) => {
+        const button = el(
+          'button',
+          {
+            type: 'button',
+            class: ['settings-theme', current.theme === value && 'is-active'],
+            'aria-pressed': String(current.theme === value),
+            onClick: () => {
+              prefs.set({ theme: value });
+              applyTheme(value);
+              for (const sibling of button.parentElement.children) {
+                const selected = sibling === button;
+                sibling.classList.toggle('is-active', selected);
+                sibling.setAttribute('aria-pressed', String(selected));
+              }
+            },
+          },
+          el('span', { class: 'settings-theme__icon' }, icon(iconName, 'w-5 h-5')),
+          el('strong', null, label),
+          el('small', null, body),
+          el('span', { class: 'settings-theme__check' }, icon('check', 'w-4 h-4')),
+        );
+        return button;
+      }),
+    ),
+  );
+
+  const workout = settingsPanel(
+    'workout',
+    'Workout experience',
+    'Set the feedback you want while training. Every option can be changed later.',
+    'dumbbell',
+    settingsGroup(
+      settingRow('sound', 'Rest timer sound', 'Play a tone when the rest period ends.', settingToggle(current, 'sound', 'Rest timer sound')),
+      settingRow('vibration', 'Vibration', 'Confirm important actions with tactile feedback.', settingToggle(current, 'vibration', 'Vibration')),
+      settingRow('screen', 'Keep screen awake', 'Prevent the display from sleeping during a workout.', settingToggle(current, 'keepAwake', 'Keep screen awake')),
+      settingRow(
+        'timer',
+        'Default rest time',
+        'Used when an exercise does not provide a different rest period.',
+        selectControl('Default rest time', String(current.restDefault), restOptions(current.restDefault), (value) => prefs.set({ restDefault: Number(value) })),
+      ),
+    ),
+  );
+
+  const data = settingsPanel(
+    'data',
+    'Data and privacy',
+    'GymLog works without an account. Your information remains on this device unless you export it.',
+    'shield',
+    el(
+      'div',
+      { class: 'settings-data-summary' },
+      el('span', { class: 'settings-data-summary__icon' }, icon('database', 'w-6 h-6')),
+      el('div', { class: 'min-w-0 flex-1' }, el('strong', null, net.online ? 'Stored locally' : 'Available offline'), el('span', null, storage.quota ? `${(storage.used / 1048576).toFixed(1)} MB currently used` : 'Local storage is available')),
+      el('span', { class: 'settings-data-summary__state' }, el('i'), 'Private'),
+    ),
+    settingsGroup(
+      settingRow('download', 'Export a backup', 'Download your profile, workouts, measurements, and goals.', actionControl('Export backup', 'download', exportData, true)),
+      clipboard.supported
+        ? settingRow('copy', 'Copy your data', 'Copy the same complete backup to your clipboard.', actionControl('Copy data', 'copy', copyData))
+        : null,
+    ),
+  );
+
+  const plan = settingsPanel(
+    'plan',
+    'Plan setup',
+    'Run the guided questions again when your schedule, experience, or preferred split changes.',
+    'calendar',
+    el(
+      'div',
+      { class: 'settings-plan-callout' },
+      el('span', { class: 'settings-plan-callout__icon' }, icon('refresh', 'w-6 h-6')),
+      el('div', null, el('strong', null, 'Your workout history is safe'), el('p', null, 'Running setup again only changes the plan used for future workouts. Completed sets and progress remain untouched.')),
+      actionControl('Run setup again', 'refresh', () => {
+        prefs.set({ onboarded: false });
+        go('/');
+      }, true),
+    ),
+  );
+
+  [appearance, workout, data, plan].forEach((panel) => panels.set(panel.dataset.panel, panel));
+  selectCategory(active);
 
   return {
     node: el(
       'div',
       null,
-      appbar({ title: 'Settings', heading: 'App preferences and data', back: () => go('/more') }),
+      appbar({ title: 'Settings', heading: 'Personalize how GymLog works', back: () => go('/more') }),
       el(
         'main',
-        { class: 'screen settings-screen lg:max-w-5xl' },
+        { class: 'screen settings-screen' },
         el(
-          'header',
-          { class: 'mb-6 max-w-2xl' },
-          el('h2', { class: 'text-2xl font-black tracking-tight lg:hidden' }, 'App preferences and data'),
-          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2 lg:mt-0' }, 'Choose how GymLog behaves and keep control of the information stored on this device.'),
-        ),
-        el(
-          'div',
-          { class: 'grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5 lg:items-start' },
-          settingsCard(
-            'Appearance',
-            'Choose the look that is most comfortable for you.',
+          'section',
+          { class: 'settings-workspace' },
+          el(
+            'aside',
+            { class: 'settings-nav' },
             el(
-              'label',
-              { class: 'flex flex-col gap-2' },
-              el('span', { class: 'text-sm font-bold' }, 'Theme'),
-              el(
-                'select',
-                {
-                  class: 'field',
-                  onChange: (event) => {
-                    prefs.set({ theme: event.target.value });
-                    applyTheme(event.target.value);
-                  },
-                },
-                [
-                  { value: 'system', label: 'Follow this device' },
-                  { value: 'dark', label: 'Dark' },
-                  { value: 'light', label: 'Light' },
-                ].map((option) => el('option', { value: option.value, selected: current.theme === option.value }, option.label)),
-              ),
+              'header',
+              { class: 'settings-nav__head' },
+              el('span', { class: 'settings-nav__brand' }, icon('settings', 'w-6 h-6')),
+              el('div', null, el('p', { class: 'label text-accent' }, 'Settings'), el('h2', null, 'Your preferences')),
             ),
-          ),
-          settingsCard(
-            'During a workout',
-            'Set the feedback and rest behaviour used while you train.',
-            settingToggle(current, 'sound', 'Rest timer sound', 'Play a tone when the rest period ends.'),
-            settingToggle(current, 'vibration', 'Vibration', 'Use tactile feedback for important actions.'),
-            settingToggle(current, 'keepAwake', 'Keep screen awake', 'Prevent the screen from sleeping during a workout.'),
-            el(
-              'label',
-              { class: 'mt-4 flex flex-col gap-2' },
-              el('span', { class: 'text-sm font-bold' }, 'Default rest time'),
-              el('span', { class: 'text-xs leading-relaxed text-ink-3' }, 'Used when an exercise does not specify a different rest period.'),
-              el('input', {
-                type: 'number',
-                inputmode: 'numeric',
-                min: '15',
-                step: '15',
-                class: 'field',
-                value: current.restDefault,
-                'aria-label': 'Default rest time in seconds',
-                onChange: (event) => prefs.set({ restDefault: Math.max(15, Number(event.target.value) || 90) }),
-              }),
-              el('span', { class: 'text-xs text-ink-3' }, 'Seconds'),
-            ),
-          ),
-          settingsCard(
-            'Data and privacy',
-            'GymLog works without an account. Your training data stays on this device.',
+            categoryNav,
             el(
               'div',
-              { class: 'mb-4 rounded-2xl bg-bg/55 p-3 text-xs leading-relaxed text-ink-2' },
-              el('strong', { class: 'block text-sm text-ink' }, net.online ? 'Online' : 'Working offline'),
-              storage.quota
-                ? `${(storage.used / 1048576).toFixed(1)} MB used on this device.`
-                : 'Local storage is available.',
-            ),
-            settingsAction('Export a backup', 'Download all your GymLog data as a JSON file.', 'share', exportData),
-            clipboard.supported
-              ? settingsAction('Copy your data', 'Copy the same backup to the clipboard.', 'info', copyData)
-              : null,
-          ),
-          settingsCard(
-            'Plan setup',
-            'Start the guided setup again if your experience, schedule, or preferred training split has changed.',
-            el(
-              'div',
-              { class: 'rounded-2xl border border-line bg-bg/45 p-4' },
-              el('p', { class: 'text-sm font-bold' }, 'Your workout history will not be deleted.'),
-              el('p', { class: 'mt-1 text-xs leading-relaxed text-ink-3' }, 'Only the plan used for future workouts will change.'),
-              el(
-                'button',
-                {
-                  type: 'button',
-                  class: 'btn-ghost mt-4 w-full sm:w-auto',
-                  onClick: () => {
-                    prefs.set({ onboarded: false });
-                    go('/');
-                  },
-                },
-                'Run setup again',
-              ),
+              { class: 'settings-nav__status' },
+              el('span', { class: 'h-2 w-2 rounded-full bg-ok shadow-[0_0_12px_rgb(var(--ok)/.55)]' }),
+              el('span', null, el('strong', null, net.online ? 'Stored on this device' : 'Ready offline'), el('small', null, 'No account required')),
             ),
           ),
+          el('div', { class: 'settings-content' }, appearance, workout, data, plan),
         ),
       ),
     ),
   };
 }
 
-function settingsCard(title, body, ...content) {
+function settingsPanel(id, title, body, iconName, ...content) {
   return el(
     'section',
-    { class: 'card' },
-    el('h3', { class: 'text-lg font-black tracking-tight' }, title),
-    el('p', { class: 'mt-1 text-sm leading-relaxed text-ink-2' }, body),
-    el('div', { class: 'mt-5' }, content),
+    { class: 'settings-pane', dataset: { panel: id }, role: 'tabpanel' },
+    el(
+      'header',
+      { class: 'settings-pane__head' },
+      el('span', { class: 'settings-pane__icon' }, icon(iconName, 'w-6 h-6')),
+      el('div', null, el('h2', null, title), el('p', null, body)),
+    ),
+    el('div', { class: 'settings-pane__body' }, content),
   );
 }
 
-function settingToggle(current, key, title, body) {
+function settingsGroup(...rows) {
+  return el('div', { class: 'settings-group' }, rows);
+}
+
+function settingRow(iconName, title, body, control) {
+  return el(
+    'div',
+    { class: 'settings-row' },
+    el('span', { class: 'settings-row__icon' }, icon(iconName, 'w-[18px] h-[18px]')),
+    el('div', { class: 'min-w-0 flex-1' }, el('strong', { class: 'block text-sm font-extrabold' }, title), el('span', { class: 'mt-0.5 block text-xs leading-relaxed text-ink-3' }, body)),
+    el('div', { class: 'settings-row__control' }, control),
+  );
+}
+
+function settingToggle(current, key, label) {
   return el(
     'label',
-    { class: 'flex items-center gap-4 border-b border-line py-3 first:pt-0 last:border-0' },
-    el('span', { class: 'min-w-0 flex-1' }, el('strong', { class: 'block text-sm' }, title), el('span', { class: 'mt-0.5 block text-xs leading-relaxed text-ink-3' }, body)),
-    el('input', {
-      type: 'checkbox',
-      class: 'h-6 w-6 shrink-0 accent-current',
-      checked: current[key],
-      onChange: (event) => prefs.set({ [key]: event.target.checked }),
-    }),
+    { class: 'settings-toggle' },
+    el('input', { type: 'checkbox', class: 'sr-only', checked: current[key], 'aria-label': label, onChange: (event) => prefs.set({ [key]: event.target.checked }) }),
+    el('span', { class: 'settings-toggle__track', 'aria-hidden': 'true' }, el('span', { class: 'settings-toggle__thumb' })),
   );
 }
 
-function settingsAction(title, body, iconName, onClick) {
+function selectControl(label, value, options, onChange) {
   return el(
-    'button',
-    { type: 'button', class: 'flex min-h-[64px] w-full items-center gap-3 border-t border-line py-3 text-left first:border-0 first:pt-0', onClick },
-    el('span', { class: 'grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-accent' }, icon(iconName, 'w-5 h-5')),
-    el('span', { class: 'min-w-0 flex-1' }, el('strong', { class: 'block text-sm' }, title), el('span', { class: 'mt-0.5 block text-xs leading-relaxed text-ink-3' }, body)),
-    icon('next', 'w-5 h-5 text-ink-3'),
+    'select',
+    { class: 'settings-select', 'aria-label': label, onChange: (event) => onChange(event.target.value) },
+    options.map(([optionValue, optionLabel]) => el('option', { value: optionValue, selected: optionValue === value }, optionLabel)),
   );
+}
+
+function restOptions(current) {
+  const seconds = [60, 90, 120, 150, 180];
+  const saved = Number(current);
+  if (saved >= 15 && !seconds.includes(saved)) seconds.push(saved);
+  return seconds.sort((a, b) => a - b).map((value) => {
+    const minutes = Math.floor(value / 60);
+    const remainder = value % 60;
+    return [String(value), minutes ? `${minutes} min${remainder ? ` ${remainder} sec` : ''}` : `${value} sec`];
+  });
+}
+
+function actionControl(label, iconName, onClick, accent = false) {
+  return el('button', { type: 'button', class: ['settings-action', accent && 'is-accent'], onClick }, icon(iconName, 'w-4 h-4'), label);
 }
 
 function dataPayload() {
-  return JSON.stringify(
-    { app: 'gymlog', version: 3, at: new Date().toISOString(), profile: prefs.get('profile'), sets: state.sets, body: state.body, goals: state.goals },
-    null,
-    2,
-  );
+  return JSON.stringify({ app: 'gymlog', version: 3, at: new Date().toISOString(), profile: prefs.get('profile'), sets: state.sets, body: state.body, goals: state.goals }, null, 2);
 }
 
 async function exportData() {
-  const blob = new Blob([dataPayload()], { type: 'application/json' });
-  const saved = await files.save(`gymlog-${new Date().toISOString().slice(0, 10)}.json`, blob);
+  const saved = await files.save(`gymlog-${new Date().toISOString().slice(0, 10)}.json`, new Blob([dataPayload()], { type: 'application/json' }));
   if (saved) toast('Backup exported', { variant: 'ok' });
 }
 

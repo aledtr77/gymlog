@@ -1,10 +1,4 @@
-/**
- * Desktop navigation.
- *
- * Below 1024px this does not exist: the phone keeps its bare one-action
- * screens. Above it, a pointer is the input and vertical space is cheap, so
- * a persistent rail costs nothing and removes a tap from every jump.
- */
+/** Responsive navigation: desktop rail and persistent mobile bottom bar. */
 import { el } from './el.js';
 import { icon } from './icons.js';
 import { go, currentPath } from '../core/router.js';
@@ -20,9 +14,16 @@ const ITEMS = [
 
 const SETTINGS = { path: '/settings', label: 'Settings', icon: 'settings' };
 
+export function primaryNavigationPath(path) {
+  if (path === '/' || path.startsWith('/session')) return '/';
+  if (path.startsWith('/settings')) return '/more';
+  return ITEMS.find(item => item.path !== '/' && path.startsWith(item.path))?.path ?? null;
+}
+
 export function mountNav(root) {
   const list = el('nav', { class: 'flex flex-col gap-1.5 px-4', 'aria-label': 'Main navigation' });
   const settingsList = el('nav', { class: 'mt-3 flex flex-col gap-1.5 border-t border-line/70 px-4 pt-3', 'aria-label': 'App settings' });
+  const mobileList = el('nav', { class: 'mobile-nav lg:hidden', 'aria-label': 'Main navigation' });
 
   const rail = el(
     'aside',
@@ -55,6 +56,7 @@ export function mountNav(root) {
 
   const paint = () => {
     const here = currentPath();
+    const mobileActivePath = primaryNavigationPath(here);
     const navButton = (item) => {
         // "/session/2" still belongs to "Today"; only "/" matches exactly.
         const active = item.path === '/' ? here === '/' || here.startsWith('/session') : here.startsWith(item.path);
@@ -74,11 +76,28 @@ export function mountNav(root) {
         );
     };
 
+    const mobileButton = (item) => {
+      const active = item.path === mobileActivePath;
+      return el(
+        'button',
+        {
+          type: 'button',
+          class: `mobile-nav__item ${active ? 'is-active' : ''}`,
+          'aria-current': active ? 'page' : null,
+          'aria-label': item.label,
+          onClick: () => go(item.path),
+        },
+        el('span', { class: 'mobile-nav__icon', 'aria-hidden': 'true' }, icon(item.icon, 'h-5 w-5')),
+        el('span', { class: 'max-w-full truncate' }, item.label),
+      );
+    };
+
     list.replaceChildren(...ITEMS.map(navButton));
+    mobileList.replaceChildren(...ITEMS.map(mobileButton));
     settingsList.replaceChildren(navButton(SETTINGS));
   };
 
   paint();
   on('route', paint);
-  root.appendChild(rail);
+  root.append(rail, mobileList);
 }

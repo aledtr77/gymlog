@@ -26,6 +26,7 @@
     --ok: 61 220 132;
     --warn: 255 176 32;
     --danger: 255 95 95;
+    --mobile-nav-height: 68px;
     color-scheme: dark;
   }
 
@@ -151,7 +152,11 @@
 
   .screen {
     @apply mx-auto w-full max-w-lg px-4 pt-5 animate-rise;
-    padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--mobile-nav-height) + 40px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .workout-screen {
+    padding-bottom: calc(var(--mobile-nav-height) + 150px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Primary action, pinned where the thumb already rests.
@@ -159,13 +164,47 @@
      inline-flex, and margin:auto does not centre an inline-level box — that
      is what pushed the button to the left edge. */
   .dock {
-    @apply fixed inset-x-0 bottom-0 z-30 flex justify-center px-4 pt-8 pointer-events-none;
-    padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
+    @apply fixed inset-x-0 z-30 flex justify-center px-4 pb-3 pt-8 pointer-events-none;
+    bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(180deg, transparent, rgb(var(--bg)) 46%);
   }
 
   .dock > * {
     @apply w-full max-w-lg pointer-events-auto;
+  }
+
+  .mobile-nav {
+    @apply fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line px-1 pt-1;
+    min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgb(var(--bg) / 0.94);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .mobile-nav__item {
+    @apply relative flex min-h-[64px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-extrabold text-ink-3 transition-colors;
+  }
+
+  .mobile-nav__item::before {
+    content: '';
+    @apply absolute left-1/2 top-0 h-0.5 w-6 -translate-x-1/2 rounded-full bg-transparent;
+  }
+
+  .mobile-nav__item.is-active {
+    @apply text-accent;
+  }
+
+  .mobile-nav__item.is-active::before {
+    @apply bg-accent;
+  }
+
+  .mobile-nav__icon {
+    @apply grid h-7 w-8 place-items-center rounded-lg;
+  }
+
+  .mobile-nav__item.is-active .mobile-nav__icon {
+    background: rgb(var(--accent) / 0.1);
   }
 
   .label {

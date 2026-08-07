@@ -1,12 +1,12 @@
 /** Settings uses master/detail navigation: one category at a time. */
-import { el } from '../ui/el.js';
+import { el, replace } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
 import { appbar, toast } from '../ui/components.js';
 import { prefs, reload as reloadState } from '../core/state.js';
 import { go } from '../core/router.js';
 import { files, clipboard, net } from '../platform/index.js';
 import { storageStatus, usage } from '../services/db.js';
-import { backupText, deleteAllData, restoreBackup } from '../services/backup.js';
+import { backupText, deleteAllData, hasDeletableData, restoreBackup } from '../services/backup.js';
 import { applyTheme } from '../services/theme.js';
 
 const CATEGORIES = [
@@ -16,17 +16,21 @@ const CATEGORIES = [
   { id: 'plan', label: 'Plan setup', short: 'Build the plan again', icon: 'calendar' },
 ];
 
+let activeCategory = 'appearance';
+let dataNotice = null;
+
 export async function render() {
   const current = prefs.get();
   const storage = await usage();
   const storageHealth = storageStatus();
-  let active = 'appearance';
+  let active = activeCategory;
 
   const categoryButtons = new Map();
   const panels = new Map();
 
   const selectCategory = (id) => {
     active = id;
+    activeCategory = id;
     for (const [key, button] of categoryButtons) {
       const selected = key === active;
       button.classList.toggle('is-active', selected);
@@ -142,17 +146,7 @@ export async function render() {
       settingRow('refresh', 'Import and merge', 'Add records from a GymLog backup. Matching IDs are updated.', actionControl('Choose backup', 'refresh', () => importData('merge'))),
       settingRow('database', 'Replace from backup', 'Replace local records and preferences after creating a safety backup.', actionControl('Replace data', 'database', () => importData('replace'))),
     ),
-    el(
-      'section',
-      { class: 'mt-5 rounded-2xl border border-danger/35 bg-danger/5 p-5' },
-      el(
-        'div',
-        { class: 'flex flex-col gap-4 sm:flex-row sm:items-center' },
-        el('span', { class: 'grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-danger/10 text-danger' }, icon('trash', 'w-5 h-5')),
-        el('div', { class: 'min-w-0 flex-1' }, el('strong', { class: 'block text-sm font-extrabold text-danger' }, 'Delete all data'), el('span', { class: 'mt-1 block text-xs leading-relaxed text-ink-3' }, 'Permanently remove workouts, sets, measurements, weekly marks, goals, plan, profile, and preferences from this device.')),
-        el('button', { type: 'button', class: 'settings-action border-danger/40 text-danger', onClick: eraseEverything }, icon('trash', 'w-4 h-4'), 'Delete all data'),
-      ),
-    ),
+    deleteAllDataControl(),
   );
 
   const plan = settingsPanel(
@@ -289,27 +283,87 @@ async function copyData() {
   }
 }
 
-async function eraseEverything(event) {
-  const confirmed = window.confirm(
-    'Delete every GymLog record and preference from this device? This cannot be undone unless you exported a backup.',
-  );
-  if (!confirmed) return;
-
+async function eraseEverything(event, onFailure) {
   const button = event.currentTarget;
   button.disabled = true;
-  button.textContent = 'Deleting…';
+  button.replaceChildren('Deleting…');
 
   try {
     await deleteAllData();
-    await reloadState();
+    dataNotice = { tone: 'ok', message: 'All local data has been deleted.' };
     applyTheme('system');
-    toast('All GymLog data deleted', { variant: 'ok' });
-    go('/training');
+    await reloadState();
   } catch (error) {
-    button.disabled = false;
-    button.replaceChildren(icon('trash', 'w-4 h-4'), 'Delete all data');
-    toast(`Delete failed: ${error.message}`, { variant: 'err', duration: 6000 });
+    dataNotice = { tone: 'danger', message: `Delete failed: ${error.message}` };
+    onFailure();
   }
+}
+
+function deleteAllDataControl() {
+  const section = el('section', { class: 'mt-5 rounded-2xl border border-danger/35 bg-danger/5 p-5' });
+
+  const paint = (confirming = false) => replace(
+    section,
+    confirming
+      ? el(
+          'div',
+          { role: 'group', 'aria-label': 'Confirm deletion of all GymLog data' },
+          el(
+            'div',
+            { class: 'flex items-start gap-3' },
+            el('span', { class: 'mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-danger/10 text-danger', 'aria-hidden': 'true' }, icon('trash', 'w-5 h-5')),
+            el(
+              'div',
+              { class: 'min-w-0' },
+              el('h3', { class: 'font-black text-ink' }, 'Delete everything from this device?'),
+              el('p', { class: 'mt-1 text-sm leading-relaxed text-ink-2' }, 'Workouts, measurements, weekly marks, goals, training plan, profile, and preferences will be permanently removed. This can only be recovered from an exported backup.'),
+            ),
+          ),
+          el(
+            'div',
+            { class: 'mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end' },
+            el('button', { type: 'button', class: 'btn bg-surface-2 text-ink', onClick: () => paint(false) }, 'Cancel'),
+            el('button', { type: 'button', class: 'btn bg-danger text-white', onClick: (event) => eraseEverything(event, () => paint(false)) }, icon('trash', 'w-4 h-4'), 'Delete everything'),
+          ),
+        )
+      : el(
+          'div',
+          { class: 'flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center' },
+          el('span', { class: 'grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-danger/10 text-danger' }, icon('trash', 'w-5 h-5')),
+          el('div', { class: 'min-w-0 flex-1' }, el('strong', { class: 'block text-sm font-extrabold text-danger' }, 'Delete all data'), el('span', { class: 'mt-1 block text-xs leading-relaxed text-ink-3' }, 'Permanently remove workouts, sets, measurements, weekly marks, goals, plan, profile, and preferences from this device.')),
+          el('button', {
+            type: 'button',
+            class: 'settings-action border-danger/40 text-danger',
+            onClick: async (event) => {
+              const button = event.currentTarget;
+              button.disabled = true;
+              button.replaceChildren('Checking…');
+              try {
+                if (!(await hasDeletableData())) {
+                  dataNotice = { tone: 'quiet', message: 'Nothing to delete. GymLog is already empty.' };
+                  paint(false);
+                  return;
+                }
+                dataNotice = null;
+                paint(true);
+              } catch (error) {
+                dataNotice = { tone: 'danger', message: `Could not check local data: ${error.message}` };
+                paint(false);
+              }
+            },
+          }, icon('trash', 'w-4 h-4'), 'Delete all data'),
+          dataNotice
+            ? el(
+                'div',
+                { class: 'w-full basis-full border-t border-line pt-3 text-xs text-ink-2', role: 'status', 'aria-live': 'polite' },
+                el('span', { class: 'inline-flex items-center gap-2' }, el('i', { class: ['h-1.5 w-1.5 rounded-full', dataNotice.tone === 'ok' ? 'bg-ok' : dataNotice.tone === 'danger' ? 'bg-danger' : 'bg-ink-3'], 'aria-hidden': 'true' }), dataNotice.message),
+              )
+            : null,
+        ),
+  );
+
+  paint();
+  return section;
 }
 
 async function chooseBackupFile() {

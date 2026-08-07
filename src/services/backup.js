@@ -119,6 +119,12 @@ export async function backupText() {
   return JSON.stringify(await createBackup(), null, 2);
 }
 
+export async function hasDeletableData() {
+  const stores = await readStores();
+  if (Object.values(stores).some((rows) => rows.length > 0)) return true;
+  return JSON.stringify(prefs.get()) !== JSON.stringify(prefs.normalizePreferences());
+}
+
 export async function restoreBackup(input, { mode = 'merge' } = {}) {
   const portable = validateBackup(typeof input === 'string' ? input : input);
   const backup = fromPortable(portable);

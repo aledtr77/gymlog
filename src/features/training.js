@@ -15,6 +15,7 @@ const setupDraft = {
   reviewing: false,
   selected: null,
   resetting: false,
+  saved: false,
 };
 
 export function render() {
@@ -60,6 +61,7 @@ function questionsStep(paint) {
     const suggested = suggestedTemplate(setupDraft.split, setupDraft.level);
     setupDraft.selected = new Set(suggested.sessions.flatMap((session) => session.lifts.map((lift) => `${session.id}:${lift.exerciseId}`)));
     setupDraft.reviewing = true;
+    setupDraft.saved = false;
     paint();
   };
 
@@ -73,13 +75,24 @@ function questionsStep(paint) {
           el(
             'div',
             { class: 'flex flex-col gap-4 sm:flex-row sm:items-center' },
-            el('div', { class: 'min-w-0 flex-1' }, el('p', { class: 'label text-accent' }, 'Current training'), el('h2', { class: 'mt-1 text-xl font-black' }, current.name), el('p', { class: 'mt-1 text-sm text-ink-2' }, `${current.days} days per week · Choose new answers below to change it.`)),
+            el(
+              'div',
+              { class: 'min-w-0 flex-1' },
+              el(
+                'div',
+                { class: 'flex flex-wrap items-center gap-2' },
+                el('p', { class: 'label text-accent' }, 'Current training'),
+                el('span', { class: 'inline-flex items-center gap-1.5 rounded-full bg-ok/12 px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-ok' }, el('i', { class: 'h-2 w-2 rounded-full bg-ok shadow-[0_0_10px_rgb(var(--ok)/.7)]', 'aria-hidden': 'true' }), 'Active'),
+              ),
+              el('h2', { class: 'mt-1 text-xl font-black' }, current.name),
+              el('p', { class: 'mt-1 text-sm text-ink-2' }, `${current.days} days per week · Choose new answers below to change it.`),
+            ),
             !setupDraft.resetting
               ? el(
                   'div',
                   { class: 'flex shrink-0 flex-wrap gap-2' },
-                  el('button', { type: 'button', class: 'btn bg-accent text-accent-ink', onClick: () => document.getElementById('training-builder')?.scrollIntoView({ behavior: 'smooth' }) }, icon('refresh', 'w-5 h-5'), 'Change training'),
-                  el('button', { type: 'button', class: 'btn-quiet text-danger', onClick: () => { setupDraft.resetting = true; paint(); } }, icon('trash', 'w-5 h-5'), 'Reset'),
+                  el('button', { type: 'button', class: 'btn bg-accent text-accent-ink', onClick: () => { setupDraft.saved = false; paint(); requestAnimationFrame(() => document.getElementById('training-builder')?.scrollIntoView({ behavior: 'smooth' })); } }, icon('refresh', 'w-5 h-5'), 'Change training'),
+                  el('button', { type: 'button', class: 'btn-quiet text-danger', onClick: () => { setupDraft.resetting = true; setupDraft.saved = false; paint(); } }, icon('trash', 'w-5 h-5'), 'Reset'),
                 )
               : null,
           ),
@@ -106,11 +119,20 @@ function questionsStep(paint) {
                       setupDraft.reviewing = false;
                       setupDraft.selected = null;
                       setupDraft.resetting = false;
+                      setupDraft.saved = false;
                       resetTemplate();
                       paint();
                     },
                   }, icon('trash', 'w-5 h-5'), 'Reset training'),
                 ),
+              )
+            : null,
+          setupDraft.saved
+            ? el(
+                'div',
+                { class: 'mt-5 flex items-start gap-3 rounded-xl border border-ok/35 bg-ok/10 p-4', role: 'status', 'aria-live': 'polite' },
+                el('span', { class: 'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ok/15 text-ok', 'aria-hidden': 'true' }, icon('check', 'w-5 h-5')),
+                el('div', { class: 'min-w-0' }, el('h3', { class: 'font-black text-ink' }, 'Training saved'), el('p', { class: 'mt-1 text-sm leading-relaxed text-ink-2' }, 'This plan is now active. You can keep reviewing it here or choose another section when you are ready.')),
               )
             : null,
         )
@@ -132,17 +154,17 @@ function questionsStep(paint) {
       setupRow(
         'Where are you now?',
         'This calibrates starting volume and load.',
-        el('div', { class: 'onboarding__options' }, levelOptions.map((option, index) => setupOption(option, setupDraft.level === option.value, () => { setupDraft.level = option.value; paint(); }, levelVisual(index)))),
+        el('div', { class: 'onboarding__options' }, levelOptions.map((option, index) => setupOption(option, setupDraft.level === option.value, () => { setupDraft.level = option.value; setupDraft.saved = false; paint(); }, levelVisual(index)))),
       ),
       setupRow(
         'How should sessions flow?',
         'Pick the structure you are most likely to enjoy.',
-        el('div', { class: 'onboarding__options' }, splitOptions.map((option) => setupOption(option, setupDraft.split === option.value, () => { setupDraft.split = option.value; paint(); }, splitVisual(option.value)))),
+        el('div', { class: 'onboarding__options' }, splitOptions.map((option) => setupOption(option, setupDraft.split === option.value, () => { setupDraft.split = option.value; setupDraft.saved = false; paint(); }, splitVisual(option.value)))),
       ),
       setupRow(
         'What is realistic most weeks?',
         'Consistency beats the perfect week.',
-        el('div', { class: 'onboarding__days' }, [2, 3, 4, 5].map((days) => el('button', { type: 'button', class: ['onboarding__day', setupDraft.days === days && 'is-selected'], 'aria-pressed': String(setupDraft.days === days), onClick: () => { setupDraft.days = days; paint(); } }, el('strong', null, days === 5 ? '5+' : String(days)), el('span', null, 'days')))),
+        el('div', { class: 'onboarding__days' }, [2, 3, 4, 5].map((days) => el('button', { type: 'button', class: ['onboarding__day', setupDraft.days === days && 'is-selected'], 'aria-pressed': String(setupDraft.days === days), onClick: () => { setupDraft.days = days; setupDraft.saved = false; paint(); } }, el('strong', null, days === 5 ? '5+' : String(days)), el('span', null, 'days')))),
       ),
       el(
         'footer',
@@ -297,6 +319,7 @@ function activateProposal(base) {
   setupDraft.days = null;
   setupDraft.reviewing = false;
   setupDraft.selected = null;
+  setupDraft.resetting = false;
+  setupDraft.saved = true;
   setTemplate('custom', { level, split, trainingDays, customTemplate: custom });
-  go('/');
 }

@@ -1,6 +1,6 @@
 # GymLog — offline-first training journal
 
-> **Status: active development / public prototype.** GymLog is functional, but it is
+> **Status: 1.0.0 / public prototype.** GymLog is functional, but it is
 > not a stable release. The current version is the first stage of a partial but
 > substantial rebuild; training flows, persistence and interface details will continue
 > to change before the first stable release.

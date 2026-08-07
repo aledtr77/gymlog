@@ -20,7 +20,7 @@ export function render() {
       node: el(
         'div',
         null,
-        appbar({ title: 'Progress', back: () => go('/') }),
+        appbar({ title: 'Progress', heading: 'Review your training trends', back: () => go('/') }),
         el(
           'main',
           { class: 'screen lg:max-w-4xl' },
@@ -39,7 +39,7 @@ export function render() {
     node: el(
       'div',
       null,
-      appbar({ title: 'Progress', back: () => go('/') }),
+      appbar({ title: 'Progress', heading: 'Review your training trends', back: () => go('/') }),
       el(
         'main',
         { class: 'screen lg:grid lg:grid-cols-2 lg:gap-4' },

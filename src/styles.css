@@ -152,6 +152,11 @@
     -webkit-backdrop-filter: saturate(180%) blur(16px);
   }
 
+  .appbar__divider,
+  .appbar__heading {
+    @apply hidden;
+  }
+
   .screen {
     @apply mx-auto w-full max-w-lg px-4 pt-5 animate-rise;
     padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
@@ -247,6 +252,198 @@
     @apply mt-2 block text-[13px] leading-[1.55] text-ink-3;
   }
 
+  /* Onboarding is one continuous decision surface. The visual hierarchy
+     replaces numbered steps, so it feels like shaping a plan rather than
+     completing an administrative form. */
+  .onboarding {
+    @apply mx-auto w-full max-w-5xl pb-4;
+  }
+
+  .onboarding__hero {
+    @apply mb-4;
+  }
+
+  .onboarding__title {
+    @apply text-2xl font-black tracking-tight lg:text-3xl;
+  }
+
+  .onboarding__builder {
+    @apply relative overflow-hidden rounded-[28px] border border-line bg-surface p-4 shadow-2xl md:p-7;
+    box-shadow: 0 30px 90px rgb(0 0 0 / 0.24), inset 0 1px rgb(255 255 255 / 0.035);
+  }
+
+  .onboarding__builder::before {
+    content: '';
+    @apply pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full;
+    background: radial-gradient(circle, rgb(var(--accent) / 0.13), transparent 68%);
+  }
+
+  .onboarding__builder-head {
+    @apply relative mb-2 flex items-start justify-between gap-4 border-b border-line pb-5;
+  }
+
+  .onboarding__builder-head h3 {
+    @apply mt-1 text-xl font-black tracking-tight md:text-2xl;
+  }
+
+  .onboarding__status {
+    @apply shrink-0 rounded-full border border-line bg-surface-2 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.08em] text-ink-2 transition;
+  }
+
+  .onboarding__status.is-ready {
+    @apply border-accent/30 bg-accent/10 text-accent;
+  }
+
+  .onboarding__row {
+    @apply relative grid gap-4 border-b border-line py-5 md:grid-cols-[190px_minmax(0,1fr)] md:items-center md:gap-6;
+  }
+
+  .onboarding__row-copy h4 {
+    @apply text-base font-extrabold;
+  }
+
+  .onboarding__row-copy p {
+    @apply mt-1 text-sm leading-relaxed text-ink-2;
+  }
+
+  .onboarding__options {
+    @apply grid grid-cols-1 gap-2 sm:grid-cols-3;
+  }
+
+  .onboarding__option {
+    @apply relative flex min-h-[76px] items-center gap-3 rounded-2xl border border-line bg-surface-2 p-3 text-left transition duration-200;
+  }
+
+  .onboarding__option:hover {
+    @apply border-ink-3 bg-surface-3;
+    transform: translateY(-1px);
+  }
+
+  .onboarding__option.is-selected {
+    @apply border-accent bg-accent/10;
+    box-shadow: inset 0 0 0 1px rgb(var(--accent) / 0.14), 0 8px 26px rgb(var(--accent) / 0.07);
+  }
+
+  .onboarding__option-copy {
+    @apply min-w-0 flex-1;
+  }
+
+  .onboarding__option-copy strong {
+    @apply block text-sm font-extrabold leading-tight;
+  }
+
+  .onboarding__option.is-selected .onboarding__option-copy strong {
+    @apply text-accent;
+  }
+
+  .onboarding__option-copy small {
+    @apply mt-1 block text-sm leading-snug text-ink-2;
+  }
+
+  .onboarding__radio {
+    @apply h-4 w-4 shrink-0 rounded-full border-2 border-ink-3 transition;
+  }
+
+  .onboarding__option.is-selected .onboarding__radio {
+    @apply border-[5px] border-accent;
+  }
+
+  .onboarding__level {
+    @apply flex h-9 w-9 shrink-0 items-end justify-center gap-[3px] rounded-xl bg-bg/40 p-2;
+  }
+
+  .onboarding__level i {
+    @apply block w-1 rounded-full bg-surface-3;
+  }
+
+  .onboarding__level i:nth-child(1) { height: 35%; }
+  .onboarding__level i:nth-child(2) { height: 65%; }
+  .onboarding__level i:nth-child(3) { height: 100%; }
+  .onboarding__level i.is-on { @apply bg-accent; }
+
+  .onboarding__split {
+    @apply grid h-9 w-9 shrink-0 grid-cols-3 gap-[3px] rounded-xl bg-bg/40 p-2;
+  }
+
+  .onboarding__split i {
+    @apply rounded-sm bg-surface-3;
+  }
+
+  .onboarding__split--full-body i { @apply bg-accent; }
+  .onboarding__split--upper-lower i:nth-child(1),
+  .onboarding__split--upper-lower i:nth-child(3) { @apply bg-accent; }
+  .onboarding__split--upper-lower i:nth-child(2) { @apply bg-accent/35; }
+  .onboarding__split--ppl i:nth-child(1) { @apply bg-accent; }
+  .onboarding__split--ppl i:nth-child(2) { background: rgb(var(--accent) / 0.62); }
+  .onboarding__split--ppl i:nth-child(3) { background: rgb(var(--accent) / 0.3); }
+
+  .onboarding__days {
+    @apply grid grid-cols-4 gap-2;
+  }
+
+  .onboarding__day {
+    @apply flex min-h-[64px] flex-col items-center justify-center rounded-2xl border border-line bg-surface-2 transition;
+  }
+
+  .onboarding__day strong {
+    @apply text-xl font-black leading-none;
+  }
+
+  .onboarding__day span {
+    @apply mt-1 text-[13px] font-bold uppercase tracking-wider text-ink-2;
+  }
+
+  .onboarding__day:hover { @apply border-ink-3 bg-surface-3; }
+  .onboarding__day.is-selected { @apply border-accent bg-accent text-accent-ink; }
+  .onboarding__day.is-selected span { color: rgb(var(--accent-ink) / 0.7); }
+
+  .onboarding__action {
+    @apply mt-5 flex flex-col gap-4 rounded-2xl border border-line bg-bg/45 p-4 transition md:flex-row md:items-center;
+  }
+
+  .onboarding__action.is-ready {
+    @apply border-accent/30;
+    background: linear-gradient(110deg, rgb(var(--accent) / 0.1), rgb(var(--bg) / 0.45) 60%);
+  }
+
+  .onboarding__summary {
+    @apply flex min-w-0 flex-1 items-center gap-3;
+  }
+
+  .onboarding__summary-icon {
+    @apply grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-ink-3;
+  }
+
+  .onboarding__action.is-ready .onboarding__summary-icon {
+    @apply bg-accent text-accent-ink;
+  }
+
+  .onboarding__summary strong {
+    @apply block truncate text-sm font-extrabold;
+  }
+
+  .onboarding__summary span:not(.onboarding__summary-icon) {
+    @apply mt-1 block text-sm leading-snug text-ink-2;
+  }
+
+  .onboarding__cta {
+    @apply w-full md:w-auto md:min-w-[190px];
+  }
+
+  .onboarding__explore {
+    @apply mx-auto mt-4 flex min-h-[44px] items-center justify-center gap-1.5 px-3 text-sm text-ink-2 transition hover:text-ink;
+  }
+
+  .onboarding__explore strong {
+    @apply text-ink-2;
+  }
+
+  @media (max-width: 639px) {
+    .onboarding__builder-head { @apply flex-col; }
+    .onboarding__status { @apply absolute right-0 top-0; }
+    .onboarding__option { @apply min-h-[68px]; }
+  }
+
   .segmented {
     @apply inline-flex rounded-xl bg-surface-2 border border-line p-1;
   }
@@ -310,6 +507,26 @@
     background: rgb(var(--bg) / 0.72);
   }
 
+  .appbar--contextual .appbar__copy {
+    @apply flex items-center gap-4;
+  }
+
+  .appbar--contextual .appbar__title {
+    @apply shrink-0 text-xs font-extrabold uppercase tracking-[0.14em] text-accent;
+  }
+
+  .appbar--contextual .appbar__divider {
+    @apply block h-6 w-px shrink-0 bg-line;
+  }
+
+  .appbar--contextual .appbar__heading {
+    @apply block truncate text-xl font-black tracking-tight text-ink;
+  }
+
+  .appbar--contextual .appbar__sub {
+    @apply hidden;
+  }
+
   .appbar-back {
     @apply hidden;
   }
@@ -319,6 +536,10 @@
   .screen {
     @apply max-w-6xl px-10 pt-8;
     padding-bottom: 8rem;
+  }
+
+  .setup-screen {
+    @apply pt-6;
   }
 
   /* Pinning the action to the bottom edge is a thumb affordance. With a

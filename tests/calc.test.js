@@ -31,6 +31,12 @@ test('macros hit the calorie target and set protein per kilo', () => {
   assert.ok(calc.macros(2500, 80, 'fat-loss').calories < m.calories);
 });
 
+test('workout calories use weight, duration, and MET without pretending to be a sensor', () => {
+  assert.equal(calc.caloriesBurned(80, 60, 5), 420);
+  assert.equal(calc.caloriesBurned(0, 60, 5), 0);
+  assert.equal(calc.caloriesBurned(80, 0, 5), 0);
+});
+
 test('1RM table descends and stays under the max', () => {
   const orm = calc.oneRepMax(100, 5);
   const table = calc.loadTable(orm);

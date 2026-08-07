@@ -186,7 +186,7 @@ export function render() {
     node: el(
       'div',
       null,
-      appbar({ title: 'Timer', back: () => go('/') }),
+      appbar({ title: 'Timer', heading: 'Manage rest and intervals', back: () => go('/') }),
       el(
         'main',
         { class: 'screen lg:max-w-4xl' },

@@ -14,7 +14,14 @@ const DEFAULTS = {
   restDefault: 90,
   onboarded: false,
   level: 'beginner',
+  split: 'full-body',
   trainingDays: 3,
+  profile: {
+    sex: '',
+    age: null,
+    height: null,
+    weight: null,
+  },
   customTemplate: null,
 };
 

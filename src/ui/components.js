@@ -7,10 +7,10 @@ import { icon } from './icons.js';
 import { haptics } from '../platform/index.js';
 
 /** Header. `back` turns the title into a navigable stack. */
-export function appbar({ title, back = null, action = null, sub = null }) {
+export function appbar({ title, back = null, action = null, sub = null, heading = null }) {
   return el(
     'header',
-    { class: 'appbar' },
+    { class: ['appbar', heading && 'appbar--contextual'] },
     back
       ? el(
           'button',
@@ -25,9 +25,11 @@ export function appbar({ title, back = null, action = null, sub = null }) {
       : null,
     el(
       'div',
-      { class: 'flex-1 min-w-0' },
-      el('h1', { class: 'text-lg font-extrabold tracking-tight truncate' }, title),
-      sub ? el('p', { class: 'text-xs text-ink-3 truncate' }, sub) : null,
+      { class: 'appbar__copy flex-1 min-w-0' },
+      el('h1', { class: 'appbar__title text-lg font-extrabold tracking-tight truncate' }, title),
+      heading ? el('span', { class: 'appbar__divider', 'aria-hidden': 'true' }) : null,
+      heading ? el('p', { class: 'appbar__heading' }, heading) : null,
+      sub ? el('p', { class: 'appbar__sub text-xs text-ink-3 truncate' }, sub) : null,
     ),
     action,
   );

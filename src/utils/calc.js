@@ -54,6 +54,14 @@ export function macros(calories, weight, goal = 'maintenance') {
   return { calories: adjusted, protein, fat, carbs };
 }
 
+/** Standard MET estimate: useful as a range-level indication, not a sensor reading. */
+export function caloriesBurned(weight, minutes, met = 5) {
+  const kgWeight = Number(weight) || 0;
+  const duration = Number(minutes) || 0;
+  if (kgWeight <= 0 || duration <= 0 || met <= 0) return 0;
+  return Math.round((met * 3.5 * kgWeight * duration) / 200);
+}
+
 /** Epley, and the percentage table people actually program from. */
 export function oneRepMax(weight, reps) {
   const w = Number(weight) || 0;

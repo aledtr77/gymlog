@@ -1,10 +1,7 @@
 /**
- * Everything that is not the workout, behind one row.
- *
- * The brief asks for calendar, goals, body weight, photos and seven
- * calculators. Putting them on the dashboard would bury the one thing that
- * matters, so they live here: reachable in two taps, invisible until asked
- * for.
+ * Secondary training tools and app preferences live here. Personal profile
+ * data and body-weight tracking belong to the dashboard, where their effect
+ * on the plan and estimates stays visible.
  */
 import { el } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
@@ -22,21 +19,20 @@ import { dayLabel } from '../utils/date.js';
 
 export function render() {
   const template = activeTemplate();
-  const lastWeight = state.body[0];
 
   return {
     node: el(
       'div',
       null,
-      appbar({ title: 'More', back: () => go('/') }),
+      appbar({ title: 'More', heading: 'Tools and preferences', back: () => go('/') }),
       el(
         'main',
         { class: 'screen' },
         el(
           'header',
           { class: 'mb-6 max-w-2xl' },
-          el('h2', { class: 'text-2xl font-black tracking-tight' }, 'Tools and preferences'),
-          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2' }, 'Adjust your training, review your data, and manage the app. Estimates can provide context, but they are not medical advice.'),
+          el('h2', { class: 'text-2xl font-black tracking-tight lg:hidden' }, 'Tools and preferences'),
+          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2 lg:mt-0' }, 'Adjust your training, review your data, and manage the app. Estimates can provide context, but they are not medical advice.'),
         ),
         el(
           'div',
@@ -50,10 +46,10 @@ export function render() {
             ],
           }),
           toolSection({
-            title: 'Measurements and estimates',
-            body: 'Look at long-term trends rather than isolated numbers.',
+            title: 'Profile and estimates',
+            body: 'Personal details stay out of your training flow and on this device.',
             items: [
-              { title: 'Body weight', sub: lastWeight ? `${kg(lastWeight.weight)} kg · ${dayLabel(lastWeight.at)}` : 'Start tracking a trend', iconName: 'scale', onClick: openBody },
+              { title: 'Personal profile', sub: personalProfileSummary(), iconName: 'scale', onClick: openPersonalProfile },
               { title: 'Training and health estimates', sub: 'BMI, energy needs, 1RM, body fat, and plates', iconName: 'calculator', onClick: openCalculators },
             ],
           }),
@@ -70,6 +66,14 @@ export function render() {
       ),
     ),
   };
+}
+
+function personalProfileSummary() {
+  const profile = prefs.get('profile') || {};
+  const weight = state.body[0]?.weight || profile.weight;
+  return weight && profile.height
+    ? `${kg(weight)} kg · ${profile.height} cm · update measurements`
+    : 'Add details for weight trends and calorie estimates';
 }
 
 function toolSection({ title, body, items, className = '' }) {
@@ -161,64 +165,119 @@ function openProgram() {
   });
 }
 
-/* ------------------------------------------------------------------ body */
+/* ----------------------------------------------------------- calculators */
 
-function openBody() {
-  const input = el('input', { type: 'number', inputmode: 'decimal', step: '0.1', class: 'field', placeholder: 'Weight in kg' });
-  const history = el('div', { class: 'flex flex-col gap-2 mt-5' });
-
-  const paint = () => {
-    const rows = state.body.slice(0, 20);
-    history.replaceChildren(
-      el('h3', { class: 'label mb-1' }, 'History'),
-      ...(rows.length
-        ? rows.map((b) =>
-            el(
-              'div',
-              { class: 'flex justify-between py-2 border-b border-line' },
-              el('span', { class: 'text-sm text-ink-2' }, dayLabel(b.at)),
-              el('span', { class: 'font-bold num' }, `${kg(b.weight)} kg`),
-            ),
-          )
-        : [el('p', { class: 'text-sm text-ink-3' }, 'No measurements yet.')]),
-    );
+function openPersonalProfile() {
+  const saved = prefs.get('profile') || {};
+  const draft = {
+    sex: saved.sex || '',
+    age: saved.age || '',
+    height: saved.height || '',
+    weight: state.body[0]?.weight || saved.weight || '',
   };
-  paint();
+  let handle;
 
-  sheet({
-    title: 'Body weight',
+  const numberField = (key, label, { min, max, step = '1', placeholder }) => {
+    const input = el('input', {
+      type: 'number',
+      inputmode: 'decimal',
+      class: 'field',
+      min: String(min),
+      max: String(max),
+      step,
+      value: draft[key],
+      placeholder,
+      onInput: (event) => { draft[key] = event.target.value; },
+    });
+    return el('label', { class: 'flex flex-col gap-1.5' }, el('span', { class: 'label' }, label), input);
+  };
+
+  const sex = el(
+    'select',
+    { class: 'field', onChange: (event) => { draft.sex = event.target.value; } },
+    el('option', { value: '', selected: !draft.sex }, 'Select'),
+    el('option', { value: 'f', selected: draft.sex === 'f' }, 'Female'),
+    el('option', { value: 'm', selected: draft.sex === 'm' }, 'Male'),
+  );
+
+  const firstWeight = state.body.at(-1)?.weight;
+  const currentWeight = state.body[0]?.weight;
+  const change = firstWeight && currentWeight ? Math.round((currentWeight - firstWeight) * 10) / 10 : null;
+
+  handle = sheet({
+    title: 'Personal profile',
     body: el(
       'div',
-      null,
+      { class: 'flex flex-col gap-5' },
       el(
-        'div',
-        { class: 'mb-5 rounded-2xl border border-line bg-surface p-4' },
-        el('h3', { class: 'font-extrabold' }, 'Follow the trend, not a single day'),
-        el('p', { class: 'mt-1.5 text-sm leading-relaxed text-ink-2' }, 'Weigh under similar conditions, ideally in the morning, and look at the average across several weeks. Hydration, sodium, and digestion can move the scale without changing body fat.'),
+        'section',
+        { class: 'rounded-xl3 border border-accent/25 bg-accent/10 p-5' },
+        el('div', { class: 'w-10 h-10 grid place-items-center rounded-xl bg-accent text-accent-ink' }, icon('scale', 'w-5 h-5')),
+        el('h3', { class: 'mt-4 text-xl font-black tracking-tight' }, 'Details that improve your estimates'),
+        el('p', { class: 'mt-1.5 text-sm leading-relaxed text-ink-2' }, 'GymLog uses these values for weight trends, BMI context, energy calculations, and workout calorie estimates. They never leave this device.'),
       ),
-      el('label', { class: 'flex flex-col gap-1.5' }, el('span', { class: 'label' }, 'Today’s weight (kg)'), input),
+      currentWeight
+        ? el(
+            'section',
+            { class: 'tile grid grid-cols-2 gap-4' },
+            stat(kg(currentWeight), 'current kg', { accent: true }),
+            stat(change === null ? '—' : `${change > 0 ? '+' : ''}${change}`, 'change since first log'),
+          )
+        : null,
       el(
-        'button',
-        {
-          type: 'button',
-          class: 'btn-primary w-full mt-3',
-          onClick: async () => {
-            const value = parseNum(input.value);
-            if (!value || value <= 0) return toast('Enter a valid weight', { variant: 'err' });
-            await logBody({ weight: value });
-            input.value = '';
-            paint();
-            toast('Weight logged', { variant: 'ok' });
+        'section',
+        { class: 'card' },
+        el('h3', { class: 'font-extrabold mb-4' }, 'Your details'),
+        el(
+          'div',
+          { class: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
+          el('label', { class: 'flex flex-col gap-1.5' }, el('span', { class: 'label' }, 'Sex used by energy formulas'), sex),
+          numberField('age', 'Age', { min: 14, max: 100, placeholder: 'e.g. 30' }),
+          numberField('height', 'Height (cm)', { min: 120, max: 230, placeholder: 'e.g. 175' }),
+          numberField('weight', 'Current weight (kg)', { min: 30, max: 300, step: '0.1', placeholder: 'e.g. 75' }),
+        ),
+        el(
+          'button',
+          {
+            type: 'button',
+            class: 'btn-primary w-full mt-4',
+            onClick: async () => {
+              const profile = normalizeProfile(draft);
+              if (!validProfile(profile)) return toast('Complete every field with a valid value', { variant: 'err' });
+              const previousWeight = state.body[0]?.weight || saved.weight;
+              prefs.set({ profile });
+              if (Number(previousWeight) !== profile.weight) await logBody({ weight: profile.weight });
+              handle.close();
+              go('/more');
+              toast('Personal profile updated', { variant: 'ok' });
+            },
           },
-        },
-        'Log weight',
+          'Save personal profile',
+        ),
       ),
-      history,
+      state.body.length > 1
+        ? el(
+            'section',
+            { class: 'card' },
+            el('h3', { class: 'font-extrabold' }, 'Recent weight entries'),
+            el('p', { class: 'mt-1 text-xs text-ink-3' }, 'Use the same weighing conditions and focus on the trend.'),
+            el('div', { class: 'mt-3' }, state.body.slice(0, 8).map((entry) => el('div', { class: 'flex items-center justify-between py-2.5 border-b border-line last:border-0' }, el('span', { class: 'text-sm text-ink-2' }, dayLabel(entry.at)), el('strong', { class: 'num' }, `${kg(entry.weight)} kg`)))),
+          )
+        : null,
     ),
   });
 }
 
-/* ----------------------------------------------------------- calculators */
+function normalizeProfile(profile) {
+  return { sex: profile.sex, age: Number(profile.age), height: Number(profile.height), weight: Number(profile.weight) };
+}
+
+function validProfile(profile) {
+  return ['f', 'm'].includes(profile.sex)
+    && profile.age >= 14 && profile.age <= 100
+    && profile.height >= 120 && profile.height <= 230
+    && profile.weight >= 30 && profile.weight <= 300;
+}
 
 function openCalculators() {
   sheet({
@@ -259,7 +318,7 @@ function calcSheet(title, fields, compute, { intro = null } = {}) {
           ? el(
               'select',
               { class: 'field', onChange: run },
-              f.options.map((o) => el('option', { value: o.value }, o.label)),
+              f.options.map((o) => el('option', { value: o.value, selected: f.value === o.value }, o.label)),
             )
           : el('input', {
               type: 'number',
@@ -318,11 +377,12 @@ function oneRmCalc() {
 }
 
 function bmiCalc() {
+  const profile = prefs.get('profile') || {};
   calcSheet(
     'Body mass index',
     [
-      { key: 'weight', label: 'Your weight (kg)' },
-      { key: 'height', label: 'Your height (cm)', step: '1' },
+      { key: 'weight', label: 'Your weight (kg)', value: state.body[0]?.weight || profile.weight },
+      { key: 'height', label: 'Your height (cm)', step: '1', value: profile.height },
     ],
     ({ weight, height }) => {
       const r = calc.bmi(weight, height);
@@ -369,13 +429,14 @@ function bmiCalc() {
 }
 
 function tdeeCalc() {
+  const profile = prefs.get('profile') || {};
   calcSheet(
     'Energy and macronutrients',
     [
-      { key: 'weight', label: 'Weight (kg)' },
-      { key: 'height', label: 'Height (cm)' },
-      { key: 'age', label: 'Age', step: '1' },
-      { key: 'sex', label: 'Sex used by the formula', options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
+      { key: 'weight', label: 'Weight (kg)', value: state.body[0]?.weight || profile.weight },
+      { key: 'height', label: 'Height (cm)', value: profile.height },
+      { key: 'age', label: 'Age', step: '1', value: profile.age },
+      { key: 'sex', label: 'Sex used by the formula', value: profile.sex, options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
       { key: 'activity', label: 'Activity level', options: calc.ACTIVITY.map((a) => ({ value: a.id, label: `${a.label} — ${a.hint}` })) },
       { key: 'goal', label: 'Goal', options: [
         { value: 'maintenance', label: 'Maintain weight' },
@@ -404,11 +465,12 @@ function tdeeCalc() {
 }
 
 function bodyFatCalc() {
+  const profile = prefs.get('profile') || {};
   calcSheet(
     'Estimated body fat',
     [
-      { key: 'sex', label: 'Sex used by the formula', options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
-      { key: 'height', label: 'Height (cm)' },
+      { key: 'sex', label: 'Sex used by the formula', value: profile.sex, options: [{ value: 'm', label: 'Male' }, { value: 'f', label: 'Female' }] },
+      { key: 'height', label: 'Height (cm)', value: profile.height },
       { key: 'neck', label: 'Neck circumference (cm)' },
       { key: 'waist', label: 'Waist circumference (cm)' },
       { key: 'hip', label: 'Hip circumference (cm, required for women)' },
@@ -498,7 +560,7 @@ async function openData() {
 
   const payload = () =>
     JSON.stringify(
-      { app: 'gymlog', version: 3, at: new Date().toISOString(), sets: state.sets, body: state.body, goals: state.goals },
+      { app: 'gymlog', version: 3, at: new Date().toISOString(), profile: prefs.get('profile'), sets: state.sets, body: state.body, goals: state.goals },
       null,
       2,
     );

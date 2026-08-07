@@ -13,8 +13,15 @@ import { go } from '../core/router.js';
 import { WEEKDAYS, longDate, sameDay, startOfWeek } from '../utils/date.js';
 import { compact, kg } from '../utils/num.js';
 import { TEMPLATES } from '../data/programs.js';
+import { caloriesBurned } from '../utils/calc.js';
 
-const setupDraft = { level: null, days: null, reviewing: false, selected: null };
+const setupDraft = {
+  level: null,
+  split: null,
+  days: null,
+  reviewing: false,
+  selected: null,
+};
 
 export function render() {
   if (!prefs.get('onboarded')) return renderSetup();
@@ -47,6 +54,7 @@ export function render() {
       null,
       appbar({
         title: 'Today',
+        heading,
         sub: longDate(new Date()),
         action: el(
           'button',
@@ -61,12 +69,12 @@ export function render() {
       }),
       el(
         'main',
-        { class: 'screen' },
+        { class: 'screen lg:max-w-6xl' },
         el(
           'header',
           { class: 'mb-5 lg:mb-7 max-w-2xl' },
-          el('h2', { class: 'text-2xl lg:text-3xl font-black tracking-tight' }, heading),
-          el('p', { class: 'mt-2 text-sm lg:text-[15px] leading-relaxed text-ink-2' }, guidance),
+          el('h2', { class: 'text-2xl font-black tracking-tight lg:hidden' }, heading),
+          el('p', { class: 'mt-2 text-sm leading-relaxed text-ink-2 lg:mt-0 lg:text-[15px]' }, guidance),
         ),
         el(
           'div',
@@ -85,7 +93,7 @@ export function render() {
 }
 
 function renderSetup() {
-  const main = el('main', { class: 'screen' });
+  const main = el('main', { class: 'screen setup-screen lg:max-w-6xl' });
 
   const paint = () => {
     replace(main, setupDraft.reviewing ? proposalStep(paint) : questionsStep(paint));
@@ -97,83 +105,106 @@ function renderSetup() {
     node: el(
       'div',
       null,
-      appbar({ title: 'Today', sub: 'Set up your starting point' }),
+      appbar({ title: 'Today', heading: 'Set up your training plan' }),
       main,
     ),
   };
 }
 
 function questionsStep(paint) {
-  const ready = setupDraft.level && setupDraft.days;
+  const ready = setupDraft.level && setupDraft.split && setupDraft.days;
   const levelOptions = [
-    { value: 'beginner', label: 'Beginner', body: 'Exercises, equipment, and training loads are still new to me.' },
-    { value: 'intermediate', label: 'Intermediate', body: 'I know the main movements and already train fairly consistently.' },
-    { value: 'advanced', label: 'Experienced', body: 'I am comfortable managing form, load, recovery, and training volume.' },
+    { value: 'beginner', label: 'Getting started', body: 'Learning or returning' },
+    { value: 'intermediate', label: 'Consistent', body: 'Training for a few months' },
+    { value: 'advanced', label: 'Independent', body: 'Managing my own progress' },
   ];
-  const dayOptions = [
-    { value: 2, label: '2 days', body: 'A realistic, low-pressure place to begin.' },
-    { value: 3, label: '3 days', body: 'A balanced rhythm with plenty of recovery.' },
-    { value: 4, label: '4 days', body: 'More sessions with less work in each one.' },
-    { value: 5, label: '5+ days', body: 'Best suited to experienced, well-recovered training.' },
+  const splitOptions = [
+    { value: 'full-body', label: 'Full body', body: 'Everything, every session' },
+    { value: 'upper-lower', label: 'Upper / lower', body: 'Alternate the two halves' },
+    { value: 'ppl', label: 'Push / pull / legs', body: 'Three focused sessions' },
   ];
+  const chosenSplit = splitOptions.find((option) => option.value === setupDraft.split);
+  const chosenLevel = levelOptions.find((option) => option.value === setupDraft.level);
+
+  const build = () => {
+    const suggested = suggestedTemplate(setupDraft.split, setupDraft.level);
+    setupDraft.selected = new Set(suggested.sessions.flatMap((session) => session.lifts.map((lift) => `${session.id}:${lift.exerciseId}`)));
+    setupDraft.reviewing = true;
+    paint();
+  };
 
   return el(
     'div',
-    { class: 'setup-flow' },
+    { class: 'onboarding' },
     el(
       'header',
-      { class: 'setup-intro' },
-      el('span', { class: 'setup-eyebrow' }, 'A quick setup'),
-      el('h2', { class: 'setup-title' }, 'Let’s get you set up.'),
-      el('p', { class: 'setup-copy' }, 'Tell us where you are starting and how much time you actually have. We will build a simple plan for you to review—nothing starts until you approve it.'),
+      { class: 'onboarding__hero lg:hidden' },
+      el('h2', { class: 'onboarding__title' }, 'Set up your training plan'),
     ),
     el(
       'section',
-      { class: 'setup-section' },
-      el('div', { class: 'setup-section-head' }, el('span', { class: 'setup-step' }, '1'), el('div', null, el('h3', { class: 'setup-question' }, 'How familiar are you with strength training?'), el('p', { class: 'setup-hint' }, 'Choose the description that feels closest. There is no wrong answer.'))),
-      el('div', { class: 'grid grid-cols-1 md:grid-cols-3 gap-2.5' }, levelOptions.map((option) => setupChoice(option, setupDraft.level === option.value, () => { setupDraft.level = option.value; paint(); }))),
-    ),
-    el(
-      'section',
-      { class: 'setup-section' },
-      el('div', { class: 'setup-section-head' }, el('span', { class: 'setup-step' }, '2'), el('div', null, el('h3', { class: 'setup-question' }, 'How many days can you train most weeks?'), el('p', { class: 'setup-hint' }, 'Choose what is sustainable, not the best-case scenario.'))),
-      el('div', { class: 'grid grid-cols-2 lg:grid-cols-4 gap-2.5' }, dayOptions.map((option) => setupChoice(option, setupDraft.days === option.value, () => { setupDraft.days = option.value; paint(); }))),
-    ),
-    el(
-      'div',
-      { class: 'mt-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-3' },
+      { class: 'onboarding__builder' },
       el(
-        'button',
-        {
-          type: 'button',
-          class: 'btn-primary sm:min-w-[240px]',
-          disabled: !ready,
-          onClick: () => {
-            const suggested = suggestedTemplate(setupDraft.level, setupDraft.days);
-            setupDraft.selected = new Set(suggested.sessions.flatMap((session) => session.lifts.map((lift) => `${session.id}:${lift.exerciseId}`)));
-            setupDraft.reviewing = true;
-            paint();
-          },
-        },
-        'Build my starting plan',
-        icon('next', 'w-5 h-5'),
+        'div',
+        { class: 'onboarding__builder-head' },
+        el('div', null, el('span', { class: 'text-sm font-extrabold uppercase tracking-[.1em] text-accent' }, 'Your training rhythm'), el('h3', null, 'Shape the week you can repeat.')),
+        el('span', { class: ['onboarding__status', ready && 'is-ready'] }, ready ? 'Ready' : '3 choices'),
       ),
-      el('button', { type: 'button', class: 'btn-quiet', onClick: () => go('/exercises') }, 'Explore exercises first'),
+      setupRow(
+        'Where are you now?',
+        'This calibrates starting volume and load.',
+        el('div', { class: 'onboarding__options' }, levelOptions.map((option, index) => setupOption(option, setupDraft.level === option.value, () => { setupDraft.level = option.value; paint(); }, levelVisual(index)))),
+      ),
+      setupRow(
+        'How should sessions flow?',
+        'Pick the structure you are most likely to enjoy.',
+        el('div', { class: 'onboarding__options' }, splitOptions.map((option) => setupOption(option, setupDraft.split === option.value, () => { setupDraft.split = option.value; paint(); }, splitVisual(option.value)))),
+      ),
+      setupRow(
+        'What is realistic most weeks?',
+        'Consistency beats the perfect week.',
+        el('div', { class: 'onboarding__days' }, [2, 3, 4, 5].map((days) => el('button', { type: 'button', class: ['onboarding__day', setupDraft.days === days && 'is-selected'], 'aria-pressed': String(setupDraft.days === days), onClick: () => { setupDraft.days = days; paint(); } }, el('strong', null, days === 5 ? '5+' : String(days)), el('span', null, 'days')))),
+      ),
+      el(
+        'footer',
+        { class: ['onboarding__action', ready && 'is-ready'] },
+        el(
+          'div',
+          { class: 'onboarding__summary' },
+          el('span', { class: 'onboarding__summary-icon' }, ready ? icon('check', 'w-5 h-5') : icon('info', 'w-5 h-5')),
+          el('div', null, el('strong', null, ready ? `${chosenSplit.label} · ${setupDraft.days} days` : 'Your plan preview will appear here'), el('span', null, ready ? `${chosenLevel.label} starting volume, adjusted to your week.` : 'Select one option in each row.')),
+        ),
+        el('button', { type: 'button', class: 'btn-primary onboarding__cta', disabled: !ready, onClick: build }, 'Show my plan', icon('next', 'w-5 h-5')),
+      ),
+      el('button', { type: 'button', class: 'onboarding__explore', onClick: () => go('/exercises') }, 'Not ready to choose?', el('strong', null, 'Explore the exercise library'), icon('next', 'w-4 h-4')),
     ),
   );
 }
 
-function setupChoice(option, active, onClick) {
+function setupRow(title, hint, content) {
+  return el('div', { class: 'onboarding__row' }, el('div', { class: 'onboarding__row-copy' }, el('h4', null, title), el('p', null, hint)), content);
+}
+
+function setupOption(option, active, onClick, visual) {
   return el(
     'button',
-    { type: 'button', class: ['setup-choice', active && 'is-selected'], 'aria-pressed': String(active), onClick },
-    el('span', { class: 'setup-choice-title' }, option.label),
-    el('span', { class: 'setup-choice-copy' }, option.body),
+    { type: 'button', class: ['onboarding__option', active && 'is-selected'], 'aria-pressed': String(active), onClick },
+    visual,
+    el('span', { class: 'onboarding__option-copy' }, el('strong', null, option.label), el('small', null, option.body)),
+    el('span', { class: 'onboarding__radio', 'aria-hidden': 'true' }),
   );
+}
+
+function levelVisual(index) {
+  return el('span', { class: 'onboarding__level', 'aria-hidden': 'true' }, [0, 1, 2].map((bar) => el('i', { class: bar <= index ? 'is-on' : '' })));
+}
+
+function splitVisual(type) {
+  return el('span', { class: `onboarding__split onboarding__split--${type}`, 'aria-hidden': 'true' }, el('i'), el('i'), el('i'));
 }
 
 function proposalStep(paint) {
-  const suggested = suggestedTemplate(setupDraft.level, setupDraft.days);
+  const suggested = suggestedTemplate(setupDraft.split, setupDraft.level);
   const selected = setupDraft.selected;
   const countFor = (session) => session.lifts.filter((lift) => selected.has(`${session.id}:${lift.exerciseId}`)).length;
   const valid = suggested.sessions.every((session) => countFor(session) >= 3);
@@ -228,19 +259,33 @@ function proposalStep(paint) {
   );
 }
 
-function suggestedTemplate(level, days) {
-  const recommended = recommendedDays(level, days);
-  if (recommended <= 3) return TEMPLATES[0];
-  if (recommended === 4) return TEMPLATES[1];
-  return TEMPLATES[2];
+function suggestedTemplate(split, level) {
+  const base = TEMPLATES.find((template) => template.id === split) || TEMPLATES[0];
+  const ranks = { beginner: 0, intermediate: 1, advanced: 2 };
+  const delta = (ranks[level] ?? 0) - (ranks[base.level] ?? 0);
+
+  return {
+    ...base,
+    level,
+    sessions: base.sessions.map((session) => ({
+      ...session,
+      lifts: session.lifts.map((lift) => ({
+        ...lift,
+        sets: Math.max(2, Math.min(5, lift.sets + delta)),
+        start: lift.start
+          ? Math.max(2.5, Math.round((lift.start * (1 + delta * 0.2)) / 2.5) * 2.5)
+          : 0,
+      })),
+    })),
+  };
 }
 
 function proposalExplanation(level, days, template) {
-  const levelLabel = level === 'beginner' ? 'beginner' : level === 'intermediate' ? 'intermediate' : 'experienced';
+  const levelLabel = level === 'beginner' ? 'getting started' : level === 'intermediate' ? 'consistent' : 'independent';
   const recommended = recommendedDays(level, days);
   const availability = days === 5 ? '5 or more' : days;
   const adjustment = recommended < days ? ` We suggest starting with ${recommended} so recovery stays manageable.` : '';
-  return `You chose ${levelLabel} and ${availability} available days.${adjustment} This plan alternates ${template.sessions.length} sessions. Review every exercise before you confirm.`;
+  return `You chose the ${template.name} structure, a ${levelLabel} starting level, and ${availability} available days.${adjustment} The plan rotates through ${template.sessions.length} sessions. Review every exercise before you confirm.`;
 }
 
 function recommendedDays(level, available) {
@@ -267,16 +312,20 @@ function activateProposal(base) {
   };
   const level = setupDraft.level;
   const trainingDays = recommendedDays(level, setupDraft.days);
+  const split = setupDraft.split;
   setupDraft.level = null;
+  setupDraft.split = null;
   setupDraft.days = null;
   setupDraft.reviewing = false;
   setupDraft.selected = null;
-  setTemplate('custom', { level, trainingDays, customTemplate: custom });
+  setTemplate('custom', { level, split, trainingDays, customTemplate: custom });
 }
 
 function sessionCard({ session, template, nextLift }) {
   const completedPct = session.setsTotal ? Math.round((session.setsDone / session.setsTotal) * 100) : 0;
   const minutes = Math.max(30, Math.round(session.setsTotal * 2.7 / 5) * 5);
+  const profileWeight = state.body[0]?.weight || prefs.get('profile')?.weight;
+  const estimatedCalories = caloriesBurned(profileWeight, minutes, 5);
 
   return el(
     'section',
@@ -307,6 +356,7 @@ function sessionCard({ session, template, nextLift }) {
       el('span', { class: 'chip' }, `${session.lifts.length} exercises`),
       el('span', { class: 'chip' }, `${session.setsTotal} sets`),
       el('span', { class: 'chip' }, `about ${minutes} min`),
+      estimatedCalories ? el('span', { class: 'chip' }, `about ${estimatedCalories} kcal`) : null,
     ),
     session.started
       ? el(

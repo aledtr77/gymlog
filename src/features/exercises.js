@@ -139,7 +139,7 @@ export function render() {
     node: el(
       'div',
       null,
-      appbar({ title: 'Exercises', back: () => go('/') }),
+      appbar({ title: 'Exercises', heading: 'Browse your exercise library', back: () => go('/') }),
       el(
         'main',
         { class: 'screen' },

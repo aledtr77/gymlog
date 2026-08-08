@@ -1,7 +1,15 @@
-/** Settings uses master/detail navigation: one category at a time. */
+/**
+ * Settings uses master/detail navigation: one category at a time.
+ *
+ * Below `lg` it is also the whole of More. The bottom bar is full at six tabs,
+ * so rather than add a seventh this screen adopts the training tools as their
+ * own group and keeps the two sets of categories visibly apart.
+ */
 import { el, replace } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
 import { appbar, toast } from '../ui/components.js';
+import { masterDetail } from '../ui/masterdetail.js';
+import { compact } from '../ui/nav.js';
 import { prefs, reload as reloadState } from '../core/state.js';
 import { go } from '../core/router.js';
 import { files, clipboard, net } from '../platform/index.js';
@@ -9,58 +17,13 @@ import { storageStatus, usage } from '../services/db.js';
 import { backupText, deleteAllData, hasDeletableData, restoreBackup } from '../services/backup.js';
 import { applyTheme } from '../services/theme.js';
 
-const CATEGORIES = [
-  { id: 'appearance', label: 'Appearance', short: 'Theme', icon: 'palette' },
-  { id: 'workout', label: 'Workout', short: 'Feedback and rest', icon: 'dumbbell' },
-  { id: 'data', label: 'Data', short: 'Local data and backup', icon: 'database' },
-  { id: 'plan', label: 'Plan setup', short: 'Build the plan again', icon: 'calendar' },
-];
-
-let activeCategory = 'appearance';
+const settingsView = { active: 'appearance' };
 let dataNotice = null;
 
 export async function render() {
   const current = prefs.get();
   const storage = await usage();
   const storageHealth = storageStatus();
-  let active = activeCategory;
-
-  const categoryButtons = new Map();
-  const panels = new Map();
-
-  const selectCategory = (id) => {
-    active = id;
-    activeCategory = id;
-    for (const [key, button] of categoryButtons) {
-      const selected = key === active;
-      button.classList.toggle('is-active', selected);
-      button.setAttribute('aria-selected', String(selected));
-      button.tabIndex = selected ? 0 : -1;
-    }
-    for (const [key, panel] of panels) panel.hidden = key !== active;
-  };
-
-  const categoryNav = el(
-    'nav',
-    { class: 'settings-nav__items', role: 'tablist', 'aria-label': 'Settings categories' },
-    CATEGORIES.map((category) => {
-      const button = el(
-        'button',
-        {
-          type: 'button',
-          class: ['settings-nav__item', category.id === active && 'is-active'],
-          role: 'tab',
-          'aria-selected': String(category.id === active),
-          onClick: () => selectCategory(category.id),
-        },
-        el('span', { class: 'settings-nav__item-icon' }, icon(category.icon, 'w-5 h-5')),
-        el('span', { class: 'min-w-0' }, el('strong', null, category.label), el('small', null, category.short)),
-        icon('next', 'settings-nav__arrow w-4 h-4'),
-      );
-      categoryButtons.set(category.id, button);
-      return button;
-    }),
-  );
 
   const appearance = settingsPanel(
     'appearance',
@@ -150,7 +113,7 @@ export async function render() {
   );
 
   const plan = settingsPanel(
-    'plan',
+    'setup',
     'Plan setup',
     'Run the guided questions again when your schedule, experience, or preferred split changes.',
     'calendar',
@@ -166,39 +129,50 @@ export async function render() {
     ),
   );
 
-  [appearance, workout, data, plan].forEach((panel) => panels.set(panel.dataset.panel, panel));
-  selectCategory(active);
+  const app = [
+    { id: 'appearance', label: 'Appearance', short: 'Theme', icon: 'palette', panel: appearance },
+    { id: 'workout', label: 'Workout', short: 'Feedback and rest', icon: 'dumbbell', panel: workout },
+    { id: 'data', label: 'Data', short: 'Local data and backup', icon: 'database', panel: data },
+    { id: 'setup', label: 'Plan setup', short: 'Build the plan again', icon: 'calendar', panel: plan },
+  ];
+
+  /* On a phone this screen is the only way in, so it carries the tools and the
+     policy too. On desktop the rail already holds both; repeating them here is
+     what made them read as clutter. */
+  const narrow = compact();
+  const groups = narrow
+    ? [
+        { label: 'App', items: app },
+        { label: 'Training tools', items: (await import('./more.js')).sections() },
+        { label: 'About', items: [{ id: 'privacy', label: 'Privacy', short: 'What happens to your data', icon: 'shield', path: '/privacy', onClick: () => go('/privacy') }] },
+      ]
+    : [{ label: 'Settings categories', items: app }];
 
   return {
     node: el(
       'div',
       null,
-      appbar({ title: 'Settings', heading: 'Personalize how GymLog works', back: () => go('/more') }),
+      appbar({
+        title: 'Settings',
+        heading: narrow ? 'Preferences and tools' : 'Personalize how GymLog works',
+        back: () => go(narrow ? '/' : '/more'),
+      }),
       el(
         'main',
         { class: 'screen settings-screen' },
-        el(
-          'section',
-          { class: 'settings-workspace' },
-          el(
-            'aside',
-            { class: 'settings-nav' },
-            el(
-              'header',
-              { class: 'settings-nav__head' },
-              el('span', { class: 'settings-nav__brand' }, icon('settings', 'w-6 h-6')),
-              el('div', null, el('p', { class: 'label text-accent' }, 'Settings'), el('h2', null, 'Your preferences')),
-            ),
-            categoryNav,
-            el(
-              'div',
-              { class: 'settings-nav__status' },
-              el('span', { class: 'h-2 w-2 rounded-full bg-ok shadow-[0_0_12px_rgb(var(--ok)/.55)]' }),
-              el('span', null, el('strong', null, net.online ? 'Stored on this device' : 'Ready offline'), el('small', null, 'No account required')),
-            ),
+        masterDetail({
+          brand: 'settings',
+          kicker: 'Settings',
+          title: narrow ? 'Preferences and tools' : 'Your preferences',
+          groups,
+          view: settingsView,
+          extra: el(
+            'div',
+            { class: 'settings-nav__status' },
+            el('span', { class: 'h-2 w-2 rounded-full bg-ok shadow-[0_0_12px_rgb(var(--ok)/.55)]' }),
+            el('span', null, el('strong', null, net.online ? 'Stored on this device' : 'Ready offline'), el('small', null, 'No account required')),
           ),
-          el('div', { class: 'settings-content' }, appearance, workout, data, plan),
-        ),
+        }),
       ),
     ),
   };

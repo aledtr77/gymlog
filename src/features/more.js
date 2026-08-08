@@ -1,7 +1,13 @@
-/** Practical tools presented as one stable master/detail workspace. */
+/**
+ * Practical training tools presented as one stable master/detail workspace.
+ *
+ * Below `lg` this screen does not exist: Settings renders `sections()` itself,
+ * because the bottom bar cannot hold a tab for both.
+ */
 import { el, replace } from '../ui/el.js';
 import { icon } from '../ui/icons.js';
 import { appbar, blank, toast } from '../ui/components.js';
+import { masterDetail } from '../ui/masterdetail.js';
 import { state, logBody, prefs, setTemplate, activeTemplate } from '../core/state.js';
 import { TEMPLATES } from '../data/programs.js';
 import { go } from '../core/router.js';
@@ -10,66 +16,19 @@ import * as calc from '../utils/calc.js';
 import { kg, compact, parseNum } from '../utils/num.js';
 import { dayLabel } from '../utils/date.js';
 
-const CATEGORIES = [
-  { id: 'plan', label: 'Training plan', short: 'Your weekly structure', icon: 'calendar' },
-  { id: 'profile', label: 'Personal profile', short: 'Measurements and estimates', icon: 'scale' },
-  { id: 'history', label: 'Workout history', short: 'Completed weights and reps', icon: 'trophy' },
-  { id: 'calculators', label: 'Quick calculations', short: 'Strength and plates', icon: 'calculator' },
-];
-
-/* The rail carries these on desktop, so they appear here only where there is
-   no rail. Without them a phone has no route into Settings or Privacy at all. */
-const APP_LINKS = [
-  { path: '/settings', label: 'App settings', short: 'Theme, feedback, and data', icon: 'settings' },
-  { path: '/privacy', label: 'Privacy', short: 'What happens to your data', icon: 'shield' },
-];
-
 const moreView = { active: 'plan', calculator: 'one-rm', planDetail: null };
 
+/** The training tools, built ready to drop into any rail that wants them. */
+export function sections() {
+  return [
+    { id: 'plan', label: 'Training plan', short: 'Your weekly structure', icon: 'calendar', panel: planPanel() },
+    { id: 'profile', label: 'Personal profile', short: 'Measurements and estimates', icon: 'scale', panel: profilePanel() },
+    { id: 'history', label: 'Workout history', short: 'Completed weights and reps', icon: 'trophy', panel: historyPanel() },
+    { id: 'calculators', label: 'Quick calculations', short: 'Strength and plates', icon: 'calculator', panel: calculatorsPanel() },
+  ];
+}
+
 export function render() {
-  const categoryButtons = new Map();
-  const panels = new Map();
-
-  const selectCategory = (id) => {
-    moreView.active = id;
-    for (const [key, button] of categoryButtons) {
-      const selected = key === id;
-      button.classList.toggle('is-active', selected);
-      button.setAttribute('aria-selected', String(selected));
-      button.tabIndex = selected ? 0 : -1;
-    }
-    for (const [key, panel] of panels) panel.hidden = key !== id;
-  };
-
-  const categoryNav = el(
-    'nav',
-    { class: 'settings-nav__items', role: 'tablist', 'aria-label': 'Training tools' },
-    CATEGORIES.map((category) => {
-      const button = el(
-        'button',
-        {
-          type: 'button',
-          class: ['settings-nav__item', category.id === moreView.active && 'is-active'],
-          role: 'tab',
-          'aria-selected': String(category.id === moreView.active),
-          onClick: () => selectCategory(category.id),
-        },
-        el('span', { class: 'settings-nav__item-icon' }, icon(category.icon, 'w-5 h-5')),
-        el('span', { class: 'min-w-0' }, el('strong', null, category.label), el('small', null, category.short)),
-        icon('next', 'settings-nav__arrow w-4 h-4'),
-      );
-      categoryButtons.set(category.id, button);
-      return button;
-    }),
-  );
-
-  const plan = planPanel();
-  const profile = profilePanel();
-  const history = historyPanel();
-  const calculators = calculatorsPanel();
-  [plan, profile, history, calculators].forEach((panel) => panels.set(panel.dataset.panel, panel));
-  selectCategory(moreView.active);
-
   return {
     node: el(
       'div',
@@ -78,37 +37,14 @@ export function render() {
       el(
         'main',
         { class: 'screen more-screen' },
-        el(
-          'section',
-          { class: 'settings-workspace more-tools' },
-          el(
-            'aside',
-            { class: 'settings-nav' },
-            el(
-              'header',
-              { class: 'settings-nav__head' },
-              el('span', { class: 'settings-nav__brand' }, icon('more', 'w-6 h-6')),
-              el('div', null, el('p', { class: 'label text-accent' }, 'Tools'), el('h2', null, 'Useful, not complicated')),
-            ),
-            categoryNav,
-            el(
-              'div',
-              { class: 'more-tools__app lg:hidden' },
-              el('p', { class: 'label mb-2 px-1' }, 'App'),
-              el(
-                'nav',
-                { class: 'settings-nav__items', 'aria-label': 'App settings and privacy' },
-                APP_LINKS.map((link) => el(
-                  'button',
-                  { type: 'button', class: 'settings-nav__item', onClick: () => go(link.path) },
-                  el('span', { class: 'settings-nav__item-icon' }, icon(link.icon, 'w-5 h-5')),
-                  el('span', { class: 'min-w-0' }, el('strong', null, link.label), el('small', null, link.short)),
-                )),
-              ),
-            ),
-          ),
-          el('div', { class: 'settings-content' }, plan, profile, history, calculators),
-        ),
+        masterDetail({
+          brand: 'more',
+          kicker: 'Tools',
+          title: 'Useful, not complicated',
+          groups: [{ label: 'Training tools', items: sections() }],
+          view: moreView,
+          className: 'more-tools',
+        }),
       ),
     ),
   };

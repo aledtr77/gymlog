@@ -5,7 +5,7 @@ import { define, setNotFound, start, refresh } from './core/router.js';
 import { on } from './core/bus.js';
 import { init } from './core/state.js';
 import { mountTimerBar } from './services/timer.js';
-import { mountNav } from './ui/nav.js';
+import { mountNav, compact } from './ui/nav.js';
 import { applyTheme, watchSystemTheme } from './services/theme.js';
 import { audio, screen as wakeScreen, net, notify } from './platform/index.js';
 import { watch as watchSync, drain } from './services/sync.js';
@@ -19,7 +19,9 @@ define('/session/:index', () => import('./features/session.js'));
 define('/timer', () => import('./features/timer.js'));
 define('/exercises', () => import('./features/exercises.js'));
 define('/stats', () => import('./features/stats.js'));
-define('/more', () => import('./features/more.js'));
+/* No More tab on a phone, so the route resolves to the screen that absorbed
+   it. An old bookmark still lands somewhere sensible. */
+define('/more', () => (compact() ? import('./features/settings.js') : import('./features/more.js')));
 define('/settings', () => import('./features/settings.js'));
 define('/privacy', () => import('./features/privacy.js'));
 setNotFound(() => import('./features/dashboard.js'));
@@ -65,6 +67,9 @@ async function boot() {
       duration: 10000,
     });
   }
+
+  // Crossing lg changes which screen owns the training tools, so redraw once.
+  window.matchMedia('(min-width: 1024px)').addEventListener('change', () => refresh());
 
   // Any state write redraws the current screen; nothing patches its own DOM.
   on('state', () => refresh());

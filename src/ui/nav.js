@@ -13,17 +13,30 @@ const ITEMS = [
   { path: '/more', label: 'More', icon: 'more' },
 ];
 
-/* Below the divider: reached deliberately, not during a workout. The mobile
-   bar has no room for these, so More links to both. */
+/* Below the divider: reached deliberately, not during a workout. */
 const SECONDARY = [
   { path: '/settings', label: 'Settings', icon: 'settings' },
   { path: '/privacy', label: 'Privacy', icon: 'shield' },
 ];
 
+/* Six is as many tabs as a phone can hold before the labels break, so the
+   sixth is Settings and it absorbs what More would have shown. */
+const MOBILE_ITEMS = [
+  ...ITEMS.slice(0, 5),
+  { path: '/settings', label: 'Settings', icon: 'settings' },
+];
+
+/** True below Tailwind's `lg`, where the rail is hidden and the bar is all
+    the navigation there is. */
+export function compact() {
+  return typeof window !== 'undefined' && !window.matchMedia('(min-width: 1024px)').matches;
+}
+
 export function primaryNavigationPath(path) {
   if (path === '/' || path.startsWith('/session')) return '/';
-  if (SECONDARY.some(item => path.startsWith(item.path))) return '/more';
-  return ITEMS.find(item => item.path !== '/' && path.startsWith(item.path))?.path ?? null;
+  // More does not exist on a phone: its tools live under Settings.
+  if (path.startsWith('/more') || path.startsWith('/privacy')) return '/settings';
+  return MOBILE_ITEMS.find(item => item.path !== '/' && path.startsWith(item.path))?.path ?? null;
 }
 
 export function mountNav(root) {
@@ -99,7 +112,7 @@ export function mountNav(root) {
     };
 
     list.replaceChildren(...ITEMS.map(navButton));
-    mobileList.replaceChildren(...ITEMS.map(mobileButton));
+    mobileList.replaceChildren(...MOBILE_ITEMS.map(mobileButton));
     settingsList.replaceChildren(...SECONDARY.map(navButton));
   };
 

@@ -12,14 +12,17 @@ test('mobile primary navigation maps nested routes to their section', () => {
     ['/exercises', '/exercises'],
     ['/exercises/squat', '/exercises'],
     ['/stats', '/stats'],
-    ['/more', '/more'],
-    ['/settings', '/more'],
-    ['/privacy', '/more'],
+    ['/settings', '/settings'],
   ];
 
   for (const [route, expected] of routes) {
     assert.equal(primaryNavigationPath(route), expected);
   }
+});
+
+test('the phone has no More tab: its routes resolve to Settings', () => {
+  assert.equal(primaryNavigationPath('/more'), '/settings');
+  assert.equal(primaryNavigationPath('/privacy'), '/settings');
 });
 
 test('mobile primary navigation leaves unknown routes without an active item', () => {

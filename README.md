@@ -5,7 +5,7 @@ workout moving.**
 
 [![lint · tests · build](https://img.shields.io/github/actions/workflow/status/aledtr77/gymlog/ci.yml?branch=main&label=lint%20%C2%B7%20tests%20%C2%B7%20build)](https://github.com/aledtr77/gymlog/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/version-1.0.0-111827)](https://github.com/aledtr77/gymlog/releases/tag/v1.0.0)
-[![Tests](https://img.shields.io/badge/tests-120%20passing-16a34a)](#quality-and-testing)
+[![Tests](https://img.shields.io/badge/tests-121%20passing-16a34a)](#quality-and-testing)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2563eb.svg)](LICENSE)
 [![PWA](https://img.shields.io/badge/PWA-installable-7c3aed)](https://gymlog.aledtr-77.workers.dev/)
 
@@ -129,7 +129,8 @@ backend and no request that carries user data off the device.
   addresses, with the hosting provider. GymLog neither adds to them nor reads them.
 
 The same statement is a screen of the application, reachable as **Privacy** in the
-navigation rail and from **More**, rather than a link buried inside another page.
+desktop navigation rail and from **Settings** on a phone, rather than a link buried
+inside another page.
 
 This position depends on the architecture, not on good intentions, so it stops holding
 the moment the architecture changes. Wiring a real backend into `src/services/sync.js`,
@@ -176,7 +177,7 @@ navigation and cache-first content-hashed assets.
 
 ## Quality and testing
 
-The automated suite currently contains **120 tests** covering:
+The automated suite currently contains **121 tests** covering:
 
 - progression, deloads, warm-ups and loadable plate increments;
 - sessions, routines, workout history and derived metrics;

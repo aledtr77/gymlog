@@ -826,6 +826,10 @@
     @apply mx-auto max-w-6xl;
   }
 
+  .more-tools__app {
+    @apply mt-4 border-t border-line/70 pt-4;
+  }
+
   .more-plan-list {
     @apply mx-auto flex max-w-4xl flex-col gap-2.5;
   }

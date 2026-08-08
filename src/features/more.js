@@ -17,6 +17,13 @@ const CATEGORIES = [
   { id: 'calculators', label: 'Quick calculations', short: 'Strength and plates', icon: 'calculator' },
 ];
 
+/* The rail carries these on desktop, so they appear here only where there is
+   no rail. Without them a phone has no route into Settings or Privacy at all. */
+const APP_LINKS = [
+  { path: '/settings', label: 'App settings', short: 'Theme, feedback, and data', icon: 'settings' },
+  { path: '/privacy', label: 'Privacy', short: 'What happens to your data', icon: 'shield' },
+];
+
 const moreView = { active: 'plan', calculator: 'one-rm', planDetail: null };
 
 export function render() {
@@ -84,6 +91,21 @@ export function render() {
               el('div', null, el('p', { class: 'label text-accent' }, 'Tools'), el('h2', null, 'Useful, not complicated')),
             ),
             categoryNav,
+            el(
+              'div',
+              { class: 'more-tools__app lg:hidden' },
+              el('p', { class: 'label mb-2 px-1' }, 'App'),
+              el(
+                'nav',
+                { class: 'settings-nav__items', 'aria-label': 'App settings and privacy' },
+                APP_LINKS.map((link) => el(
+                  'button',
+                  { type: 'button', class: 'settings-nav__item', onClick: () => go(link.path) },
+                  el('span', { class: 'settings-nav__item-icon' }, icon(link.icon, 'w-5 h-5')),
+                  el('span', { class: 'min-w-0' }, el('strong', null, link.label), el('small', null, link.short)),
+                )),
+              ),
+            ),
           ),
           el('div', { class: 'settings-content' }, plan, profile, history, calculators),
         ),

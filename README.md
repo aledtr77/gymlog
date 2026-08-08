@@ -96,7 +96,7 @@ a safety net while importing useful records from previous data shapes. Preferenc
 backup files have independent versions, so application schema changes do not silently
 invalidate a user's export.
 
-From **Settings → Data and privacy**, a user can:
+From **Settings → Data**, a user can:
 
 - export or copy all user-owned data as versioned JSON;
 - merge a compatible GymLog backup into existing records;
@@ -124,7 +124,7 @@ backend and no request that carries user data off the device.
 - No cookies are set. The browser storage that is used is strictly necessary for the
   application to function, so no consent banner is required.
 - Users can export everything as JSON and permanently delete everything, both from
-  **Settings → Data and privacy**, without asking anyone.
+  **Settings → Data**, without asking anyone.
 - Serving the application leaves ordinary web server access records, including IP
   addresses, with the hosting provider. GymLog neither adds to them nor reads them.
 

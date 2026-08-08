@@ -12,7 +12,7 @@ import { applyTheme } from '../services/theme.js';
 const CATEGORIES = [
   { id: 'appearance', label: 'Appearance', short: 'Theme', icon: 'palette' },
   { id: 'workout', label: 'Workout', short: 'Feedback and rest', icon: 'dumbbell' },
-  { id: 'data', label: 'Data & privacy', short: 'Local data and backup', icon: 'shield' },
+  { id: 'data', label: 'Data', short: 'Local data and backup', icon: 'database' },
   { id: 'plan', label: 'Plan setup', short: 'Build the plan again', icon: 'calendar' },
 ];
 
@@ -121,13 +121,13 @@ export async function render() {
 
   const data = settingsPanel(
     'data',
-    'Data and privacy',
+    'Data',
     'GymLog works without an account. Your information remains on this device unless you export it.',
-    'shield',
+    'database',
     el(
       'div',
       { class: 'settings-data-summary' },
-      el('span', { class: 'settings-data-summary__icon' }, icon('database', 'w-6 h-6')),
+      el('span', { class: 'settings-data-summary__icon' }, icon('screen', 'w-6 h-6')),
       el(
         'div',
         { class: 'min-w-0 flex-1' },

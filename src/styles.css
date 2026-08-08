@@ -287,37 +287,21 @@
     @apply p-4 sm:p-5;
   }
 
-  /* Privacy reads as prose, not as controls: one column, generous measure. */
-  .privacy-layout {
-    @apply grid grid-cols-1 gap-4;
+  /* Privacy is a document: one column at a readable measure, no controls. */
+  .privacy-doc {
+    @apply max-w-[68ch] pb-4;
   }
 
-  .privacy-layout .surface-group {
-    @apply p-4 sm:p-5;
+  .privacy-doc h2 {
+    @apply mt-9 text-xs font-extrabold uppercase tracking-[.14em] text-accent;
   }
 
-  .privacy-prose {
-    @apply mt-4 max-w-[68ch] text-sm leading-relaxed text-ink-2;
+  .privacy-doc p {
+    @apply mt-3 text-sm leading-relaxed text-ink-2;
   }
 
-  .privacy-points {
-    @apply mt-4 grid gap-4;
-  }
-
-  .privacy-point {
-    @apply grid grid-cols-[36px_minmax(0,1fr)] items-start gap-3;
-  }
-
-  .privacy-point__icon {
-    @apply grid h-9 w-9 place-items-center rounded-xl bg-surface-2 text-ink-2;
-  }
-
-  .privacy-point strong {
-    @apply block text-sm font-extrabold text-ink;
-  }
-
-  .privacy-point > div > span {
-    @apply mt-1 block max-w-[68ch] text-xs leading-relaxed text-ink-3;
+  .privacy-doc p.privacy-doc__lead {
+    @apply mt-0 text-base leading-relaxed text-ink;
   }
 
   .dual-timer {

@@ -14,6 +14,7 @@ test('mobile primary navigation maps nested routes to their section', () => {
     ['/stats', '/stats'],
     ['/more', '/more'],
     ['/settings', '/more'],
+    ['/privacy', '/more'],
   ];
 
   for (const [route, expected] of routes) {

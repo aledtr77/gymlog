@@ -13,17 +13,22 @@ const ITEMS = [
   { path: '/more', label: 'More', icon: 'more' },
 ];
 
-const SETTINGS = { path: '/settings', label: 'Settings', icon: 'settings' };
+/* Below the divider: reached deliberately, not during a workout. The mobile
+   bar has no room for these, so More links to both. */
+const SECONDARY = [
+  { path: '/settings', label: 'Settings', icon: 'settings' },
+  { path: '/privacy', label: 'Privacy', icon: 'shield' },
+];
 
 export function primaryNavigationPath(path) {
   if (path === '/' || path.startsWith('/session')) return '/';
-  if (path.startsWith('/settings')) return '/more';
+  if (SECONDARY.some(item => path.startsWith(item.path))) return '/more';
   return ITEMS.find(item => item.path !== '/' && path.startsWith(item.path))?.path ?? null;
 }
 
 export function mountNav(root) {
   const list = el('nav', { class: 'flex flex-col gap-1.5 px-4', 'aria-label': 'Main navigation' });
-  const settingsList = el('nav', { class: 'mt-3 flex flex-col gap-1.5 border-t border-line/70 px-4 pt-3', 'aria-label': 'App settings' });
+  const settingsList = el('nav', { class: 'mt-3 flex flex-col gap-1.5 border-t border-line/70 px-4 pt-3', 'aria-label': 'App and privacy' });
   const mobileList = el('nav', { class: 'mobile-nav lg:hidden', 'aria-label': 'Main navigation' });
 
   const rail = el(
@@ -95,7 +100,7 @@ export function mountNav(root) {
 
     list.replaceChildren(...ITEMS.map(navButton));
     mobileList.replaceChildren(...ITEMS.map(mobileButton));
-    settingsList.replaceChildren(navButton(SETTINGS));
+    settingsList.replaceChildren(...SECONDARY.map(navButton));
   };
 
   paint();

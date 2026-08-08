@@ -111,6 +111,33 @@ Clearing browser site data can still remove the database. Storage belongs to the
 origin, so the `workers.dev` deployment and any future custom domain have separate
 browser databases. Export important records regularly.
 
+## Privacy
+
+GymLog records body measurements, progress photos and training history, which is
+personal information in the ordinary sense and health data under the GDPR. The design
+answer is that none of it is ever collected: there is no account, no application
+backend and no request that carries user data off the device.
+
+- Everything a user logs is written to IndexedDB and LocalStorage on their own device.
+- No analytics, telemetry, advertising, error reporting or third-party script is
+  loaded. The application makes no outbound request beyond fetching its own assets.
+- No cookies are set. The browser storage that is used is strictly necessary for the
+  application to function, so no consent banner is required.
+- Users can export everything as JSON and permanently delete everything, both from
+  **Settings → Data and privacy**, without asking anyone.
+- Serving the application leaves ordinary web server access records, including IP
+  addresses, with the hosting provider. GymLog neither adds to them nor reads them.
+
+The same statement is a screen of the application, reachable as **Privacy** in the
+navigation rail and from **More**, rather than a link buried inside another page.
+
+This position depends on the architecture, not on good intentions, so it stops holding
+the moment the architecture changes. Wiring a real backend into `src/services/sync.js`,
+adding analytics or shipping through an app store each require a published privacy
+policy, a lawful basis for processing health data and a defined deletion path. Those
+obligations are part of the cost of the accounts phase described under
+[Scope and limitations](#scope-and-limitations).
+
 ## Architecture
 
 GymLog intentionally has no runtime framework dependency.

@@ -5,8 +5,8 @@ import { go, currentPath } from '../core/router.js';
 import { on } from '../core/bus.js';
 
 const ITEMS = [
-  { path: '/training', label: 'Training', icon: 'calendar' },
   { path: '/', label: 'Today', icon: 'home' },
+  { path: '/training', label: 'Training', icon: 'calendar' },
   { path: '/timer', label: 'Timer', icon: 'timer' },
   { path: '/exercises', label: 'Exercises', icon: 'dumbbell' },
   { path: '/stats', label: 'Progress', icon: 'chart' },

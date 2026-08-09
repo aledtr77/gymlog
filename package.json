@@ -1,6 +1,6 @@
 {
   "name": "gymlog",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Installable offline-first training PWA with smart workout logging, tested local persistence, progress metrics and portable backups",
   "license": "MIT",

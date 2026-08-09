@@ -1,6 +1,6 @@
 {
   "name": "gymlog",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Installable offline-first training PWA with smart workout logging, tested local persistence, progress metrics and portable backups",
   "license": "MIT",
@@ -22,7 +22,6 @@
     "test": "node --test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "release": "bash scripts/release.sh",
     "badge": "node scripts/sync-test-badge.mjs",
     "badge:check": "node scripts/sync-test-badge.mjs --check"
   },

@@ -22,6 +22,7 @@
     "test": "node --test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "release": "bash scripts/release.sh",
     "badge": "node scripts/sync-test-badge.mjs",
     "badge:check": "node scripts/sync-test-badge.mjs --check"
   },

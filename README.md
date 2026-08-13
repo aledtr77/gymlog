@@ -247,9 +247,14 @@ in the prototype.
 
 ## Development approach
 
-GymLog was built through an AI-assisted development workflow. Product scope,
-architecture, feature selection, integration, review and release decisions remain part
-of the project work; generated suggestions are treated as code to inspect, test and
+GymLog was built through an AI-assisted development workflow. I defined the product
+scope, user flows, feature priorities, privacy requirements and acceptance criteria.
+AI supported much of the implementation and documentation; I directed iteration,
+reviewed the resulting changes, ran the verification workflow and made the release
+decisions.
+
+This repository documents what the prototype currently does, not a claim that I wrote
+every line unaided. Generated suggestions are treated as code to inspect, test and
 maintain rather than as proof of correctness.
 
 ## License

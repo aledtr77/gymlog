@@ -246,10 +246,11 @@ in the prototype.
 
 ## Development approach
 
-The code in this repository is written by AI models — most of it, not part of it. What
-is mine is the product scope, the user flows, the feature priorities, the privacy
-requirements and the acceptance criteria; the direction of every iteration; the review
-of what came back; the verification workflow; and the release decisions.
+GymLog was built through an AI-assisted development workflow. I defined the product
+scope, user flows, feature priorities, privacy requirements and acceptance criteria.
+AI supported much of the implementation and documentation; I directed iteration,
+reviewed the resulting changes, ran the verification workflow and made the release
+decisions.
 
 This repository documents what the prototype currently does, not a claim that I wrote
 every line unaided. Generated suggestions are treated as code to inspect, test and

@@ -4,7 +4,6 @@
 workout moving.**
 
 [![lint · tests · build](https://img.shields.io/github/actions/workflow/status/aledtr77/gymlog/ci.yml?branch=main&label=lint%20%C2%B7%20tests%20%C2%B7%20build)](https://github.com/aledtr77/gymlog/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.0.0-111827)](https://github.com/aledtr77/gymlog/releases/tag/v1.0.0)
 [![Tests](https://img.shields.io/badge/tests-121%20passing-16a34a)](#quality-and-testing)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2563eb.svg)](LICENSE)
 [![PWA](https://img.shields.io/badge/PWA-installable-7c3aed)](https://gymlog.aledtr-77.workers.dev/)
@@ -245,10 +244,10 @@ defining authentication, encrypted transport, conflict resolution, data deletion
 privacy obligations and operating costs. Those systems are intentionally not simulated
 in the prototype.
 
-## Development approach
+## How this was built
 
-GymLog was built through an AI-assisted development workflow. I defined the product
-scope, user flows, feature priorities, privacy requirements and acceptance criteria.
+I defined the product scope, user flows, feature priorities, privacy requirements and
+acceptance criteria.
 AI supported much of the implementation and documentation; I directed iteration,
 reviewed the resulting changes, ran the verification workflow and made the release
 decisions.
